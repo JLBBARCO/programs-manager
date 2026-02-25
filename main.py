@@ -12,18 +12,18 @@ except Exception as error:
         ctk = importlib.import_module('customtkinter')
     except Exception as error2:
         log.log(f'Failed to install/import customtkinter: {error2}')
-        sys.exit("customtkinter is required. Instale dependências e execute novamente.")
+        sys.exit("customtkinter is required. Install dependencies and run again.")
 
 # * Main Variables
 systemName = "Windows Installations"
 widthWindow = 400
 heightWindow = 400
 
-class App(ctk.CTk):
+class App(ctk.CTk):  # type: ignore
     def __init__(self):
         super().__init__()
 
-        log.log('Program started')
+        log.log('Program started', level="INFO")
         ctk.set_appearance_mode("system")
 
         self.title(systemName)
@@ -88,11 +88,11 @@ class App(ctk.CTk):
             log.log(installations.development())
 
         if self.checkedButtonGames.get():
-            log.log(f'Install Games Programs: {self.checkedButtonGames.get()}')
+            log.log(f'Install Games: {self.checkedButtonGames.get()}')
             log.log(installations.games())
 
         if self.checkedButtonCustomization.get():
-            log.log(f'Install Customizations: {self.checkedButtonCustomization.get()}')
+            log.log(f'Install Customization: {self.checkedButtonCustomization.get()}')
             log.log(installations.customization())
 
     def cancel(self):
