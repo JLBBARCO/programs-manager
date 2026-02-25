@@ -51,20 +51,25 @@ class App(ctk.CTk):  # type: ignore
         self.checkButtonOffice.select()
         self.checkButtonOffice.grid(padx=20, pady=5, row=1, column=0, sticky="w")
 
+        self.checkedButtonScreen = ctk.BooleanVar()
+        self.checkButtonScreen = ctk.CTkCheckBox(self.options_frame, text="Screen", onvalue=True, offvalue=False, variable=self.checkedButtonScreen)
+        self.checkButtonScreen.select()
+        self.checkButtonScreen.grid(padx=20, pady=5, row=2, column=0, sticky="w")
+
         self.checkedButtonCustomization = ctk.BooleanVar()
         self.checkButtonCustomization = ctk.CTkCheckBox(self.options_frame, text="Customization", onvalue=True, offvalue=False, variable=self.checkedButtonCustomization)
         self.checkButtonCustomization.select()
-        self.checkButtonCustomization.grid(padx=20, pady=5, row=2, column=0, sticky="w")
+        self.checkButtonCustomization.grid(padx=20, pady=5, row=3, column=0, sticky="w")
 
         self.checkedButtonDevelopment = ctk.BooleanVar()
         self.checkButtonDevelopment = ctk.CTkCheckBox(self.options_frame, text="Developer Tools", onvalue=True, offvalue=False, variable=self.checkedButtonDevelopment)
         self.checkButtonDevelopment.select()
-        self.checkButtonDevelopment.grid(padx=20, pady=5, row=3, column=0, sticky="w")
+        self.checkButtonDevelopment.grid(padx=20, pady=5, row=4, column=0, sticky="w")
 
         self.checkedButtonGames = ctk.BooleanVar()
         self.checkButtonGames = ctk.CTkCheckBox(self.options_frame, text="Games", onvalue=True, offvalue=False, variable=self.checkedButtonGames)
         self.checkButtonGames.select()
-        self.checkButtonGames.grid(padx=20, pady=5, row=4, column=0, sticky="w")
+        self.checkButtonGames.grid(padx=20, pady=5, row=5, column=0, sticky="w")
 
         self.submitButton = ctk.CTkButton(self.container, text="Install", command=self.install)
         self.submitButton.grid(pady=20, column=0, row=3)
@@ -90,6 +95,10 @@ class App(ctk.CTk):  # type: ignore
         if self.checkedButtonGames.get():
             log.log(f'Install Games: {self.checkedButtonGames.get()}')
             log.log(installations.games())
+
+        if self.checkedButtonScreen.get():
+            log.log(f'Install Screen: {self.checkedButtonScreen.get()}')
+            log.log(installations.screen())
 
         if self.checkedButtonCustomization.get():
             log.log(f'Install Customization: {self.checkedButtonCustomization.get()}')

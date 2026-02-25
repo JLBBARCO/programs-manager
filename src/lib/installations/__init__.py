@@ -75,6 +75,9 @@ def development():
 def games():
     return install_program("games")
 
+def screen():
+    return install_program("screen")
+
 def customization():
     import src.lib.customizations as custom
     log.log('Starting customization flow', level="INFO")
