@@ -1,6 +1,7 @@
 @echo off
 echo Starting update of all installed applications...
-winget update --all
+winget update --all --accept-source-agreements --accept-package-agreements >nul 2>&1
+set UPDATE_ERROR=%ERRORLEVEL%
 echo Update process completed.
 echo.
 
@@ -9,7 +10,7 @@ echo.
 
 call :install "Xbox App" "Microsoft.XboxApp"
 call :install "Steam" "Valve.Steam"
-call :install "Discord" "XPDC2RH70K22MN"
+call :install "Discord" "Discord.Discord"
 call :install "Google Play Games" "Google.PlayGames"
 call :install "Radmin VPN" "Famatech.RadminVPN"
 call :install "CurseForge" "Overwolf.CurseForge"
@@ -21,7 +22,7 @@ goto :eof
 set NAME=%~1
 set ID=%~2
 echo Installing %NAME%...
-winget install %ID% --accept-source-agreements --accept-package-agreements
+winget install %ID% --accept-source-agreements --accept-package-agreements >nul 2>&1
 set INSTALL_ERROR=%ERRORLEVEL%
 
 if %INSTALL_ERROR% EQU 0 (

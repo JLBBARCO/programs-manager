@@ -1,13 +1,13 @@
 @echo off
 echo Starting update of all installed applications...
-winget update --all
+winget update --all --accept-source-agreements --accept-package-agreements >nul 2>&1
+set UPDATE_ERROR=%ERRORLEVEL%
 echo Update process completed.
 echo.
 
 echo Starting installation applications...
 echo.
 
-call :install "Camo Studio" "9PGM3QB3PDRD"
 call :install "Spacedesk Client" "Datronicsoft.SpacedeskDriver.Client"
 call :install "Spacedesk Server" "Datronicsoft.SpacedeskDriver.Server"
 call :install "AnyDesk" "AnyDesk.AnyDesk"
@@ -18,7 +18,7 @@ goto :eof
 set NAME=%~1
 set ID=%~2
 echo Installing %NAME%...
-winget install %ID% --accept-source-agreements --accept-package-agreements
+winget install %ID% --accept-source-agreements --accept-package-agreements >nul 2>&1
 set INSTALL_ERROR=%ERRORLEVEL%
 
 if %INSTALL_ERROR% EQU 0 (

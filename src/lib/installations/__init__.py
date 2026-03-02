@@ -1,13 +1,49 @@
 import subprocess
 import os
 import re
+import shutil
+import sys
 from src.lib import log
 
+
+# PyInstaller packages data files into a temporary folder during execution.
+# Use this helper to get the absolute path to bundled resources whether the
+# application is running from source or from a PyInstaller-built executable.
+
+def _resource_path(relative_path: str) -> str:
+    """Return the absolute path to *relative_path* inside the project.
+
+    When running normally ``relative_path`` is resolved relative to the
+    current working directory.  When running as a frozen app (PyInstaller)
+    it resides inside ``sys._MEIPASS`` (or the equivalent extraction
+    location).  This ensures that calls such as ``subprocess.run`` and
+    ``shutil.copy`` can locate the files regardless of how the program is
+    packaged.
+    """
+    if getattr(sys, "frozen", False):
+        base = getattr(sys, "_MEIPASS", os.path.dirname(sys.executable))
+    else:
+        base = os.getcwd()
+    return os.path.join(base, relative_path)
+
 def install_program(program):
-    # Build path to the .bat in a cross-platform way and run it with shell=True
-    bat_path = os.path.join('install', f"{program}.bat")
+    # Build an absolute path to the installer script.  Use the packaging helper
+    # so that the file can be found when the application is frozen by
+    # PyInstaller (it ends up inside ``sys._MEIPASS``).
+    bat_path = _resource_path(os.path.join('install', 'windows', f"{program}.bat"))
     log.log(f'Running installer: {bat_path}', level="INFO")
-    process = subprocess.run(bat_path, capture_output=True, text=True, shell=True)
+
+    if not os.path.exists(bat_path):
+        # early exit if the file is missing; this mirrors the behaviour of the
+        # shell while giving a clearer message to the log.
+        msg = f'Installer not found: {bat_path}'
+        log.log(msg, level="ERROR")
+        return msg
+
+    # On Windows we run the batch file via the shell.  Wrap the path in quotes
+    # to ensure spaces in directory names don’t break the command.
+    command = f'"{bat_path}"'
+    process = subprocess.run(command, capture_output=True, text=True, shell=True)
     # Combine stdout and stderr
     raw_output = (process.stdout or "") + ("\n" + process.stderr if process.stderr else "")
 
@@ -52,15 +88,18 @@ def essentials():
     return install_program("essentials")
 
 def office():
-    import shutil
-    destinationPath = r"C:\office"
-    files = ['install/office/setup.exe', 'install/office/settings.xml']
+    destinationPath = r"C:\Office"
+    files = ['install/windows/office/settings.xml']
 
     os.makedirs(destinationPath, exist_ok=True)
     messages = []
     for file in files:
+        # compute the real path to the file using our helper; without this the
+        # file is not found when running from a PyInstaller bundle (it lives
+        # under ``sys._MEIPASS/install/windows/...`` instead of the CWD).
+        real_file = _resource_path(file)
         try:
-            shutil.copy(file, destinationPath)
+            shutil.copy(real_file, destinationPath)
             messages.append(f"Successfully copied {file} to {destinationPath}")
         except Exception as error:
             messages.append(f"Failed to copy {file} to {destinationPath}. Error: {error}")
@@ -91,20 +130,30 @@ def customization():
     log.log(f'Disable startup: {disableStartupMessage}', level="INFO")
 
     # 3) Save current startup keys to programs.log (overwrite)
-    saveKeysMessage = custom.save_startup_keys('programs.log')
+    # write the startup key dump next to the executable rather than into
+    # whatever directory the caller is currently in
+    save_path = _resource_path('programs.log')
+    saveKeysMessage = custom.save_startup_keys(save_path)
     log.log(saveKeysMessage, level="INFO")
 
-    # 4) Reactivate entries that are in the whitelist
-    # prefer 'install/white_list.txt' if present, otherwise try 'white_list.txt'
-    whitelist_path = 'install/white_list.txt' if os.path.exists(os.path.join('install','white_list.txt')) else 'white_list.txt'
+    # 4) Reactivate entries that are in the whitelist.  When the application is
+    # frozen the whitelist file is embedded in the bundle, so we must resolve
+    # its real location before checking for existence.
+    candidate = _resource_path(os.path.join('install','windows','white_list.txt'))
+    if os.path.exists(candidate):
+        whitelist_path = candidate
+    else:
+        # fall back to a top-level file (used during development)
+        whitelist_path = _resource_path('white_list.txt')
+
     enableStartupMessage = custom.enable_startup_whitelist(whitelist_path)
     log.log(enableStartupMessage, level="INFO")
 
     # 5) Apply dark mode and restart explorer to apply visual changes
     darkModeMessage = custom.dark_mode()
     log.log(darkModeMessage, level="INFO")
-    os.system("taskkill /f /im explorer.exe")
-    os.system("start explorer.exe")
+    subprocess.run("taskkill /f /im explorer.exe", shell=True)
+    subprocess.run("start explorer.exe", shell=True)
 
     log.log('Customization flow completed', level="INFO")
     return f"{installProgramsMessage}\n{disableStartupMessage}\n{saveKeysMessage}\n{enableStartupMessage}\n{darkModeMessage}"

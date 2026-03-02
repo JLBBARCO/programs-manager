@@ -6,3 +6,5 @@ dist/
 *.log
 test.*
 build.bat
+*.lock
+%userprofile%/

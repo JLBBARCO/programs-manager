@@ -1,9 +1,18 @@
 from datetime import datetime
 import threading
 import os
+import sys
 import inspect
 
-_log_file = open('log.log', 'a+', encoding="utf-8")
+# write log.log alongside the executable when frozen or in the project root
+if getattr(sys, 'frozen', False):
+    base_dir = os.path.dirname(sys.executable)
+else:
+    # prefer the repository root if available, otherwise CWD
+    base_dir = os.getcwd()
+
+_log_file_path = os.path.join(base_dir, 'log.log')
+_log_file = open(_log_file_path, 'a+', encoding="utf-8")
 _lock = threading.Lock()
 
 
