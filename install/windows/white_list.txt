@@ -1,5 +1,8 @@
-OneDrive
-Teams
-Discord
-SecurityHealth
-Nearby Share
+onedrive
+teams
+discord
+securityhealth
+nearby
+camo
+edge
+whatsapp

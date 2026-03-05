@@ -1,6 +1,7 @@
 @echo off
 echo Starting update of all installed applications...
-winget update --all
+winget update --all --accept-source-agreements --accept-package-agreements >nul 2>&1
+set UPDATE_ERROR=%ERRORLEVEL%
 echo Update process completed.
 echo.
 
@@ -8,19 +9,15 @@ echo Starting installation applications...
 echo.
 
 call :install "Google Chrome" "Google.Chrome"
-call :install "Mozilla FireFox" "9NZVDKPMR9RD"
-call :install "VLC" "XPDM1ZW6815MQM"
+call :install "Mozilla Firefox" "Mozilla.Firefox"
+call :install "VLC" "VideoLAN.VLC"
 call :install "WinRAR" "RARLab.WinRAR"
-call :install "WhatsApp" "9NKSQGP7F2NH"
+call :install "WhatsApp" "WhatsApp.WhatsApp"
 call :install "Telegram Desktop" "Telegram.TelegramDesktop"
-call :install "HP Smart" "9WZDNCRFHWLH"
-call :install "Spotify" "9NCBCSZSJRSB"
-call :install "Microsoft PC Manager" "9PM860492SZD"
-call :install "Proton VPN" "Proton.ProtonVPN"
-call :install "Google Quick Share" "Google.QuickShare"
-call :install "LinkedIn" "9WZDNCRFJ4Q7"
-call :install "Google Drive" "Google.GoogleDrive"
-call :install "Warp VPN" "Cloudflare.Warp"
+call :install "Spotify" "Spotify.Spotify"
+call :install "Google Drive" "Google.Drive"
+call :install "Cloudflare Warp" "Cloudflare.Warp"
+call :install "Adobe Acrobat" "Adobe.Acrobat.Reader.64-bit"
 
 goto :eof
 
@@ -28,7 +25,7 @@ goto :eof
 set NAME=%~1
 set ID=%~2
 echo Installing %NAME%...
-winget install %ID% --accept-source-agreements --accept-package-agreements
+winget install %ID% --accept-source-agreements --accept-package-agreements >nul 2>&1
 set INSTALL_ERROR=%ERRORLEVEL%
 
 if %INSTALL_ERROR% EQU 0 (

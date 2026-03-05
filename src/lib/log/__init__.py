@@ -1,14 +1,19 @@
-from datetime import datetime
-import threading
-import os
-import inspect
+from src.lib.externalLibs import sys, os, threading, datetime, inspect
 
-_log_file = open('log.log', 'a+', encoding="utf-8")
+# write log.log alongside the executable when frozen or in the project root
+if getattr(sys, 'frozen', False):
+    base_dir = os.path.dirname(sys.executable)
+else:
+    # prefer the repository root if available, otherwise CWD
+    base_dir = os.getcwd()
+
+_log_file_path = os.path.join(base_dir, 'log.log')
+_log_file = open(_log_file_path, 'a+', encoding="utf-8")
 _lock = threading.Lock()
 
 
 def _now():
-    return datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    return datetime.datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
 
 def log(message, level="INFO"):
