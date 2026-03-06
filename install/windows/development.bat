@@ -12,7 +12,7 @@ echo.
 call :install "Visual Studio Code" "Microsoft.VisualStudioCode"
 call :install "Arduino IDE" "ArduinoSA.IDE.stable"
 call :install "Microsoft Teams" "Microsoft.Teams"
-call :install "Gimp" "GIMP.GIMP.2"
+call :install "Gimp" "GIMP.GIMP.3"
 call :install "Git" "Git.Git"
 call :install "GitHub Desktop" "GitHub.GitHubDesktop"
 call :install "Python 3.12" "Python.Python.3.12"
