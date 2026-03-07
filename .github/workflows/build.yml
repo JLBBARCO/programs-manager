@@ -108,7 +108,7 @@ jobs:
           else
             TAG="auto-v$(date -u +'%Y.%m.%d')-${GITHUB_RUN_NUMBER}"
             NAME="Auto Release ${TAG}"
-            PRE="true"
+            PRE="false"
           fi
 
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
