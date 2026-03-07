@@ -61,7 +61,7 @@ echo ""
 # Instalar pacotes globalmente com --break-system-packages
 echo "Instalando/atualizando dependencias..."
 python3 -m pip install --upgrade pip --break-system-packages --quiet
-python3 -m pip install pyinstaller customtkinter --break-system-packages --quiet
+python3 -m pip install pyinstaller customtkinter psutil --break-system-packages --quiet
 
 echo "✓ Dependências instaladas"
 echo ""
@@ -71,6 +71,7 @@ python3 -m PyInstaller --noconfirm --onedir --windowed \
     --add-data "src:src" \
     --add-data "install:install" \
     --collect-all customtkinter \
+    --collect-all psutil \
     "main.py"
 
 echo ""

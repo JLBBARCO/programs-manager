@@ -5,7 +5,7 @@ del /f /q "Auto Install Programs.spec" 2>nul
 
 echo Instalando dependencias necessarias...
 python -m pip install --upgrade pip
-python -m pip install pyinstaller customtkinter
+python -m pip install pyinstaller customtkinter psutil
 
 echo Iniciando o Build com PyInstaller...
 python -m PyInstaller --noconfirm --onedir --windowed ^
@@ -14,6 +14,7 @@ python -m PyInstaller --noconfirm --onedir --windowed ^
     --add-data "src;src" ^
     --add-data "install;install" ^
     --collect-all customtkinter ^
+    --collect-all psutil ^
     "main.py"
 
 if errorlevel 1 (

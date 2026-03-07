@@ -1,8 +1,16 @@
 from src.lib.externalLibs import ctk, time
 from src.lib import installations, log, system
+from src.lib.installations import single_instance
 
 # * Main Variables
 systemName = f"{system.nameSO()} Installations"
+
+# * Single Instance Control
+# The application allows multiple GUI windows to be opened simultaneously,
+# but only the most recently started installation will execute.
+# When a new installation begins, any previous running installation is
+# automatically cancelled and terminated, ensuring no conflicts between
+# concurrent installation processes.
 
 class App(ctk.CTk):  # type: ignore
     def __init__(self):
@@ -91,40 +99,71 @@ class App(ctk.CTk):  # type: ignore
     def install(self):
         self.destroy()  # Close the GUI before starting installations
         
-        if self.checkedButtonEssentials.get():
-            log.log(f'Install Essential Programs: {self.checkedButtonEssentials.get()}')
-            log.log(installations.essentials())
-            time.sleep(3)
+        # Acquire installation lock - this will cancel any previous installation
+        log.log('Acquiring installation lock...', level="INFO")
+        single_instance.acquire_installation_lock()
+        
+        try:
+            if self.checkedButtonEssentials.get():
+                if single_instance.is_installation_cancelled():
+                    log.log('Installation cancelled by newer instance', level="WARNING")
+                    return
+                log.log(f'Install Essential Programs: {self.checkedButtonEssentials.get()}')
+                log.log(installations.essentials())
+                time.sleep(3)
 
-        if self.checkedButtonOffice.get():
-            log.log(f'Install Office: {self.checkedButtonOffice.get()}')
-            log.log(installations.office())
-            time.sleep(3)
+            if self.checkedButtonOffice.get():
+                if single_instance.is_installation_cancelled():
+                    log.log('Installation cancelled by newer instance', level="WARNING")
+                    return
+                log.log(f'Install Office: {self.checkedButtonOffice.get()}')
+                log.log(installations.office())
+                time.sleep(3)
 
-        if self.checkedButtonDevelopment.get():
-            log.log(f'Install Development Programs: {self.checkedButtonDevelopment.get()}')
-            log.log(installations.development())
-            time.sleep(3)
+            if self.checkedButtonDevelopment.get():
+                if single_instance.is_installation_cancelled():
+                    log.log('Installation cancelled by newer instance', level="WARNING")
+                    return
+                log.log(f'Install Development Programs: {self.checkedButtonDevelopment.get()}')
+                log.log(installations.development())
+                time.sleep(3)
 
-        if self.checkedButtonGames.get():
-            log.log(f'Install Games: {self.checkedButtonGames.get()}')
-            log.log(installations.games())
-            time.sleep(3)
+            if self.checkedButtonGames.get():
+                if single_instance.is_installation_cancelled():
+                    log.log('Installation cancelled by newer instance', level="WARNING")
+                    return
+                log.log(f'Install Games: {self.checkedButtonGames.get()}')
+                log.log(installations.games())
+                time.sleep(3)
 
-        if self.checkedButtonScreen.get():
-            log.log(f'Install Screen: {self.checkedButtonScreen.get()}')
-            log.log(installations.screen())
-            time.sleep(3)
+            if self.checkedButtonScreen.get():
+                if single_instance.is_installation_cancelled():
+                    log.log('Installation cancelled by newer instance', level="WARNING")
+                    return
+                log.log(f'Install Screen: {self.checkedButtonScreen.get()}')
+                log.log(installations.screen())
+                time.sleep(3)
 
-        if self.checkedButtonServer.get():
-            log.log(f'Install Server: {self.checkedButtonServer.get()}')
-            log.log(installations.server())
-            time.sleep(3)
+            if self.checkedButtonServer.get():
+                if single_instance.is_installation_cancelled():
+                    log.log('Installation cancelled by newer instance', level="WARNING")
+                    return
+                log.log(f'Install Server: {self.checkedButtonServer.get()}')
+                log.log(installations.server())
+                time.sleep(3)
 
-        if self.checkedButtonCustomization.get():
-            log.log(f'Install Customization: {self.checkedButtonCustomization.get()}')
-            log.log(installations.customization())
-            time.sleep(3)
+            if self.checkedButtonCustomization.get():
+                if single_instance.is_installation_cancelled():
+                    log.log('Installation cancelled by newer instance', level="WARNING")
+                    return
+                log.log(f'Install Customization: {self.checkedButtonCustomization.get()}')
+                log.log(installations.customization())
+                time.sleep(3)
+            
+            log.log('All installations completed successfully', level="INFO")
+        finally:
+            # Always release the lock when done
+            single_instance.release_installation_lock()
 
     def cancel(self):
         log.log('Installation cancelled by the user')
