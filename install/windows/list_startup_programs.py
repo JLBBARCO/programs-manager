@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Script para listar todos os programas de startup do Windows
-e facilitar a geração de uma whitelist personalizada.
+Script to list all Windows startup programs
+and facilitate the generation of a custom whitelist.
 """
 
 import sys
@@ -38,7 +38,7 @@ def list_startup_programs():
                     except OSError:
                         break
         except Exception as e:
-            print(f"  Erro ao ler registro: {e}")
+            print(f"  Error reading registry: {e}")
     
     return all_programs
 
@@ -59,6 +59,7 @@ def generate_whitelist(programs):
         all_names.extend(region_programs)
     
     all_names = list(set(all_names))  # Remove duplicatas
+        all_names = list(set(all_names))  # Remove duplicates
     all_names.sort()
     
     for name in all_names:
@@ -119,11 +120,12 @@ def save_whitelist(programs, filename="white_list_generated.txt"):
             f.write(program + '\n')
     
     print(f"\nArquivo salvo: {filename}")
-    print(f"Total de programas sugeridos: {len(set(suggested))}")
+    print(f"\nFile saved: {filename}")
+    print(f"Total suggested programs: {len(set(suggested))}")
 
 def main():
     print("="*60)
-    print("Listador de Programas de Startup do Windows")
+    print("Windows Startup Programs Lister")
     print("="*60)
     
     try:
@@ -131,27 +133,27 @@ def main():
         suggested = generate_whitelist(programs)
         
         print(f"\n{'='*60}")
-        print("RESUMO")
+        print("SUMMARY")
         print(f"{'='*60}")
         
         total = sum(len(v) for v in programs.values())
         unique = len(set(sum(programs.values(), [])))
         
-        print(f"Total de entradas encontradas: {total}")
-        print(f"Programas únicos: {unique}")
-        print(f"Programas sugeridos para whitelist: {len(set(suggested))}")
+        print(f"Total entries found: {total}")
+        print(f"Unique programs: {unique}")
+        print(f"Suggested programs for whitelist: {len(set(suggested))}")
         
         # Perguntar se deseja salvar
         print(f"\n{'='*60}")
-        resposta = input("Deseja salvar whitelist sugerida em arquivo? (s/n): ").lower()
+        response = input("Do you want to save suggested whitelist to file? (y/n): ").lower()
         
-        if resposta == 's':
+        if response == 'y':
             save_whitelist(programs)
-            print("\nVocê pode editar o arquivo e copiar no white_list.txt")
+            print("\nYou can edit the file and copy it to white_list.txt")
         
     except Exception as e:
-        print(f"\nERRO: {e}")
-        print("\nExecute este script como administrador!")
+        print(f"\nERROR: {e}")
+        print("\nRun this script as administrator!")
         sys.exit(1)
 
 if __name__ == "__main__":

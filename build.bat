@@ -1,9 +1,9 @@
 @echo off
-echo Limpando builds antigos...
+echo Cleaning old builds...
 rd /s /q dist build 2>nul
 del /f /q "Auto Install Programs.spec" 2>nul
 
-echo Instalando dependencias necessarias...
+echo Installing required dependencies...
 python -m pip install --upgrade pip
 python -m pip install pyinstaller customtkinter psutil
 
@@ -19,15 +19,14 @@ python -m PyInstaller --noconfirm --onedir --windowed ^
 
 if errorlevel 1 (
     echo.
-    echo ERRO: Build falhou!
-    echo Verifique os erros acima.
+    echo ERROR: Build failed!
+    echo Check the errors above.
     exit /b 1
 )
 
 echo.
-echo ============================================
-echo Build concluido com sucesso!
-echo ============================================
+echo Build completed successfully!
+echo %%%%
 echo.
 echo O executavel esta em: dist/Auto Install Programs/
 echo.

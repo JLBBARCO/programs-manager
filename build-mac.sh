@@ -1,15 +1,15 @@
 #!/bin/bash
 set -e
 
-echo "Limpando builds antigos..."
+echo "Cleaning old builds..."
 rm -rf dist build
 rm -f "Auto Install Programs.spec"
 
-echo "Instalando dependencias necessarias..."
+echo "Installing required dependencies..."
 python -m pip install --upgrade pip
 python -m pip install pyinstaller customtkinter psutil
 
-echo "Iniciando o Build com PyInstaller..."
+echo "Starting build with PyInstaller..."
 python -m PyInstaller --noconfirm --onedir --windowed \
     --name "Auto Install Programs" \
     --add-data "src:src" \
@@ -21,14 +21,14 @@ python -m PyInstaller --noconfirm --onedir --windowed \
 echo ""
 if [ -d "dist/Auto Install Programs" ]; then
     echo "============================================"
-    echo "Build concluido com sucesso!"
+    echo "Build completed successfully!"
     echo "============================================"
     echo ""
-    echo "O executavel esta em: dist/Auto Install Programs/"
+    echo "Executable is at: dist/Auto Install Programs/"
     echo ""
 else
     echo "============================================"
-    echo "Build falhou!"
+    echo "Build failed!"
     echo "============================================"
     echo ""
     exit 1

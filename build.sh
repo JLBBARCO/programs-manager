@@ -1,71 +1,73 @@
 #!/bin/bash
 
 # Detectar se estamos em um sistema de arquivos Windows montado
+# Detect if we're on a mounted Windows file system
 CURRENT_PATH=$(pwd)
 if [[ $CURRENT_PATH == /mnt/* ]]; then
     echo "============================================"
-    echo "⚠ AVISO: Sistema de arquivos Windows detectado"
+    echo "WARNING: Windows file system detected"
     echo "============================================"
     echo ""
-    echo "Você está executando o script em $CURRENT_PATH"
+    echo "You are running the script in $CURRENT_PATH"
     echo ""
-    echo "O PyInstaller não consegue definir permissões executáveis"
-    echo "em sistemas de arquivos Windows montados no WSL."
+    echo "PyInstaller cannot set executable permissions"
+    echo "on Windows file systems mounted in WSL."
     echo ""
-    echo "Use uma das seguintes opções:"
+    echo "Use one of the following options:"
     echo ""
-    echo "OPÇÃO 1 (Recomendado para Windows): Build nativo no Windows"
-    echo "  Execute no PowerShell do Windows:"
+    echo "OPTION 1 (Recommended for Windows): Native Windows build"
+    echo "  Run in Windows PowerShell:"
     echo "    .\\build.bat"
-    echo "  Isso criará um executável .exe para Windows."
+    echo "  This will create a .exe executable for Windows."
     echo ""
-    echo "OPÇÃO 2: Build Linux no sistema de arquivos Linux"
-    echo "  Execute no WSL:"
+    echo "OPTION 2: Linux build on Linux file system"
+    echo "  Run in WSL:"
     echo "    chmod +x build-wsl.sh"
     echo "    ./build-wsl.sh"
-    echo "  Isso copiará o projeto para /home, fará o build,"
-    echo "  e copiará o resultado de volta."
+    echo "  This will copy the project to /home, build it,"
+    echo "  and copy the result back."
     echo ""
-    echo "OPÇÃO 3: Ignorar o aviso e tentar mesmo assim"
-    echo "  Pressione Enter para continuar (pode falhar)..."
-    echo "  Ou pressione Ctrl+C para cancelar."
+    echo "OPTION 3: Ignore the warning and try anyway"
+    echo "  Press Enter to continue (may fail)..."
+    echo "  Or press Ctrl+C to cancel."
     read -r
     echo ""
 fi
 
-echo "Limpando builds antigos..."
+echo "Cleaning old builds..."
 rm -rf dist build
 rm -f "Auto Install Programs.spec"
 
-echo "Verificando e instalando dependencias necessarias..."
+echo "Checking and installing required dependencies..."
 
 # Verificar se pip está instalado
 if ! python3 -m pip --version &> /dev/null; then
     echo "============================================"
-    echo "pip não encontrado!"
+    echo "pip not found!"
     echo "============================================"
     echo ""
-    echo "Para continuar, você precisa instalar pip."
-    echo "Execute no PowerShell do Windows:"
+    echo "To continue, you need to install pip."
+    echo "Run in Windows PowerShell:"
     echo ""
     echo "  .\\install-wsl-deps.bat"
     echo ""
-    echo "Após instalar pip, execute este script novamente."
+    echo "After installing pip, run this script again."
     echo ""
+    echo "Try installing pip3 manually:"
     exit 1
 fi
 
-echo "✓ pip encontrado"
+echo "✓ pip found"
 echo ""
 
-# Instalar pacotes globalmente com --break-system-packages
-echo "Instalando/atualizando dependencias..."
+# Install packages globally with --break-system-packages
+echo "Installing/updating dependencies..."
 python3 -m pip install --upgrade pip --break-system-packages --quiet
 python3 -m pip install pyinstaller customtkinter psutil --break-system-packages --quiet
 
-echo "✓ Dependências instaladas"
+echo "✓ Dependencies installed"
 echo ""
-echo "Iniciando o Build com PyInstaller..."
+echo "Starting build with PyInstaller..."
 python3 -m PyInstaller --noconfirm --onedir --windowed \
     --name "Auto Install Programs" \
     --add-data "src:src" \
@@ -77,18 +79,18 @@ python3 -m PyInstaller --noconfirm --onedir --windowed \
 echo ""
 if [ -d "dist/Auto Install Programs" ]; then
     echo "============================================"
-    echo "Build concluído!"
+    echo "Build completed!"
     echo "============================================"
     echo ""
-    echo "O executável está em: dist/Auto Install Programs/"
+    echo "Executable is at: dist/Auto Install Programs/"
     echo ""
 else
     echo "============================================"
-    echo "Build falhou!"
+    echo "Build failed!"
     echo "============================================"
     echo ""
-    echo "Veja os erros acima para mais detalhes."
-    echo "Considere usar build-wsl.sh ou build.bat"
+    echo "Check the errors above for more details."
+    echo "Consider using build-wsl.sh or build.bat"
     echo ""
     exit 1
 fi

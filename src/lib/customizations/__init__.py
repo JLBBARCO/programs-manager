@@ -106,7 +106,7 @@ def enable_startup_whitelist(whitelist_path="install/white_list.txt"):
     whitelist_path = _resource_path(whitelist_path)
 
     if not os.path.exists(whitelist_path):
-        return f"Whitelist não encontrada: {whitelist_path}"
+        return f"Whitelist not found: {whitelist_path}"
 
     try:
         with open(whitelist_path, 'r', encoding='utf-8') as f:
@@ -130,13 +130,13 @@ def enable_startup_whitelist(whitelist_path="install/white_list.txt"):
                                 # BUSCA PARCIAL: Verifica se o nome no registo contém algum termo da whitelist
                                 if any(term in name.lower() for term in whitelist):
                                     winreg.SetValueEx(app_key, name, 0, winreg.REG_BINARY, enabled_value)
-                                    log.log(f'Reativado da whitelist: {name}', level="INFO")
+                                        log.log(f'Re-enabled from whitelist: {name}', level="INFO")
                                     activated_count += 1
                                 i += 1
                             except OSError:
                                 break
             except Exception:
                 continue
-        return f"Sucesso: {activated_count} programas reativados."
+        return f"Success: {activated_count} programs re-enabled."
     except Exception as e:
-        return f"Erro na whitelist: {e}"
+        return f"Error in whitelist: {e}"
