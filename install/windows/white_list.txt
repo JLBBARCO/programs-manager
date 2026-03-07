@@ -4,18 +4,16 @@ discord
 securityhealth
 nearby
 camo
-edge
+msedge
 whatsapp
-nv-display-container
-nvspcaps64
-nvidia share
-shadowplay
-amdsoftware
-atibrowser
-radeonsoftware
-cnext
-igfxpers
+nvidia
+nvbackend
+nvinitialize
 igfxtray
+igfxpers
+igfxhk
 intelgraphics
-Rainmeter
-Lively Wallpaper
+amd
+radeon
+rainmeter
+lively
