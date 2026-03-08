@@ -9,23 +9,24 @@ echo.
 echo Starting installation applications...
 echo.
 
-call :install "Visual Studio Code" "Microsoft.VisualStudioCode"
 call :install "Arduino IDE" "ArduinoSA.IDE.stable"
-call :install "Microsoft Teams" "Microsoft.Teams"
+call :install "Blender" "BlenderFoundation.Blender"
+call :install "Docker Desktop" "Docker.DockerDesktop"
+call :install "Figma" "Figma.Figma"
 call :install "Gimp" "GIMP.GIMP.3"
 call :install "Git" "Git.Git"
 call :install "GitHub Desktop" "GitHub.GitHubDesktop"
-call :install "Python 3.12" "Python.Python.3.12"
 call :install "Java Runtime Environment" "Oracle.JavaRuntimeEnvironment"
+call :install "Microsoft Teams" "Microsoft.Teams"
 call :install "MySQL Workbench" "Oracle.MySQLWorkbench"
 call :install "Node.js" "OpenJS.NodeJS"
-call :install "XAMPP" "ApacheFriends.Xampp.8.1"
-call :install "Docker Desktop" "Docker.DockerDesktop"
-call :install "VirtualBox" "Oracle.VirtualBox"
-call :install "Figma" "Figma.Figma"
-call :install "Blender" "BlenderFoundation.Blender"
-call :install "Ventoy" "Ventoy.Ventoy"
+call :install "Visual Studio Code" "Microsoft.VisualStudioCode"
+call :install "Python 3.12" "Python.Python.3.12"
+call :install "Raspberry Pi" "RaspberryPi.RaspberryPiImager"
 call :install "Rufus" "Rufus.Rufus"
+call :install "Ventoy" "Ventoy.Ventoy"
+call :install "VirtualBox" "Oracle.VirtualBox"
+call :install "XAMPP" "ApacheFriends.Xampp.8.1"
 
 goto :eof
 

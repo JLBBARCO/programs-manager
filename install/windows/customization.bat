@@ -9,9 +9,9 @@ echo.
 echo Starting installation applications...
 echo.
 
-call :install "TranslucentTB" "CharlesMilette.TranslucentTB"
-call :install "Rainmeter" "Rainmeter.Rainmeter" "https://visualskins.com"
 call :install "Lively Wallpaper" "9NTM2QC6QWS7" "https://motionbgs.com/"
+call :install "Rainmeter" "Rainmeter.Rainmeter" "https://visualskins.com"
+call :install "TranslucentTB" "CharlesMilette.TranslucentTB"
 
 goto :eof
 

@@ -44,5 +44,6 @@ install_pkg "Gimp" "gimp"
 install_pkg "Blender" "blender"
 install_pkg "VirtualBox" "virtualbox"
 install_pkg "Arduino IDE" "arduino"
+install_pkg "Raspberry Pi" "raspberrypi-imager"
 
 echo "Configured Development!"
