@@ -1,9 +1,10 @@
+#!/bin/bash
+
 if ! command -v brew &> /dev/null; then
     echo "Instalando Homebrew..."
     /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 fi
 
-#!/bin/bash
 echo "Starting update of installed applications..."
 brew upgrade --quiet
 echo "Update complete."
@@ -15,11 +16,12 @@ install() {
     echo "Installing $NAME..."
     # No macOS, a maioria das apps essenciais são 'casks' (GUI)
     brew install --cask $ID --quiet
-    
+    EXIT_CODE=$?
+
     # Adicionado sistema de sleep para reduzir carga no CPU
     sleep 2
 
-    if [ $? -eq 0 ]; then
+    if [ $EXIT_CODE -eq 0 ]; then
         echo "[SUCCESS] $NAME Installed successfully!"
     else
         echo "[INFO/ERROR] Failure or $NAME is already present."
@@ -28,7 +30,7 @@ install() {
 }
 
 # Lista de Programas Adaptada para macOS
-install "Free Download Manager" ""
+install "Free Download Manager" "soft-deluxe-free-download-manager"
 install "Google Chrome" "google-chrome"
 install "Mozilla Firefox" "firefox"
 install "VLC" "vlc"
