@@ -6,6 +6,7 @@ $branch = if ($env:AIP_BRANCH) { $env:AIP_BRANCH } else { "main" }
 
 $installRoot = Join-Path $HOME ".auto-install-programs"
 $stageDir = Join-Path $installRoot "src"
+$safeBranch = $branch -replace '[^A-Za-z0-9._-]', '_'
 $zipUrl = "https://codeload.github.com/$owner/$repo/zip/refs/heads/$branch"
 $zipFile = Join-Path $env:TEMP "$repo-$branch.zip"
 $stateFile = Join-Path $installRoot "quick-run-state.json"
@@ -46,7 +47,7 @@ function Get-RemoteEtag {
     param([string]$Url)
 
     try {
-        $headResponse = Invoke-WebRequest -Uri $Url -Method Head
+        $headResponse = Invoke-WebRequest -Uri $Url -Method Head -UseBasicParsing
         return $headResponse.Headers.ETag
     }
     catch {
@@ -83,7 +84,7 @@ if ($sourceIsCurrent) {
 }
 else {
     Write-Host "[quick-run] Refreshing source archive..."
-    Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile
+    Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile -UseBasicParsing
 
     if (Test-Path $stageDir) {
         Remove-Item -Path $stageDir -Recurse -Force
@@ -109,7 +110,7 @@ if (!(Test-Path $mainPy)) {
 }
 
 $requirementsFile = Join-Path $stageDir "requirements.txt"
-$venvPath = Join-Path $stageDir ".venv"
+$venvPath = Join-Path $installRoot (".venv-" + $safeBranch)
 $venvPython = Join-Path $venvPath "Scripts\python.exe"
 
 $pythonLauncher = Get-Command py -ErrorAction SilentlyContinue
@@ -120,7 +121,7 @@ if (!($pythonLauncher -or $pythonCmd)) {
 }
 
 if (!(Test-Path $venvPython)) {
-    Write-Host "[quick-run] Creating .venv..."
+    Write-Host "[quick-run] Creating virtual environment at $venvPath..."
     if ($pythonLauncher) {
         & py -3 -m venv $venvPath
     }
@@ -133,6 +134,7 @@ $requirementsHash = Get-FileHashString -Path $requirementsFile
 $depsAreCurrent = (
     (Test-Path $venvPython) -and
     ($requirementsHash) -and
+    ($state.requirementsBranch -eq $branch) -and
     ($state.requirementsHash -eq $requirementsHash)
 )
 
@@ -149,6 +151,7 @@ else {
 if (Test-Path $requirementsFile) {
     if (!$depsAreCurrent) {
         & $venvPython -m pip install -r $requirementsFile --disable-pip-version-check
+        $state.requirementsBranch = $branch
         $state.requirementsHash = $requirementsHash
     }
 }
