@@ -15,6 +15,39 @@ The only local data written at runtime is:
 
 - `programs.log` — startup-key dump written by the startup manager actions.
 
+## One-Line Run (No Manual Download)
+
+Use these commands to run directly from terminal without downloading the repository manually.
+The script will fetch/update source code in a local cache and launch the app.
+
+- Windows PowerShell:
+
+  ```powershell
+  irm https://raw.githubusercontent.com/JLBBARCO/auto-programs/main/scripts/quick-run.ps1 | iex
+  ```
+
+- Linux:
+
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/JLBBARCO/auto-programs/main/scripts/quick-run.sh | bash
+  ```
+
+- macOS:
+
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/JLBBARCO/auto-programs/main/scripts/quick-run.sh | bash
+  ```
+
+Optional branch override (for testing `develop`):
+
+```powershell
+$env:AIP_BRANCH='develop'; irm https://raw.githubusercontent.com/JLBBARCO/auto-programs/main/scripts/quick-run.ps1 | iex
+```
+
+```bash
+AIP_BRANCH=develop curl -fsSL https://raw.githubusercontent.com/JLBBARCO/auto-programs/main/scripts/quick-run.sh | bash
+```
+
 ## Current Scope
 
 The current Windows startup flow exposes two actions:

@@ -1,5 +1,11 @@
 # Linux
 
+## One-Line Terminal
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/JLBBARCO/auto-programs/main/scripts/quick-run.sh | bash
+```
+
 This system install programs with basis in this topics:
 
 - [Developer Tools](#developer-tools)

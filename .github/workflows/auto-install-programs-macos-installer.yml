@@ -1,0 +1,58 @@
+name: build-auto-install-programs-macos-installer
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-installer:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          if [[ -f requirements.txt ]]; then
+            pip install -r requirements.txt
+          fi
+
+      - name: Build app
+        shell: bash
+        run: |
+          chmod +x build-mac.sh
+          ./build-mac.sh
+
+      - name: Verify app bundle exists
+        shell: bash
+        run: |
+          if [[ ! -d "dist/Auto Install Programs.app" ]]; then
+            echo "App bundle not found at dist/Auto Install Programs.app"
+            exit 1
+          fi
+
+      - name: Build pkg installer
+        shell: bash
+        run: |
+          pkgbuild \
+            --component "dist/Auto Install Programs.app" \
+            --install-location /Applications \
+            --identifier "com.jlbbarco.auto-install-programs" \
+            "auto-install-programs-macos-installer.pkg"
+
+      - name: Upload installer artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-installer
+          path: auto-install-programs-macos-installer.pkg
+          if-no-files-found: error
+          retention-days: 30

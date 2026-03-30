@@ -1,5 +1,11 @@
 # Windows
 
+## One-Line PowerShell
+
+```powershell
+irm https://raw.githubusercontent.com/JLBBARCO/auto-programs/main/scripts/quick-run.ps1 | iex
+```
+
 The current Windows app is restricted to startup management.
 
 ![Windows print program](src/assets/img/windows.webp)
