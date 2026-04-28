@@ -16,7 +16,8 @@ except ModuleNotFoundError:
 try:
     import customtkinter as ctk
 except ImportError:
-    subprocess.run([sys.executable, "-m", "pip", "install", "requirements.txt"], check=True)
+    # try installing missing requirements and re-importing
+    subprocess.run([sys.executable, "-m", "pip", "install", "-r", "requirements.txt"], check=True)
     try:
         ctk = importlib.import_module("customtkinter")
     except Exception:
