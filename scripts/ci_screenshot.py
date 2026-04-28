@@ -7,7 +7,7 @@ import os
 import sys
 
 try:
-    from mss import mss
+    from mss import MSS
     from PIL import Image
 except Exception:
     print("Missing dependencies: please install mss and pillow.")
@@ -16,7 +16,7 @@ except Exception:
 
 def capture(output_path: str) -> int:
     os.makedirs(os.path.dirname(output_path) or '.', exist_ok=True)
-    with mss() as sct:
+    with MSS() as sct:
         monitor = sct.monitors[0]
         sct_img = sct.grab(monitor)
         img = Image.frombytes('RGB', sct_img.size, sct_img.rgb)
