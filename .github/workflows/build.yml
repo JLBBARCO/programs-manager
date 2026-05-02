@@ -85,6 +85,7 @@ jobs:
             script: build.bat
             artifact-name: windows
             artifact-path: dist/Auto*
+            launch-path: dist/Auto Install Programs/Auto Install Programs.exe
             build_filter: windows
 
           - os: ubuntu-latest
@@ -92,6 +93,7 @@ jobs:
             script: build.sh
             artifact-name: linux
             artifact-path: dist/Auto*
+            launch-path: dist/Auto Install Programs/Auto Install Programs
             build_filter: linux
 
           - os: macos-latest
@@ -99,6 +101,8 @@ jobs:
             script: build-mac.sh
             artifact-name: macos
             artifact-path: dist/Auto*
+            launch-path: dist/Auto Install Programs/Auto Install
+              Programs.app/Contents/MacOS/Auto Install Programs
             build_filter: macos
 
     steps:
@@ -210,10 +214,16 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
-            xvfb-run -s "-screen 0 1920x1080x24" python scripts/ci_screenshot.py screenshots/screenshot-${{ matrix.artifact-name }}.webp
+            xvfb-run -s "-screen 0 1920x1080x24" python scripts/ci_screenshot.py screenshots/screenshot-${{ matrix.artifact-name }}.webp --wait-seconds 8 --launch "${{ matrix.launch-path }}"
           else
-            python scripts/ci_screenshot.py screenshots/screenshot-${{ matrix.artifact-name }}.webp
+            python scripts/ci_screenshot.py screenshots/screenshot-${{ matrix.artifact-name }}.webp --wait-seconds 8 --launch "${{ matrix.launch-path }}"
           fi
+
+      - name: Verify screenshot output
+        if: steps.should_build.outputs.should_build == 'true'
+        shell: bash
+        run: |
+          test -s "screenshots/screenshot-${{ matrix.artifact-name }}.webp"
 
       - name: Upload screenshot
         if: steps.should_build.outputs.should_build == 'true'
@@ -309,7 +319,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: "3.12"
 
       - name: Install assembly dependencies
         run: |
@@ -321,7 +331,16 @@ jobs:
           python scripts/assemble_thumbnails.py --windows screenshots/screenshot-windows.webp --linux screenshots/screenshot-linux.webp --macos screenshots/screenshot-macos.webp --out-windows src/assets/img/windows.webp --out-linux src/assets/img/linux.webp --out-macos src/assets/img/macos.webp --output src/assets/img/thumbnail.webp
 
       - name: Commit and push screenshots
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
           git add src/assets/img/windows.webp src/assets/img/linux.webp src/assets/img/macos.webp src/assets/img/thumbnail.webp || true
-          git commit -m "ci: update platform screenshots and thumbnail" || echo "No changes to commit"
-          git push || echo "Push failed"
+          if git diff --cached --quiet; then
+            echo "No changes to commit"
+          else
+            git commit -m "ci: update platform screenshots and thumbnail"
+            git push
+          fi

@@ -4,7 +4,10 @@
 Usage: python scripts/ci_screenshot.py output.webp
 """
 import os
+import subprocess
 import sys
+import time
+import argparse
 
 try:
     from mss import MSS
@@ -39,13 +42,37 @@ def capture(output_path: str) -> int:
     return 0
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("Usage: ci_screenshot.py OUTPUT_PATH")
-        return 2
-    output = sys.argv[1]
+def launch_and_capture(output_path: str, launch_command: list[str], wait_seconds: float) -> int:
+    process = subprocess.Popen(launch_command)
     try:
-        return capture(output)
+        time.sleep(wait_seconds)
+        return capture(output_path)
+    finally:
+        try:
+            process.terminate()
+        except Exception:
+            pass
+
+
+def main():
+    parser = argparse.ArgumentParser(add_help=True)
+    parser.add_argument("output")
+    parser.add_argument("--wait-seconds", type=float, default=6.0)
+    parser.add_argument("--launch", nargs=argparse.REMAINDER)
+    args = parser.parse_args()
+
+    launch_command = args.launch or None
+    if launch_command == ["--"]:
+        launch_command = []
+
+    if launch_command is not None and not launch_command:
+        print("--launch requires at least one command argument")
+        return 2
+
+    try:
+        if launch_command is None:
+            return capture(args.output)
+        return launch_and_capture(args.output, launch_command, args.wait_seconds)
     except Exception as e:
         print(f"Failed to capture screenshot: {e}")
         return 1

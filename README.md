@@ -93,6 +93,8 @@ The main build workflow runs on Python 3.12 and is configured for the `main` and
 
 The macOS installer workflow uses Python 3.12 and creates a package with `pkgbuild` after the app bundle is produced.
 
+On each successful platform build, the CI workflow launches the compiled app, captures a screenshot for Windows, Linux, and macOS, updates `src/assets/img/windows.webp`, `src/assets/img/linux.webp`, `src/assets/img/macos.webp`, and rebuilds `src/assets/img/thumbnail.webp` from those three images.
+
 ## macOS
 
 The macOS section is organized around these areas:
