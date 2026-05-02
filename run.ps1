@@ -28,9 +28,19 @@ function Resolve-ExePath {
 
 New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
 $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
-
 # 1. Verifica se já existe, se não, busca na API do GitHub
-if (!(Test-Path $exePath)) {
+$shouldDownload = $false
+if (-not $exePath) {
+    $shouldDownload = $true
+} else {
+    try {
+        if (-not (Test-Path $exePath)) { $shouldDownload = $true }
+    } catch {
+        $shouldDownload = $true
+    }
+}
+
+if ($shouldDownload) {
     Write-Host "[programs-manager] Baixando versão compilada para Windows..."
     $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/latest" -UseBasicParsing
     $asset = $release.assets | Where-Object { $_.name -eq "Auto-Install-Programs-windows.zip" } | Select-Object -First 1
@@ -46,11 +56,16 @@ if (!(Test-Path $exePath)) {
     Remove-Item $zipTemp -Force
 
     $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
-    if (!(Test-Path $exePath)) {
+    if (-not $exePath -or -not (Test-Path $exePath)) {
         throw "Executável não encontrado após extração em $installRoot"
     }
 }
 
 # 2. Executa o binário diretamente (Sem Python, sem VENV)
 Write-Host "[programs-manager] Iniciando..."
+if (-not $exePath) {
+    throw "Executável não encontrado. Caminho está vazio."
+}
+
+Write-Host "[programs-manager] Executável: $exePath"
 Start-Process -FilePath $exePath

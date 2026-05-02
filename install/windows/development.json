@@ -51,6 +51,10 @@
       "id": "Python.Python.3.12"
     },
     {
+      "name": "Python Install Manager",
+      "id": "Python.PythonInstallManager"
+    },
+    {
       "name": "VirtualBox",
       "id": "Oracle.VirtualBox"
     },

@@ -55,6 +55,7 @@
       "id": "Notion.Notion"
     },
     { "name": "Obsidian", "id": "Obsidian.Obsidian" },
-    { "name": "Camo Studio", "id": "Reincubate.CamoStudio" }
+    { "name": "Camo Studio", "id": "Reincubate.CamoStudio" },
+    { "name": "Tor Browser", "id": "TheTorProject.TorBrowser" }
   ]
 }

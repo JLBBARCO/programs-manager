@@ -122,7 +122,7 @@ class App(ctk.CTk):  # type: ignore
         button_frame = ctk.CTkFrame(self)
         button_frame.grid(pady=20, padx=10, row=5, column=1, sticky="e")
 
-        run_button = ctk.CTkButton(button_frame, text="Run", command=self.run)
+        run_button = ctk.CTkButton(button_frame, text="Next", command=self.run)
         run_button.grid(padx=5, pady=20, column=0, row=0)
 
     def _create_category_checkbox(self, config: CategoryConfig):
