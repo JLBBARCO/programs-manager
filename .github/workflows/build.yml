@@ -204,7 +204,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ "$RUNNER_OS" = "Linux" ]; then
             sudo apt-get update
-            sudo apt-get install -y xvfb x11-utils
+            sudo apt-get install -y xvfb x11-utils xdotool
           fi
           python -m pip install mss pillow
 
@@ -235,7 +235,8 @@ jobs:
   create-release:
     needs: build
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' ||
+      github.ref == 'refs/heads/develop')
 
     steps:
       - name: Download all artifacts
@@ -273,8 +274,13 @@ jobs:
             PRE="false"
           else
             TAG="auto-v$(date -u +'%Y.%m.%d')-${GITHUB_RUN_NUMBER}"
-            NAME="Auto Release ${TAG}"
-            PRE="false"
+            if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
+              NAME="Pre-release ${TAG}"
+              PRE="true"
+            else
+              NAME="Auto Release ${TAG}"
+              PRE="false"
+            fi
           fi
 
           echo "tag=${TAG}" >> "$GITHUB_OUTPUT"

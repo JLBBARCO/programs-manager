@@ -89,7 +89,7 @@ Behavior notes:
 
 ## Build and CI
 
-The main build workflow runs on Python 3.12 and is configured for the `main` and `develop` branches. It triggers when Python files, install data, workflow files, the README, `requirements.txt`, or platform build scripts change.
+The main build workflow runs on Python 3.12 and is configured for the `main` and `develop` branches. It triggers when Python files, install data, workflow files, the README, `requirements.txt`, or platform build scripts change. Pushes to `develop` publish GitHub pre-releases; pushes to `main` publish regular releases.
 
 The macOS installer workflow uses Python 3.12 and creates a package with `pkgbuild` after the app bundle is produced.
 
