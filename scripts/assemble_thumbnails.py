@@ -11,10 +11,14 @@ import os
 from PIL import Image
 
 
-def load_or_fail(path):
-    if not path or not os.path.exists(path):
-        raise FileNotFoundError(path)
-    return Image.open(path).convert('RGBA')
+def load_or_none(path):
+    if path and os.path.exists(path):
+        try:
+            return Image.open(path).convert('RGBA')
+        except Exception as e:
+            print(f"Failed to open {path}: {e}")
+            return None
+    return None
 
 
 def compose_side_by_side(images, spacing=8, bg=(255, 255, 255, 0)):
@@ -43,9 +47,24 @@ def main():
     args = p.parse_args()
 
     imgs = []
-    imgs.append(load_or_fail(args.windows))
-    imgs.append(load_or_fail(args.linux))
-    imgs.append(load_or_fail(args.macos))
+    imgs.append(load_or_none(args.windows))
+    imgs.append(load_or_none(args.linux))
+    imgs.append(load_or_none(args.macos))
+
+    # Determine target size from first available image, or fallback
+    target_size = None
+    for im in imgs:
+        if im is not None:
+            target_size = im.size
+            break
+    if target_size is None:
+        target_size = (1280, 720)
+
+    # Replace missing images with plain placeholders
+    for i, im in enumerate(imgs):
+        if im is None:
+            print(f"Warning: screenshot missing for index {i}; inserting placeholder {target_size}.")
+            imgs[i] = Image.new('RGBA', target_size, (255, 255, 255, 255))
 
     # Save individual images (normalize to webp)
     os.makedirs(os.path.dirname(args.out_windows), exist_ok=True)
