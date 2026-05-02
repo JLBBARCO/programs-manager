@@ -171,7 +171,9 @@ def launch_and_capture(output_path: str, launch_command: list[str], wait_seconds
 
         bbox = _get_window_bbox_linux_by_pid(process.pid, timeout_seconds=max(wait_seconds, 1.0) + 6.0)
         if bbox is None:
-            raise RuntimeError('Unable to determine the app window bounds from the launched process')
+            print("Warning: Unable to locate app window by PID on Linux; falling back to full-screen capture")
+            time.sleep(wait_seconds)
+            return capture(output_path)
 
         return _grab_region(output_path, bbox)
     finally:
