@@ -213,7 +213,7 @@ jobs:
         shell: bash
         run: |
           if [ "$RUNNER_OS" = "Linux" ]; then
-            xvfb-run -s "-screen 0 1920x1080x24" python scripts/ci_screenshot.py screenshots/screenshot-${{ matrix.artifact-name }}.webp --wait-seconds 8 --launch "${{ matrix.launch-path }}"
+            xvfb-run -s "-screen 0 1366x768x24" python scripts/ci_screenshot.py screenshots/screenshot-${{ matrix.artifact-name }}.webp --wait-seconds 8 --launch "${{ matrix.launch-path }}"
           else
             python scripts/ci_screenshot.py screenshots/screenshot-${{ matrix.artifact-name }}.webp --wait-seconds 8 --launch "${{ matrix.launch-path }}"
           fi

@@ -83,6 +83,111 @@ def _get_foreground_window_bbox_windows():
     return rect.left, rect.top, rect.right, rect.bottom
 
 
+def _get_window_bbox_windows_by_pid(pid: int, timeout_seconds: float = 12.0):
+    try:
+        import ctypes
+        from ctypes import wintypes
+    except Exception:
+        return None
+
+    user32 = ctypes.windll.user32
+    deadline = time.monotonic() + timeout_seconds
+
+    while time.monotonic() < deadline:
+        window_handles = []
+
+        def enum_windows_callback(hwnd, _lparam):
+            if not user32.IsWindowVisible(hwnd):
+                return True
+
+            window_pid = wintypes.DWORD()
+            user32.GetWindowThreadProcessId(hwnd, ctypes.byref(window_pid))
+            if window_pid.value != pid:
+                return True
+
+            rect = wintypes.RECT()
+            if not user32.GetWindowRect(hwnd, ctypes.byref(rect)):
+                return True
+
+            if rect.right <= rect.left or rect.bottom <= rect.top:
+                return True
+
+            title_length = user32.GetWindowTextLengthW(hwnd)
+            title = ''
+            if title_length > 0:
+                buffer = ctypes.create_unicode_buffer(title_length + 1)
+                user32.GetWindowTextW(hwnd, buffer, title_length + 1)
+                title = buffer.value.strip()
+
+            window_handles.append((rect.left, rect.top, rect.right, rect.bottom, title))
+            return True
+
+        callback_type = ctypes.WINFUNCTYPE(ctypes.c_bool, wintypes.HWND, wintypes.LPARAM)
+        enum_windows_proc = callback_type(enum_windows_callback)
+        if not user32.EnumWindows(enum_windows_proc, 0):
+            time.sleep(0.25)
+            continue
+
+        preferred_windows = []
+        terminal_windows = []
+        for left, top, right, bottom, title in window_handles:
+            title_lower = title.lower()
+            is_terminal_window = any(
+                keyword in title_lower
+                for keyword in ('powershell', 'cmd', 'terminal', 'windows terminal', 'git bash')
+            )
+            if is_terminal_window:
+                terminal_windows.append((left, top, right, bottom, title))
+            else:
+                preferred_windows.append((left, top, right, bottom, title))
+
+        chosen_windows = preferred_windows or terminal_windows
+        if chosen_windows:
+            left, top, right, bottom, _title = chosen_windows[-1]
+            if left >= 0 and top >= 0 and right > left and bottom > top:
+                return left, top, right, bottom
+
+        time.sleep(0.25)
+
+    return None
+
+
+def _get_foreground_window_bbox_linux():
+    if shutil.which('xdotool') is None or shutil.which('xwininfo') is None:
+        return None
+
+    try:
+        window_id = subprocess.check_output(['xdotool', 'getwindowfocus'], text=True).strip()
+    except Exception:
+        return None
+
+    if not window_id:
+        return None
+
+    try:
+        output = subprocess.check_output(['xwininfo', '-id', window_id], text=True)
+    except Exception:
+        return None
+
+    left = top = None
+    width = height = None
+    for line in output.splitlines():
+        line = line.strip()
+        if line.startswith('Absolute upper-left X:'):
+            left = int(line.split(':', 1)[1].strip())
+        elif line.startswith('Absolute upper-left Y:'):
+            top = int(line.split(':', 1)[1].strip())
+        elif line.startswith('Width:'):
+            width = int(line.split(':', 1)[1].strip())
+        elif line.startswith('Height:'):
+            height = int(line.split(':', 1)[1].strip())
+
+    if None in (left, top, width, height):
+        return None
+
+    return left, top, left + width, top + height
+
+
 def _get_window_bbox_linux_by_pid(pid: int, timeout_seconds: float = 12.0):
     if shutil.which('xdotool') is None or shutil.which('xwininfo') is None:
         return None
@@ -201,7 +306,7 @@ def capture_active_window(output_path: str) -> int:
     elif sys.platform == 'darwin':
         bbox = _get_foreground_window_bbox_macos()
     else:
-        raise RuntimeError('Use PID-based capture on Linux')
+        bbox = _get_foreground_window_bbox_linux()
 
     if bbox is None:
         print("Warning: Unable to determine the active window bounds; falling back to full-screen capture")
@@ -214,8 +319,14 @@ def launch_and_capture(output_path: str, launch_command: list[str], wait_seconds
     process = subprocess.Popen(launch_command)
     try:
         if sys.platform.startswith('win'):
-            time.sleep(wait_seconds)
-            return capture_active_window(output_path)
+            bbox = _get_window_bbox_windows_by_pid(process.pid, timeout_seconds=max(wait_seconds, 1.0) + 6.0)
+            if bbox is None:
+                time.sleep(wait_seconds)
+                bbox = _get_foreground_window_bbox_windows()
+            if bbox is None:
+                print("Warning: Unable to locate app window by PID on Windows; falling back to full-screen capture")
+                return capture(output_path)
+            return _grab_region(output_path, bbox)
 
         elif sys.platform == 'darwin':
             # macOS: try PID-based capture first, then active window, then full-screen fallback
@@ -229,8 +340,10 @@ def launch_and_capture(output_path: str, launch_command: list[str], wait_seconds
         else:  # Linux
             bbox = _get_window_bbox_linux_by_pid(process.pid, timeout_seconds=max(wait_seconds, 1.0) + 6.0)
             if bbox is None:
-                print("Warning: Unable to locate app window by PID on Linux; falling back to full-screen capture")
                 time.sleep(wait_seconds)
+                bbox = _get_foreground_window_bbox_linux()
+            if bbox is None:
+                print("Warning: Unable to locate app window by PID on Linux; falling back to full-screen capture")
                 return capture(output_path)
             return _grab_region(output_path, bbox)
     finally:
