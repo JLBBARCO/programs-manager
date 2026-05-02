@@ -101,8 +101,7 @@ jobs:
             script: build-mac.sh
             artifact-name: macos
             artifact-path: dist/Auto*
-            launch-path: dist/Auto Install Programs/Auto Install
-              Programs.app/Contents/MacOS/Auto Install Programs
+            launch-path: dist/Auto Install Programs/Auto Install Programs
             build_filter: macos
 
     steps:
