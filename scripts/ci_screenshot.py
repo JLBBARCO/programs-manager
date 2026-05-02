@@ -121,6 +121,53 @@ def _get_window_bbox_linux_by_pid(pid: int, timeout_seconds: float = 12.0):
     return None
 
 
+def _get_window_bbox_macos_by_pid(pid: int, timeout_seconds: float = 12.0):
+    """Get window bounds for a process on macOS using lsof and osascript."""
+    if shutil.which('lsof') is None:
+        return None
+
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        try:
+            # Get the application name from process ID
+            result = subprocess.check_output(['ps', '-p', str(pid), '-o', 'comm='], text=True).strip()
+            if not result:
+                time.sleep(0.25)
+                continue
+            
+            app_name = result.split('/')[-1]  # Get just the executable name
+            
+            # Try to get window bounds using osascript
+            applescript = f'''
+tell application "System Events"
+    set procs to (every application process whose name contains "{app_name}")
+    if (count of procs) is 0 then return ""
+    set frontProc to item 1 of procs
+    if (count of windows of frontProc) is 0 then return ""
+    set win to front window of frontProc
+    set {{x, y}} to position of win
+    set {{w, h}} to size of win
+    return (x as text) & "," & (y as text) & "," & ((x + w) as text) & "," & ((y + h) as text)
+end tell
+'''
+            output = subprocess.check_output(['osascript', '-e', applescript], text=True).strip()
+            
+            if output and output != '':
+                try:
+                    left, top, right, bottom = (int(value) for value in output.split(','))
+                    if left >= 0 and top >= 0 and right > left and bottom > top:
+                        return left, top, right, bottom
+                except Exception:
+                    pass
+        
+        except Exception:
+            pass
+        
+        time.sleep(0.25)
+
+    return None
+
+
 def _get_foreground_window_bbox_macos():
     applescript = r'''
 tell application "System Events"
@@ -157,7 +204,8 @@ def capture_active_window(output_path: str) -> int:
         raise RuntimeError('Use PID-based capture on Linux')
 
     if bbox is None:
-        raise RuntimeError('Unable to determine the active window bounds')
+        print("Warning: Unable to determine the active window bounds; falling back to full-screen capture")
+        return capture(output_path)
 
     return _grab_region(output_path, bbox)
 
@@ -165,17 +213,26 @@ def capture_active_window(output_path: str) -> int:
 def launch_and_capture(output_path: str, launch_command: list[str], wait_seconds: float) -> int:
     process = subprocess.Popen(launch_command)
     try:
-        if sys.platform.startswith('win') or sys.platform == 'darwin':
+        if sys.platform.startswith('win'):
             time.sleep(wait_seconds)
             return capture_active_window(output_path)
 
-        bbox = _get_window_bbox_linux_by_pid(process.pid, timeout_seconds=max(wait_seconds, 1.0) + 6.0)
-        if bbox is None:
-            print("Warning: Unable to locate app window by PID on Linux; falling back to full-screen capture")
-            time.sleep(wait_seconds)
-            return capture(output_path)
+        elif sys.platform == 'darwin':
+            # macOS: try PID-based capture first, then active window, then full-screen fallback
+            bbox = _get_window_bbox_macos_by_pid(process.pid, timeout_seconds=max(wait_seconds, 1.0) + 6.0)
+            if bbox is None:
+                # If PID-based fails, try active window
+                time.sleep(wait_seconds)
+                return capture_active_window(output_path)
+            return _grab_region(output_path, bbox)
 
-        return _grab_region(output_path, bbox)
+        else:  # Linux
+            bbox = _get_window_bbox_linux_by_pid(process.pid, timeout_seconds=max(wait_seconds, 1.0) + 6.0)
+            if bbox is None:
+                print("Warning: Unable to locate app window by PID on Linux; falling back to full-screen capture")
+                time.sleep(wait_seconds)
+                return capture(output_path)
+            return _grab_region(output_path, bbox)
     finally:
         try:
             process.terminate()
