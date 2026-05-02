@@ -83,35 +83,42 @@ def _get_foreground_window_bbox_windows():
     return rect.left, rect.top, rect.right, rect.bottom
 
 
-def _get_foreground_window_bbox_linux():
+def _get_window_bbox_linux_by_pid(pid: int, timeout_seconds: float = 12.0):
     if shutil.which('xdotool') is None or shutil.which('xwininfo') is None:
         return None
 
-    try:
-        window_id = subprocess.check_output(['xdotool', 'getactivewindow'], text=True).strip()
-        if not window_id:
-            return None
-        output = subprocess.check_output(['xwininfo', '-id', window_id], text=True)
-    except Exception:
-        return None
+    deadline = time.monotonic() + timeout_seconds
+    while time.monotonic() < deadline:
+        try:
+            window_ids = subprocess.check_output(['xdotool', 'search', '--pid', str(pid)], text=True).splitlines()
+        except Exception:
+            window_ids = []
 
-    left = top = right = bottom = None
-    width = height = None
-    for line in output.splitlines():
-        line = line.strip()
-        if line.startswith('Absolute upper-left X:'):
-            left = int(line.split(':', 1)[1].strip())
-        elif line.startswith('Absolute upper-left Y:'):
-            top = int(line.split(':', 1)[1].strip())
-        elif line.startswith('Width:'):
-            width = int(line.split(':', 1)[1].strip())
-        elif line.startswith('Height:'):
-            height = int(line.split(':', 1)[1].strip())
+        for window_id in reversed([window_id.strip() for window_id in window_ids if window_id.strip()]):
+            try:
+                output = subprocess.check_output(['xwininfo', '-id', window_id], text=True)
+            except Exception:
+                continue
 
-    if None in (left, top, width, height):
-        return None
+            left = top = None
+            width = height = None
+            for line in output.splitlines():
+                line = line.strip()
+                if line.startswith('Absolute upper-left X:'):
+                    left = int(line.split(':', 1)[1].strip())
+                elif line.startswith('Absolute upper-left Y:'):
+                    top = int(line.split(':', 1)[1].strip())
+                elif line.startswith('Width:'):
+                    width = int(line.split(':', 1)[1].strip())
+                elif line.startswith('Height:'):
+                    height = int(line.split(':', 1)[1].strip())
 
-    return left, top, left + width, top + height
+            if None not in (left, top, width, height):
+                return left, top, left + width, top + height
+
+        time.sleep(0.25)
+
+    return None
 
 
 def _get_foreground_window_bbox_macos():
@@ -147,7 +154,7 @@ def capture_active_window(output_path: str) -> int:
     elif sys.platform == 'darwin':
         bbox = _get_foreground_window_bbox_macos()
     else:
-        bbox = _get_foreground_window_bbox_linux()
+        raise RuntimeError('Use PID-based capture on Linux')
 
     if bbox is None:
         raise RuntimeError('Unable to determine the active window bounds')
@@ -158,8 +165,15 @@ def capture_active_window(output_path: str) -> int:
 def launch_and_capture(output_path: str, launch_command: list[str], wait_seconds: float) -> int:
     process = subprocess.Popen(launch_command)
     try:
-        time.sleep(wait_seconds)
-        return capture_active_window(output_path)
+        if sys.platform.startswith('win') or sys.platform == 'darwin':
+            time.sleep(wait_seconds)
+            return capture_active_window(output_path)
+
+        bbox = _get_window_bbox_linux_by_pid(process.pid, timeout_seconds=max(wait_seconds, 1.0) + 6.0)
+        if bbox is None:
+            raise RuntimeError('Unable to determine the app window bounds from the launched process')
+
+        return _grab_region(output_path, bbox)
     finally:
         try:
             process.terminate()
