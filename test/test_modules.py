@@ -87,6 +87,48 @@ class TestJsonModule:
         assert isinstance(path, str), "Caminho deve ser string"
         assert len(path) > 0, "Caminho não pode estar vazio"
 
+    def test_user_data_file_path_windows_downloads_folder(self, monkeypatch):
+        """Em Windows, user_install/user_uninstall devem ir para Downloads/Programs Manager."""
+        import os
+        from lib import json as json_lib
+
+        monkeypatch.setattr(os.path, "expanduser", lambda _path: r"C:\Users\Reginaldo")
+
+        target = json_lib._user_data_file_path("user_install")
+        expected = os.path.join(r"C:\Users\Reginaldo", "Downloads", "Programs Manager", "user_install.json")
+        assert target == expected
+
+    def test_user_data_file_path_linux_downloads_folder(self, monkeypatch):
+        """No Linux, user_install/user_uninstall devem ir para ~/Downloads/Programs Manager."""
+        import os
+        from lib import json as json_lib
+
+        monkeypatch.setattr(os.path, "expanduser", lambda _path: "/home/reginaldo")
+
+        target = json_lib._user_data_file_path("user_uninstall")
+        expected = os.path.join("/home/reginaldo", "Downloads", "Programs Manager", "user_uninstall.json")
+        assert target == expected
+
+    def test_user_data_file_path_macos_downloads_folder(self, monkeypatch):
+        """No macOS, user_install/user_uninstall devem ir para ~/Downloads/Programs Manager."""
+        import os
+        from lib import json as json_lib
+
+        monkeypatch.setattr(os.path, "expanduser", lambda _path: "/Users/reginaldo")
+
+        target = json_lib._user_data_file_path("user_install")
+        expected = os.path.join("/Users/reginaldo", "Downloads", "Programs Manager", "user_install.json")
+        assert target == expected
+
+    def test_user_data_file_path_non_user_file_uses_default_resource_path(self, monkeypatch):
+        """Arquivos fora de user_install/user_uninstall mantêm comportamento padrão."""
+        from lib import json as json_lib
+
+        monkeypatch.setattr(json_lib, "_resource_path", lambda rel: f"BASE/{rel}")
+
+        target = json_lib._user_data_file_path("essentials")
+        assert target == "BASE/essentials.json"
+
 
 # ============================================================================
 # Testes do módulo customizations

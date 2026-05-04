@@ -11,6 +11,10 @@ except ModuleNotFoundError:
 GITHUB_REPOSITORY_BASE_URL = "https://raw.githubusercontent.com/jlbbarco/auto-install-programs/main"
 GITHUB_INSTALL_BASE_URL = f"{GITHUB_REPOSITORY_BASE_URL}/install"
 
+
+def _user_data_dir() -> str:
+    return os.path.join(os.path.expanduser("~"), "Downloads", "Programs Manager")
+
 def _resource_path(relative_path: str) -> str:
     """Return the absolute path to *relative_path* next to the executable.
 
@@ -25,6 +29,19 @@ def _resource_path(relative_path: str) -> str:
     else:
         base = os.getcwd()
     return os.path.join(base, relative_path)
+
+
+def _user_data_file_path(file_stem: str) -> str:
+    """Return the storage path for user-managed JSON files.
+
+    Always use the Downloads/Programs Manager folder so user-managed data is
+    stable across source and packaged executions.
+    """
+    normalized = str(file_stem).strip().replace('.json', '')
+    if normalized not in ('user_install', 'user_uninstall'):
+        return _resource_path(f"{normalized}.json")
+
+    return os.path.join(_user_data_dir(), f"{normalized}.json")
 
 
 def _normalize_json_payload(installer_data: Dict) -> Dict:
@@ -67,7 +84,7 @@ def _entry_unique_key(program: Dict) -> str:
 
 def read_local_json_file(file_name: str) -> Dict:
     file_stem = str(file_name).strip().replace('.json', '')
-    target_path = _resource_path(f"{file_stem}.json")
+    target_path = _user_data_file_path(file_stem)
     if not os.path.exists(target_path):
         return _default_payload(file_stem.replace('_', ' ').title())
 
@@ -101,7 +118,7 @@ def read_local_json_file(file_name: str) -> Dict:
 
 def save_local_json_file(file_name: str, programs: List[Dict], description: str = '') -> int:
     file_stem = str(file_name).strip().replace('.json', '')
-    target_path = _resource_path(f"{file_stem}.json")
+    target_path = _user_data_file_path(file_stem)
     os.makedirs(os.path.dirname(target_path), exist_ok=True)
 
     current_payload = read_local_json_file(file_stem)

@@ -370,8 +370,7 @@ class App(ctk.CTk):  # type: ignore
         menu_items = [(config.key, config.label) for config in selected_configs]
 
         if not menu_items:
-            log.log("No supported categories selected for installation.", level="INFO")
-            return
+            log.log("No category selected on the main screen; opening secondary screen for user-managed actions.", level="INFO")
 
         self.more_window = more.More(
             self,
