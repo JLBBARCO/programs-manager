@@ -273,6 +273,12 @@ class Screen(ctk.CTkToplevel):
 
     def _submit(self):
         selected_by_section = self._collect_selected()
-        if callable(self.submit_handler):
-            self.submit_handler(selected_by_section)
-        self.destroy()
+        try:
+            if callable(self.submit_handler):
+                self.submit_handler(selected_by_section)
+        finally:
+            try:
+                self.grab_release()
+            except Exception:
+                pass
+            self.destroy()

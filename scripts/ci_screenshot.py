@@ -188,6 +188,46 @@ def _get_foreground_window_bbox_linux():
     return left, top, left + width, top + height
 
 
+def _get_linux_primary_monitor_size() -> tuple[int, int] | None:
+    if shutil.which('xdpyinfo') is None:
+        return None
+
+    try:
+        output = subprocess.check_output(['xdpyinfo'], text=True)
+    except Exception:
+        return None
+
+    for line in output.splitlines():
+        line = line.strip()
+        if line.startswith('dimensions:'):
+            # Example: dimensions:    1920x1080 pixels (508x285 millimeters)
+            parts = line.split(':', 1)[1].strip().split(' ', 1)[0]
+            if 'x' not in parts:
+                return None
+            width_text, height_text = parts.split('x', 1)
+            try:
+                return int(width_text), int(height_text)
+            except ValueError:
+                return None
+
+    return None
+
+
+def _is_likely_fullscreen_linux_window(left: int, top: int, width: int, height: int) -> bool:
+    monitor_size = _get_linux_primary_monitor_size()
+    if monitor_size is None:
+        return False
+
+    monitor_width, monitor_height = monitor_size
+    if monitor_width <= 0 or monitor_height <= 0:
+        return False
+
+    # Ignore windows that effectively occupy the full monitor surface.
+    width_ratio = width / monitor_width
+    height_ratio = height / monitor_height
+    return width_ratio >= 0.97 and height_ratio >= 0.97
+
+
 def _get_window_bbox_linux_by_pid(pid: int, timeout_seconds: float = 12.0):
     if shutil.which('xdotool') is None or shutil.which('xwininfo') is None:
         return None
@@ -195,7 +235,10 @@ def _get_window_bbox_linux_by_pid(pid: int, timeout_seconds: float = 12.0):
     deadline = time.monotonic() + timeout_seconds
     while time.monotonic() < deadline:
         try:
-            window_ids = subprocess.check_output(['xdotool', 'search', '--pid', str(pid)], text=True).splitlines()
+            window_ids = subprocess.check_output(
+                ['xdotool', 'search', '--onlyvisible', '--pid', str(pid)],
+                text=True,
+            ).splitlines()
         except Exception:
             window_ids = []
 
@@ -219,6 +262,8 @@ def _get_window_bbox_linux_by_pid(pid: int, timeout_seconds: float = 12.0):
                     height = int(line.split(':', 1)[1].strip())
 
             if None not in (left, top, width, height):
+                if _is_likely_fullscreen_linux_window(left, top, width, height):
+                    continue
                 return left, top, left + width, top + height
 
         time.sleep(0.25)
@@ -345,6 +390,10 @@ def launch_and_capture(output_path: str, launch_command: list[str], wait_seconds
             if bbox is None:
                 print("Warning: Unable to locate app window by PID on Linux; falling back to full-screen capture")
                 return capture(output_path)
+            left, top, right, bottom = bbox
+            if _is_likely_fullscreen_linux_window(left, top, right - left, bottom - top):
+                print("Warning: Linux window detection returned a full-screen-sized region; trying active window capture")
+                return capture_active_window(output_path)
             return _grab_region(output_path, bbox)
     finally:
         try:
