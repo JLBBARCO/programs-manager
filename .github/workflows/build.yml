@@ -12,12 +12,17 @@ on:
     paths:
       - "**/*.py"
       - "install/**"
+      - "src/**"
+      - "lib/**"
+      - "scripts/**"
+      - "test/**"
       - "README.md"
       - "requirements.txt"
-      - "Auto Install Programs.spec"
       - "build.bat"
       - "build.sh"
       - "build-mac.sh"
+      - "run.ps1"
+      - "run.sh"
       - ".github/workflows/**"
   pull_request:
     branches:
@@ -26,12 +31,17 @@ on:
     paths:
       - "**/*.py"
       - "install/**"
+      - "src/**"
+      - "lib/**"
+      - "scripts/**"
+      - "test/**"
       - "README.md"
       - "requirements.txt"
-      - "Auto Install Programs.spec"
       - "build.bat"
       - "build.sh"
       - "build-mac.sh"
+      - "run.ps1"
+      - "run.sh"
       - ".github/workflows/**"
 
 jobs:
