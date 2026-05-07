@@ -26,10 +26,13 @@
       "name": "Seelen UI",
       "id": "SeelenUI.SeelenUI"
     },
-
     {
       "name": "Vision Cursor",
       "function": "vision-cursor"
+    },
+    {
+      "name": "Essential Programs Initialization",
+      "function": "essential-programs-initialization"
     }
   ]
 }

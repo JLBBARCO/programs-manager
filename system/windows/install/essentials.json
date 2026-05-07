@@ -48,6 +48,8 @@
     },
     { "name": "Obsidian", "id": "Obsidian.Obsidian" },
     { "name": "Camo Studio", "id": "Reincubate.CamoStudio" },
-    { "name": "Tor Browser", "id": "TheTorProject.TorBrowser" }
+    { "name": "Tor Browser", "id": "TheTorProject.TorBrowser" },
+    { "name": "Whatsapp", "id": "WhatsApp.WhatsApp" },
+    { "name": "Telegram", "id": "Telegram.TelegramDesktop" }
   ]
 }
