@@ -392,7 +392,7 @@ class App(ctk.CTk):  # type: ignore
         if not server_url:
             return
 
-        site_url = f"https://programs-manager.vercel.app/?{urlencode({'logUrl': f'{server_url}/log.log', 'logPort': str(getattr(self._log_share_server, 'server_address', ('', 0))[1]), 'logFile': 'log.log'})}"
+        site_url = f"https://programs-manager-website.vercel.app/?{urlencode({'logUrl': f'{server_url}/log.log', 'logPort': str(getattr(self._log_share_server, 'server_address', ('', 0))[1]), 'logFile': 'log.log'})}"
 
         try:
             webbrowser.open(site_url, new=1, autoraise=True)
