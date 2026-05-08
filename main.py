@@ -344,9 +344,19 @@ class App(ctk.CTk):  # type: ignore
 
             # Process uninstall entries first (if any), then install entries.
             if user_uninstall_entries:
-                uninstall_module.user(user_uninstall_entries)
+                try:
+                    log.log(f"Calling uninstall_module.user() with {len(user_uninstall_entries)} entries", level='INFO')
+                    result_uninstall = uninstall_module.user(user_uninstall_entries)
+                    log.log(f"uninstall_module.user() returned: {result_uninstall}", level='INFO')
+                except Exception as error:
+                    log.log(f"Error during uninstall_module.user(): {error}", level='ERROR')
             if user_install_entries:
-                install_module.user(user_install_entries)
+                try:
+                    log.log(f"Calling install_module.user() with {len(user_install_entries)} entries", level='INFO')
+                    result_install = install_module.user(user_install_entries)
+                    log.log(f"install_module.user() returned: {result_install}", level='INFO')
+                except Exception as error:
+                    log.log(f"Error during install_module.user(): {error}", level='ERROR')
 
             selected_installations = self._selected_installations()
             # If there are no category installers and no user files selected, nothing to do.
