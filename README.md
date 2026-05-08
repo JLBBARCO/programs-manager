@@ -1,4 +1,4 @@
-# Auto Installation Programs
+# Programs Manager
 
 Programs Manager is a cross-platform installer and startup manager. The Windows build includes installer categories plus custom actions such as startup management and system customization.
 

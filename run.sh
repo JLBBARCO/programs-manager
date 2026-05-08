@@ -8,14 +8,14 @@ repo="programs-manager"
 SCRIPT_BRANCH="beta"
 
 OS_TYPE=$(uname -s)
-INSTALL_ROOT="${HOME}/.auto-install-programs"
+INSTALL_ROOT="${HOME}/.programs-manager"
 mkdir -p "$INSTALL_ROOT"
 
 if [ "$OS_TYPE" == "Linux" ]; then
-    ASSET_PATTERN="Auto-Install-Programs-linux.tar.gz"
+    ASSET_PATTERN="programs-manager-linux.tar.gz"
     BINARY_NAME="Programs Manager/Programs Manager"
 else
-    ASSET_PATTERN="Auto-Install-Programs-macos.tar.gz"
+    ASSET_PATTERN="programs-manager-macos.tar.gz"
     BINARY_NAME="Programs Manager.app/Contents/MacOS/Programs Manager"
 fi
 
