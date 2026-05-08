@@ -1,12 +1,12 @@
 {
-  "timestamp": "2026-05-08T14:31:13.559143",
-  "duration_seconds": 0.548218,
+  "timestamp": "2026-05-02T17:28:38.645509",
+  "duration_seconds": 0.49939,
   "summary": {
-    "total": 16,
-    "passed": 3,
-    "failed": 1,
-    "skipped": 13,
-    "success_rate": 18.75
+    "total": 21,
+    "passed": 4,
+    "failed": 0,
+    "skipped": 17,
+    "success_rate": 19.047619047619047
   },
   "results": [
     {
@@ -14,8 +14,8 @@
       "function": "nameSO",
       "status": "PASSED",
       "error": null,
-      "message": "Sistema operacional detectado: Linux",
-      "timestamp": "2026-05-08T14:31:13.011024"
+      "message": "Sistema operacional detectado: Windows",
+      "timestamp": "2026-05-02T17:28:38.146119"
     },
     {
       "module": "lib.json",
@@ -23,7 +23,7 @@
       "status": "PASSED",
       "error": null,
       "message": "JSON lido com sucesso. Keys: ['name', 'description', 'programs']",
-      "timestamp": "2026-05-08T14:31:13.011051"
+      "timestamp": "2026-05-02T17:28:38.262561"
     },
     {
       "module": "lib.json",
@@ -31,7 +31,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551435"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.json",
@@ -39,7 +39,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551446"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.json",
@@ -47,7 +47,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551450"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.json",
@@ -55,7 +55,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551452"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.json",
@@ -63,7 +63,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551455"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.json",
@@ -71,7 +71,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551457"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.json",
@@ -79,15 +79,15 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551459"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.log",
       "function": "get_log_file_path",
       "status": "PASSED",
       "error": null,
-      "message": "Caminho do log: /home/runner/work/programs-manager/programs-manager/log.log",
-      "timestamp": "2026-05-08T14:31:13.551468"
+      "message": "Caminho do log: C:\\Users\\Reginaldo\\Downloads\\programs-manager\\log.log",
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.log",
@@ -95,7 +95,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551471"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.log",
@@ -103,7 +103,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551474"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.log",
@@ -111,15 +111,47 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função requer argumentos específicos ou interação do sistema",
-      "timestamp": "2026-05-08T14:31:13.551476"
+      "timestamp": "2026-05-02T17:28:38.629146"
     },
     {
       "module": "lib.customizations",
-      "function": "all",
-      "status": "FAILED",
-      "error": "Falha ao importar módulo: No module named 'winreg'",
-      "message": "Traceback (most recent call last):\n  File \"/home/runner/work/programs-manager/programs-manager/test/run_tests.py\", line 129, in discover_and_test_modules\n    module = __import__(module_name, fromlist=[parts[-1]])\n             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/runner/work/programs-manager/programs-manager/lib/customizations/__init__.py\", line 9, in <module>\n    import winreg\nModuleNotFoundError: No module named 'winreg'\n",
-      "timestamp": "2026-05-08T14:31:13.558847"
+      "function": "apply_vision_cursor_black",
+      "status": "SKIPPED",
+      "error": null,
+      "message": "Função requer argumentos específicos ou interação do sistema",
+      "timestamp": "2026-05-02T17:28:38.645509"
+    },
+    {
+      "module": "lib.customizations",
+      "function": "disable_startup_programs",
+      "status": "SKIPPED",
+      "error": null,
+      "message": "Função requer argumentos específicos ou interação do sistema",
+      "timestamp": "2026-05-02T17:28:38.645509"
+    },
+    {
+      "module": "lib.customizations",
+      "function": "enable_startup_whitelist",
+      "status": "SKIPPED",
+      "error": null,
+      "message": "Função requer argumentos específicos ou interação do sistema",
+      "timestamp": "2026-05-02T17:28:38.645509"
+    },
+    {
+      "module": "lib.customizations",
+      "function": "save_startup_keys",
+      "status": "SKIPPED",
+      "error": null,
+      "message": "Função requer argumentos específicos ou interação do sistema",
+      "timestamp": "2026-05-02T17:28:38.645509"
+    },
+    {
+      "module": "lib.customizations",
+      "function": "_normalize_startup_name",
+      "status": "PASSED",
+      "error": null,
+      "message": "Nome normalizado: testprogram",
+      "timestamp": "2026-05-02T17:28:38.645509"
     },
     {
       "module": "lib.install.single_instance",
@@ -127,7 +159,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função de lock de processo não testada por segurança",
-      "timestamp": "2026-05-08T14:31:13.558867"
+      "timestamp": "2026-05-02T17:28:38.645509"
     },
     {
       "module": "lib.install.single_instance",
@@ -135,7 +167,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função de lock de processo não testada por segurança",
-      "timestamp": "2026-05-08T14:31:13.558871"
+      "timestamp": "2026-05-02T17:28:38.645509"
     },
     {
       "module": "lib.install.single_instance",
@@ -143,7 +175,7 @@
       "status": "SKIPPED",
       "error": null,
       "message": "Função de lock de processo não testada por segurança",
-      "timestamp": "2026-05-08T14:31:13.558874"
+      "timestamp": "2026-05-02T17:28:38.645509"
     }
   ]
 }
