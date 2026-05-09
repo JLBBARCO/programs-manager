@@ -1,14 +1,9 @@
-.vscode/
 __pycache__/
-build/
-dist/
 venv/
 .venv/
 .pytest_cache/
 .ruff_cache/
 *.spec
-*.log
-test.*
 *.lock
 %userprofile%/
 white_list_generated.txt
