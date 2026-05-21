@@ -68,7 +68,7 @@ git push origin main
 
 ## Estrutura Rápida
 
-```
+```plaintext
 Home.tsx (60 linhas)
 ├── useLogMonitor() hook
 ├── LogContainer (info/warning/error)
@@ -146,4 +146,4 @@ npm run dev           # ✅ Running at localhost:5173
 
 ---
 
-**Que comece a diversão! 🎉**
+## Que comece a diversão! 🎉

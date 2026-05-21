@@ -264,6 +264,7 @@ Já se a branch for a beta, o Actions deverá salvar como Pre-release;
 A pasta system não precisa ser incluída na compilação pois todos os arquivos contidos nela serão obtidos via Github RAW.
 
 A automação também deverá gerar um print de cada sistema operacional utilizando o bot do Github. Esses prints serão em formato WEBP, e eles substituirão os arquivos:
+
 ![Print MacOS](src/assets/img/macos.webp)
 ![Print Linux](src/assets/img/linux.webp)
 ![Print Windows](src/assets/img/windows.webp)
