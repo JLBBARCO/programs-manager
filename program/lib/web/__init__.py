@@ -1,10 +1,12 @@
 import json
 import threading
+import time
 import webbrowser
 from pathlib import Path
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlparse
+from urllib.request import Request, urlopen
 
 from lib.find_folders import get_ProgramsManager_folder
 
@@ -15,6 +17,68 @@ _shared_log_server_thread = None
 _shared_log_server_port = 9999
 _log_file_path = get_ProgramsManager_folder() / 'log.log'
 _programs_manager_site_url = 'https://jlbbarco.github.io/programs-manager'
+_internet_check_interval_seconds = 30
+_internet_check_url = 'https://www.google.com/generate_204'
+_internet_online_event = threading.Event()
+_internet_monitor_stop_event = threading.Event()
+_internet_monitor_thread = None
+
+
+def _check_internet_connection(timeout_seconds: int = 5) -> bool:
+	request = Request(_internet_check_url, headers={'User-Agent': 'ProgramsManager/1.0'})
+	try:
+		with urlopen(request, timeout=timeout_seconds) as response:
+			return 200 <= getattr(response, 'status', 204) < 400
+	except Exception:
+		return False
+
+
+def _internet_monitor_loop():
+	while not _internet_monitor_stop_event.is_set():
+		if _check_internet_connection():
+			_internet_online_event.set()
+		else:
+			_internet_online_event.clear()
+
+		if _internet_monitor_stop_event.wait(_internet_check_interval_seconds):
+			break
+
+
+def start_internet_monitor():
+	global _internet_monitor_thread
+
+	if _internet_monitor_thread is not None and _internet_monitor_thread.is_alive():
+		return
+
+	_internet_monitor_stop_event.clear()
+	if _check_internet_connection():
+		_internet_online_event.set()
+	else:
+		_internet_online_event.clear()
+
+	_internet_monitor_thread = threading.Thread(
+		target=_internet_monitor_loop,
+		name='InternetMonitor',
+		daemon=True,
+	)
+	_internet_monitor_thread.start()
+
+
+def wait_for_internet_connection(poll_interval_seconds: float = 1.0):
+	start_internet_monitor()
+	while not _internet_online_event.is_set():
+		print('Internet offline. Pausing execution until connection is restored...')
+		if _internet_monitor_stop_event.wait(poll_interval_seconds):
+			break
+
+
+def stop_internet_monitor():
+	global _internet_monitor_thread
+
+	_internet_monitor_stop_event.set()
+	if _internet_monitor_thread is not None and _internet_monitor_thread.is_alive():
+		_internet_monitor_thread.join(timeout=1)
+	_internet_monitor_thread = None
 
 
 class _LogShareRequestHandler(BaseHTTPRequestHandler):

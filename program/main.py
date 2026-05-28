@@ -10,6 +10,7 @@ system_title = f'{operational_system} Programs Manager'
 log.log('Start System', level='INFO')
 
 try:
+    web.start_internet_monitor()
     primary_screen = screen_primary.ScreenPrimary(operational_system, theme, system_title)
     primary_screen.mainloop()
     primary_array = primary_screen.return_array() or []
@@ -41,12 +42,14 @@ try:
 
 
     web.start_shared_log_server()
+    web.wait_for_internet_connection()
     web.open_programs_manager_site()
 
     updates.update_package_manager(operational_system, log.log)
     if uninstall_list:
         log.log('Uninstalling programs...', level='INFO')
     if install_list:
+        web.wait_for_internet_connection()
         log.log('Installing programs...', level='INFO')
         install.install(install_list, operational_system)
     if function_list:
@@ -58,5 +61,6 @@ except Exception as e:
     log.log(f"An error occurred: {e}", level="ERROR")
 
 finally:
+    web.stop_internet_monitor()
     web.stop_shared_log_server()
 

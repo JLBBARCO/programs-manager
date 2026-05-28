@@ -24,7 +24,7 @@ npm run build
 
 **Expected Output:**
 
-```
+```checkbox
 ✓ 123 modules transformed
 ✓ built in 4.23s
 ```
@@ -59,7 +59,7 @@ python -m http.server 9999
 
 Create `client/public/log.log` with test content:
 
-```
+```log
 [01/01/2024 10:00:00] [SUCCESS] [pid:1234] [thread:1] System started
 [01/01/2024 10:00:01] [INFO] [pid:1234] [thread:1] Processing task 1
 [01/01/2024 10:00:02] [WARNING] [pid:1234] [thread:1] Memory usage high
@@ -163,7 +163,7 @@ npm run build
 
 Add to log.log:
 
-```
+```log
 [01/01/2024 10:00:00] [INFO] [pid:1234] [thread:1] Ação/Reação: Tudo certo! 🎉
 ```
 

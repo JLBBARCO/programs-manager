@@ -1,9 +1,12 @@
 def update_package_manager(nameSO, log):
     import subprocess
 
+    from lib import web
+
     name_so = nameSO
 
     try:
+        web.wait_for_internet_connection()
         if name_so == "Windows":
             subprocess.run(["winget", "upgrade", "--id", 'Microsoft.AppInstaller'], check=True)
             log("Package manager updated successfully.", level="INFO")

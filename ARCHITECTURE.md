@@ -17,7 +17,7 @@
 
 ## Arquitetura
 
-```
+```tree
 ┌─────────────────────────────────────────────────────────────┐
 │                        Frontend (Vite)                       │
 ├─────────────────────────────────────────────────────────────┤
@@ -100,7 +100,7 @@
 
 ### 1. **Log Streaming Flow**
 
-```
+```tree
 useLogMonitor Hook
     ↓
 [Initialize state: {info: [], warning: [], error: [], history: []}]
@@ -132,7 +132,7 @@ bucketLogLevel(level) → "info" | "warning" | "error"
 
 ### 2. **Component Update Flow**
 
-```
+```tree
 useLogMonitor returns: { info, warning, error, history, isLoading, error }
     ↓
 Home.tsx receives hook result
@@ -152,7 +152,7 @@ LogContainer receives entries
 
 ### 3. **Contact Footer Flow**
 
-```
+```tree
 ContactFooter mounts
     ↓
 [Set loading state]
