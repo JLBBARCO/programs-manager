@@ -5,7 +5,7 @@ import {
   LOG_MONITOR_TIMEOUT_MS,
   getLogServerUrl,
 } from "@/constants/app";
-import { fetchLogStream, fetchLogOnce } from "@/lib/logFetcher";
+import { fetchLogOnce } from "@/lib/logFetcher";
 import {
   bucketLogLevel,
   classifyLogSection,
@@ -118,6 +118,21 @@ export function useLogMonitor(): UseLogMonitorResult {
     [appendLog]
   );
 
+  const processLogBatch = useCallback(
+    (lines: string[]) => {
+      let systemEnded = false;
+
+      for (const line of lines) {
+        if (processLogLine(line)) {
+          systemEnded = true;
+        }
+      }
+
+      return systemEnded;
+    },
+    [processLogLine]
+  );
+
   // Função para fazer polling periódico
   const startPolling = useCallback(() => {
     if (isPollingRef.current) return;
@@ -130,13 +145,7 @@ export function useLogMonitor(): UseLogMonitorResult {
           controllerRef.current?.signal
         );
 
-        // Processar apenas novas linhas
-        let systemEnded = false;
-        for (const line of lines) {
-          if (processLogLine(line)) {
-            systemEnded = true;
-          }
-        }
+        const systemEnded = processLogBatch(lines);
 
         // Se encontrou "End system", parar de fazer polling
         if (systemEnded) {
@@ -153,7 +162,7 @@ export function useLogMonitor(): UseLogMonitorResult {
     };
 
     pollIntervalRef.current = window.setInterval(poll, LOG_POLL_INTERVAL_MS);
-  }, [processLogLine]);
+  }, [processLogBatch]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -174,20 +183,18 @@ export function useLogMonitor(): UseLogMonitorResult {
 
     const monitorLogs = async () => {
       try {
-        for await (const rawLine of fetchLogStream(logServerUrl, {
-          signal: controller.signal,
-        })) {
-          setIsLoading(false);
+        const initialLines = await fetchLogOnce(
+          logServerUrl,
+          controller.signal
+        );
 
-          if (processLogLine(rawLine)) {
-            // "End system" encontrado
-            controller.abort();
-            window.clearTimeout(timeoutId);
-            return;
-          }
-        }
-        // Stream terminou normalmente sem "End system", iniciar polling
         setIsLoading(false);
+
+        if (processLogBatch(initialLines)) {
+          controller.abort();
+          window.clearTimeout(timeoutId);
+          return;
+        }
         startPolling();
       } catch (err) {
         if (!controller.signal.aborted && !didTimeout) {
