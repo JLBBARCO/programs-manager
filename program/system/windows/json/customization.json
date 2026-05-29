@@ -29,7 +29,7 @@
     {
       "name": "Dark Mode ",
       "type": "function",
-      "id": "dark-mode",
+      "id": "dark_mode",
       "checkbox": true
     },
     {
@@ -41,13 +41,13 @@
     {
       "name": "Vision Cursor",
       "type": "function",
-      "id": "vision-cursor",
+      "id": "vision_cursor",
       "checkbox": false
     },
     {
       "name": "Essential Programs Initialization",
       "type": "function",
-      "id": "essential-programs-initialization",
+      "id": "essential_programs_initialization",
       "checkbox": true
     },
     {

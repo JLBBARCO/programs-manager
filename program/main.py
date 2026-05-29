@@ -2,6 +2,8 @@ from typing import Any
 
 from lib import system, log, screen_primary, screen_secondary, updates, install, uninstall, web
 
+from lib.functions import finalize_notification
+
 theme = "system"
 operational_system = system.nameSO()
 system_title = f'{operational_system} Programs Manager'
@@ -19,14 +21,13 @@ try:
         log.log('User interrupted the program.', level='WARNING')
         primary_array = []
 
-    if primary_array:
-        try:
-            secondary_screen = screen_secondary.ScreenSecondary(operational_system, theme, system_title, primary_array)
-            secondary_screen.mainloop()
-            secondary_result: Any = secondary_screen.ScreenSecondaryReturn()
-        except KeyboardInterrupt:
-            log.log('User interrupted the program.', level='WARNING')
-            secondary_result = None
+    try:
+        secondary_screen = screen_secondary.ScreenSecondary(operational_system, theme, system_title, primary_array)
+        secondary_screen.mainloop()
+        secondary_result: Any = secondary_screen.ScreenSecondaryReturn()
+    except KeyboardInterrupt:
+        log.log('User interrupted the program.', level='WARNING')
+        secondary_result = None
 
     if secondary_result:
         install_list = []
@@ -76,4 +77,5 @@ except Exception as e:
 finally:
     web.stop_internet_monitor()
     web.stop_shared_log_server()
+    finalize_notification()
 

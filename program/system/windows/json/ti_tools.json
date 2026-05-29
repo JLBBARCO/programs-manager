@@ -36,6 +36,30 @@
       "type": "install",
       "id": "FinalWire.AIDA64.Extreme",
       "checkbox": true
+    },
+    {
+      "name": "HWMonitor",
+      "type": "install",
+      "id": "CPUID.HWMonitor",
+      "checkbox": true
+    },
+    {
+      "name": "CrystalDiskInfo",
+      "type": "install",
+      "id": "CrystalDewWorld.CrystalDiskInfo",
+      "checkbox": true
+    },
+    {
+      "name": "CPU-Z",
+      "type": "install",
+      "id": "CPUID.CPU-Z",
+      "checkbox": true
+    },
+    {
+      "name": "BIOS Shortcut",
+      "type": "function",
+      "id": "bios_shortcut",
+      "checkbox": true
     }
   ]
 }
