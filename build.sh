@@ -63,7 +63,7 @@ echo ""
 # Install packages globally with --break-system-packages
 echo "Installing/updating dependencies..."
 python3 -m pip install --upgrade pip --break-system-packages --quiet
-python3 -m pip install pyinstaller customtkinter psutil --break-system-packages --quiet
+python3 -m pip install -r requirements.txt --break-system-packages --quiet
 
 echo "✓ Dependencies installed"
 echo ""

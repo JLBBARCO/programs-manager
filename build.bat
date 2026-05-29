@@ -5,7 +5,7 @@ del /f /q "Programs Manager.spec" 2>nul
 
 echo Installing required dependencies...
 python -m pip install --upgrade pip
-python -m pip install pyinstaller customtkinter psutil
+python -m pip install -r requirements.txt
 
 echo Iniciando o Build com PyInstaller...
 
