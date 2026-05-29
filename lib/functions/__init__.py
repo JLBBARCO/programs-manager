@@ -1,10 +1,195 @@
-import subprocess, os, re
-import sys
-import ctypes
-from ctypes import wintypes
+import subprocess, os, re, sys, ctypes, winreg, urllib.request
 from pathlib import Path
+from lib import system, log, json
+from .bios_shortcur import bios_shortcut
+from .dark_mode import dark_mode
+from .finalize_notifications import finalize_notification
+from .vision_cursor_black import vision_cursor_black
+from .video_drivers import video_drivers
 
-from lib import system, log
+
+REG_PATHS = {
+    "HKEY_CURRENT_USER": (winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"),
+    "HKEY_LOCAL_MACHINE (32-bit)": (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"),
+    "HKEY_LOCAL_MACHINE (64-bit/WOW64)": (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"),
+}
+APPROVED_PATHS = {
+    "HKEY_CURRENT_USER": r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run",
+    "HKEY_LOCAL_MACHINE (32-bit)": r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run",
+    "HKEY_LOCAL_MACHINE (64-bit/WOW64)": r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run32",
+}
+LEGACY_WHITELIST_TERMS = {
+    'microsoftonedrive': {'onedrive'},
+    'microsoftedgeautolaunch': {'msedge'},
+    'microsoftpcmanager': {'microsoftpcmanager'},
+    'nvidiageforceexperience': {'nvidia'},
+    'nvcontainer': {'nvidia'},
+    'nvbackend': {'nvidia'},
+    'nvinitialize': {'nvidia'},
+    'igfxtray': {'intelgraphics'},
+    'igfxpers': {'intelgraphics'},
+    'igfxhk': {'intelgraphics'},
+    'hotkeyscmds': {'intelgraphics'},
+    'persistence': {'intelgraphics'},
+    'radeonsoftware': {'radeon'},
+    'livelywpf': {'lively'},
+    'camostudio': {'camo'},
+}
+
+
+def _normalize_startup_name(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", value.casefold())
+
+
+def _load_whitelist_terms(whitelist_content=None):
+    """Parse whitelist content and return set of normalized terms."""
+    if whitelist_content is None:
+        whitelist_content = json.read_external_json('initialization_whitelist')
+
+    if not whitelist_content:
+        return set()
+
+    if isinstance(whitelist_content, dict):
+        entries = (
+            whitelist_content.get('data')
+            or whitelist_content.get('whitelist')
+            or whitelist_content.get('items')
+            or []
+        )
+    elif isinstance(whitelist_content, (list, tuple, set)):
+        entries = whitelist_content
+    else:
+        entries = str(whitelist_content).splitlines()
+
+    whitelist = set()
+    for raw_line in entries:
+        line = str(raw_line).strip()
+        if not line or line.startswith('#'):
+            continue
+
+        normalized = _normalize_startup_name(line)
+        if not normalized:
+            continue
+
+        whitelist.add(normalized)
+        whitelist.update(LEGACY_WHITELIST_TERMS.get(normalized, set()))
+
+    return whitelist
+
+
+def _is_whitelisted(entry_name: str, whitelist_terms) -> bool:
+    return _normalize_startup_name(entry_name) in whitelist_terms
+
+
+def disable_startup_programs():
+    """Disable startup entries that are not present in the GitHub whitelist."""
+    try:
+        whitelist_terms = _load_whitelist_terms()
+    except Exception as error:
+        return f"Startup disable aborted. Failed to load initialization whitelist: {error}"
+
+    if not whitelist_terms:
+        return "Startup disable aborted. Whitelist is empty."
+
+    disabled_count = 0
+    preserved_count = 0
+    disabled_value = b'\x03\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+    for label, (root, path) in REG_PATHS.items():
+        try:
+            with winreg.OpenKey(root, path, 0, winreg.KEY_READ) as run_key:
+                entry_names = []
+                index = 0
+                while True:
+                    try:
+                        name, _, _ = winreg.EnumValue(run_key, index)
+                        entry_names.append(name)
+                        index += 1
+                    except OSError:
+                        break
+
+                app_root = winreg.HKEY_CURRENT_USER if "HKCU" in label else winreg.HKEY_LOCAL_MACHINE
+                app_path = APPROVED_PATHS[label]
+
+                with winreg.CreateKey(app_root, app_path) as approved_key:
+                    for name in entry_names:
+                        if _is_whitelisted(name, whitelist_terms):
+                            preserved_count += 1
+                            log.log(f'Preserved startup entry [{label}]: {name}', level="INFO")
+                            continue
+
+                        winreg.SetValueEx(approved_key, name, 0, winreg.REG_BINARY, disabled_value)
+                        log.log(f'Disabled startup entry [{label}]: {name}', level="INFO")
+                        disabled_count += 1
+        except Exception as error:
+            log.log(f"Skipping {label}, key not found or inaccessible: {error}", level="INFO")
+
+    return (
+        f"Scan complete. {disabled_count} startup entries were disabled and "
+        f"{preserved_count} whitelist entries were preserved."
+    )
+
+
+def save_startup_keys(output_path="programs.log"):
+    """Save the current startup registry state for audit/debugging."""
+    try:
+        lines = []
+        for label, (root, path) in REG_PATHS.items():
+            try:
+                with winreg.OpenKey(root, path, 0, winreg.KEY_READ) as key:
+                    count = winreg.QueryInfoKey(key)[1]
+                    for index in range(count):
+                        name, value, _ = winreg.EnumValue(key, index)
+                        lines.append(f"{label}::{name}::{value}")
+            except Exception:
+                lines.append(f"{label}::(inaccessible)")
+
+        with open(output_path, 'w', encoding='utf-8') as output_file:
+            output_file.write("\n".join(lines))
+        return f"Startup keys saved to {output_path}."
+    except Exception as error:
+        return f"Error saving keys: {error}"
+
+
+def enable_startup_whitelist():
+    """Re-enable whitelisted startup entries from GitHub."""
+    try:
+        whitelist_terms = _load_whitelist_terms()
+    except Exception as error:
+        return f"Whitelist re-enable failed. Error: {error}"
+
+    if not whitelist_terms:
+        return "Whitelist is empty; nothing to re-enable."
+
+    activated_count = 0
+    enabled_value = b'\x02\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00'
+
+    for label, (root, path) in REG_PATHS.items():
+        try:
+            with winreg.OpenKey(root, path, 0, winreg.KEY_READ) as run_key:
+                app_root = winreg.HKEY_CURRENT_USER if "HKCU" in label else winreg.HKEY_LOCAL_MACHINE
+                app_path = APPROVED_PATHS[label]
+
+                with winreg.CreateKey(app_root, app_path) as approved_key:
+                    index = 0
+                    while True:
+                        try:
+                            name, _, _ = winreg.EnumValue(run_key, index)
+                            if _is_whitelisted(name, whitelist_terms):
+                                winreg.SetValueEx(approved_key, name, 0, winreg.REG_BINARY, enabled_value)
+                                log.log(f'Re-enabled from whitelist: {name}', level="INFO")
+                                activated_count += 1
+                            index += 1
+                        except OSError:
+                            break
+        except Exception:
+            continue
+
+    return f"Success: {activated_count} startup entries re-enabled from whitelist."
+
+
+def essentials_programs_whitelist():
+    pass
 
 
 def _filter_install_output(output: str) -> str:
@@ -28,81 +213,6 @@ def _filter_install_output(output: str) -> str:
         kept_lines.append(f"[{removed_count} progress updates suppressed]")
 
     return "\n".join(kept_lines).strip()
-
-
-def _run_command(command: str) -> str:
-    process = subprocess.run(command, capture_output=True, text=True, shell=True)
-    raw_output = (process.stdout or "") + ("\n" + process.stderr if process.stderr else "")
-    filtered_output = _filter_install_output(raw_output)
-
-    return filtered_output
-
-
-def dark_mode():
-    if system.nameSO() == 'Windows':
-        try:
-            _run_command(
-                'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" '
-                '/v AppsUseLightTheme /t REG_DWORD /d 0 /f >nul 2>&1'
-            )
-            _run_command(
-                'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" '
-                '/v SystemUsesLightTheme /t REG_DWORD /d 0 /f >nul 2>&1'
-            )
-            return 'Dark mode applied successfully.'
-        except Exception as error:
-            return f'Failed to apply dark mode: {error}'
-
-def bios_shortcut() -> str:
-    if system.nameSO() != 'Windows':
-        return 'BIOS shortcut is currently supported only on Windows.'
-
-    from lib.find_folders import get_StartMenu_Programs_folder
-    bios_shortcut_ink = get_StartMenu_Programs_folder() / 'BIOS Shortcut.lnk'
-
-    if bios_shortcut_ink.exists():
-        return 'BIOS shortcut already exists in Start Menu.'
-
-    try:
-        start_menu_programs = os.path.join(
-            os.environ.get('APPDATA', ''),
-            'Microsoft',
-            'Windows',
-            'Start Menu',
-            'Programs',
-        )
-        if not start_menu_programs:
-            return 'Could not resolve Start Menu path.'
-
-        os.makedirs(start_menu_programs, exist_ok=True)
-        shortcut_path = os.path.join(start_menu_programs, 'BIOS Shortcut.lnk')
-
-        ps_script = (
-            "$shell = New-Object -ComObject WScript.Shell; "
-            f"$shortcut = $shell.CreateShortcut('{shortcut_path}'); "
-            "$shortcut.TargetPath = \"$env:SystemRoot\\System32\\shutdown.exe\"; "
-            "$shortcut.Arguments = '/r /fw /t 1'; "
-            "$shortcut.WorkingDirectory = \"$env:SystemRoot\\System32\"; "
-            "$shortcut.IconLocation = \"$env:SystemRoot\\System32\\shell32.dll,27\"; "
-            "$shortcut.Save();"
-        )
-
-        process = subprocess.run(
-            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps_script],
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="ignore",
-            shell=False,
-        )
-
-        if process.returncode != 0:
-            stderr = (process.stderr or '').strip()
-            return f'Failed to create BIOS shortcut: {stderr or "unknown error"}'
-
-        return 'BIOS shortcut created in Start Menu.'
-    except Exception as error:
-        return f'Failed to create BIOS shortcut: {error}'
 
 
 def _restart_windows_explorer() -> None:
@@ -131,161 +241,42 @@ def _restart_windows_explorer() -> None:
         log.log(f'Failed to restart Windows Explorer: {error}', 'ERROR')
 
 
-def _resolve_notification_icon_path() -> Path | None:
-    candidate_paths = []
+def _normalize_function_name(value: str) -> str:
+    return re.sub(r'[^a-z0-9]+', '', value.casefold())
 
-    try:
-        source_root = Path(__file__).resolve().parents[3]
-        candidate_paths.extend([
-            source_root / 'src' / 'assets' / 'icon' / 'icon.ico',
-            source_root / 'program' / 'src' / 'assets' / 'icon' / 'icon.ico',
-        ])
-    except Exception:
-        pass
 
-    executable_path = Path(sys.executable).resolve()
-    candidate_paths.extend([
-        executable_path.with_name('icon.ico'),
-        executable_path.parent / 'icon.ico',
-        Path.cwd() / 'icon.ico',
-        Path.cwd() / 'src' / 'assets' / 'icon' / 'icon.ico',
-    ])
+def _resolve_function(func_name: str):
+    direct_function = globals().get(func_name)
+    if callable(direct_function):
+        return direct_function
 
-    bundled_root_value = getattr(sys, '_MEIPASS', None)
-    if bundled_root_value:
-        bundled_root = Path(bundled_root_value)
-        candidate_paths.extend([
-            bundled_root / 'icon.ico',
-            bundled_root / 'src' / 'assets' / 'icon' / 'icon.ico',
-        ])
+    normalized_name = _normalize_function_name(func_name)
+    if not normalized_name:
+        return None
 
-    for candidate in candidate_paths:
-        if candidate.exists():
+    for name, candidate in globals().items():
+        if callable(candidate) and _normalize_function_name(name) == normalized_name:
             return candidate
 
     return None
 
 
-def _show_windows_notification(title: str, message: str) -> bool:
-    user32 = ctypes.windll.user32
-    shell32 = ctypes.windll.shell32
-    kernel32 = ctypes.windll.kernel32
-
-    WM_USER = 0x0400
-    NIM_ADD = 0x00000000
-    NIM_MODIFY = 0x00000001
-    NIF_MESSAGE = 0x00000001
-    NIF_ICON = 0x00000002
-    NIF_TIP = 0x00000004
-    NIF_INFO = 0x00000010
-    NIIF_INFO = 0x00000001
-    IMAGE_ICON = 1
-    LR_LOADFROMFILE = 0x00000010
-    LR_DEFAULTSIZE = 0x00000040
-
-    class NOTIFYICONDATAW(ctypes.Structure):
-        _fields_ = [
-            ('cbSize', wintypes.DWORD),
-            ('hWnd', wintypes.HWND),
-            ('uID', wintypes.UINT),
-            ('uFlags', wintypes.UINT),
-            ('uCallbackMessage', wintypes.UINT),
-            ('hIcon', wintypes.HICON),
-            ('szTip', wintypes.WCHAR * 128),
-            ('dwState', wintypes.DWORD),
-            ('dwStateMask', wintypes.DWORD),
-            ('szInfo', wintypes.WCHAR * 256),
-            ('uTimeoutOrVersion', wintypes.UINT),
-            ('szInfoTitle', wintypes.WCHAR * 64),
-            ('dwInfoFlags', wintypes.DWORD),
-            ('guidItem', ctypes.c_byte * 16),
-            ('hBalloonIcon', wintypes.HICON),
-        ]
-
-    h_instance = kernel32.GetModuleHandleW(None)
-    hwnd = user32.CreateWindowExW(0, 'STATIC', title, 0, 0, 0, 0, 0, 0, 0, h_instance, None)
-    if not hwnd:
-        return False
-
-    icon_handle = None
-    icon_path = _resolve_notification_icon_path()
-    if icon_path is not None:
-        icon_handle = user32.LoadImageW(
-            None,
-            str(icon_path),
-            IMAGE_ICON,
-            0,
-            0,
-            LR_LOADFROMFILE | LR_DEFAULTSIZE,
-        )
-
-    nid = NOTIFYICONDATAW()
-    nid.cbSize = ctypes.sizeof(NOTIFYICONDATAW)
-    nid.hWnd = hwnd
-    nid.uID = 1
-    nid.uFlags = NIF_MESSAGE | NIF_ICON | NIF_TIP
-    nid.uCallbackMessage = WM_USER + 1
-    nid.hIcon = icon_handle or 0
-    nid.szTip = title
-
-    if not shell32.Shell_NotifyIconW(NIM_ADD, ctypes.byref(nid)):
-        return False
-
-    nid.uFlags = NIF_INFO
-    nid.szInfo = message
-    nid.szInfoTitle = title
-    nid.dwInfoFlags = NIIF_INFO
-    nid.uTimeoutOrVersion = 10000
-
-    result = bool(shell32.Shell_NotifyIconW(NIM_MODIFY, ctypes.byref(nid)))
-    return result
-
-
 def functions(functions_list):
     try:
         for item in functions_list:
-            func = item['id']
-            func = globals().get(func)
+            func_name = item.get('id') if isinstance(item, dict) else item
+            if not func_name:
+                continue
+
+            display_name = item.get('name', func_name) if isinstance(item, dict) else func_name
+
+            func = _resolve_function(func_name)
             if callable(func):
                 func()
-            log.log(f"Executed function: {item['name']}", 'INFO')
+                log.log(f"Executed function: {display_name}", 'INFO')
+            else:
+                log.log(f"Function not found: {display_name} ({func_name})", 'WARNING')
         _restart_windows_explorer()
     except Exception as error:
         log.log(f"Error executing functions: {error}", 'ERROR')
-
-
-def finalize_notification():
-    title = 'Programs Manager'
-    message = 'Todas as instalações, desinstalações, atualizações e funções foram finalizadas.'
-
-    try:
-        current_system = system.nameSO()
-
-        if current_system == 'Windows':
-            if not _show_windows_notification(title, message):
-                raise RuntimeError('could not create Windows notification')
-
-        elif current_system == 'MacOS':
-            process = subprocess.run(
-                ["osascript", "-e", f'display notification "{message}" with title "{title}"'],
-                capture_output=True,
-                text=True,
-                shell=False,
-            )
-            if process.returncode != 0:
-                raise RuntimeError((process.stderr or process.stdout or '').strip() or 'unknown error')
-
-        elif current_system == 'Linux':
-            process = subprocess.run(
-                ["notify-send", title, message],
-                capture_output=True,
-                text=True,
-                shell=False,
-            )
-            if process.returncode != 0:
-                raise RuntimeError((process.stderr or process.stdout or '').strip() or 'unknown error')
-
-        log.log('Final system notification sent successfully.', 'INFO')
-    except Exception as error:
-        log.log(f'Failed to send final system notification: {error}', 'ERROR')
 

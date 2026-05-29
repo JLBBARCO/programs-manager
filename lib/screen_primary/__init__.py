@@ -99,7 +99,7 @@ class ScreenPrimary(ctk.CTk):
 
     def next(self):
         self.destroy()
-        self.array_json = []
+        self.array_json = ['user']
         for installer_name, var in self.category_vars.items():
             if var.get():
                 self.array_json.append(installer_name)

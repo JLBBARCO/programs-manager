@@ -101,7 +101,7 @@
     {
       "name": "Video Drivers",
       "type": "function",
-      "id": "videoDrivers",
+      "id": "video_drivers",
       "checkbox": true
     }
   ]

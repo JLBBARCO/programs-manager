@@ -2,7 +2,7 @@ from typing import Any
 
 from lib import system, log, screen_primary, screen_secondary, updates, install, uninstall, web
 
-from lib.functions import finalize_notification
+from lib.functions import finalize_notification, functions
 
 theme = "system"
 operational_system = system.nameSO()
@@ -17,17 +17,18 @@ try:
         primary_screen = screen_primary.ScreenPrimary(operational_system, theme, system_title)
         primary_screen.mainloop()
         primary_array = primary_screen.return_array() or []
-    except KeyboardInterrupt:
+    except:
         log.log('User interrupted the program.', level='WARNING')
         primary_array = []
 
-    try:
-        secondary_screen = screen_secondary.ScreenSecondary(operational_system, theme, system_title, primary_array)
-        secondary_screen.mainloop()
-        secondary_result: Any = secondary_screen.ScreenSecondaryReturn()
-    except KeyboardInterrupt:
-        log.log('User interrupted the program.', level='WARNING')
-        secondary_result = None
+    if primary_array:
+        try:
+            secondary_screen = screen_secondary.ScreenSecondary(operational_system, theme, system_title, primary_array)
+            secondary_screen.mainloop()
+            secondary_result: Any = secondary_screen.ScreenSecondaryReturn()
+        except KeyboardInterrupt:
+            log.log('User interrupted the program.', level='WARNING')
+            secondary_result = None
 
     if secondary_result:
         install_list = []
@@ -68,6 +69,7 @@ try:
         if function_list:
             web.wait_for_internet_connection()
             log.log('Executing functions...', level='INFO')
+            functions(function_list)
 
     log.log('End System', level='INFO')
 
