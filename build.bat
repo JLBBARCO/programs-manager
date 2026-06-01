@@ -32,4 +32,4 @@ echo %%%%
 echo.
 echo O executavel esta em: dist/Programs Manager/
 echo.
-pause
+if not defined CI pause

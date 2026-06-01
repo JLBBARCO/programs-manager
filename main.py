@@ -13,6 +13,7 @@ log.info('Start System')
 
 try:
     web.start_internet_monitor()
+    secondary_result: Any = None
     try:
         primary_screen = screen_primary.ScreenPrimary(operational_system, theme, system_title)
         primary_screen.mainloop()
@@ -62,14 +63,14 @@ try:
             web.wait_for_internet_connection()
             log.info('Uninstalling programs...')
             uninstall.uninstall(uninstall_list, operational_system)
-        if install_list:
-            web.wait_for_internet_connection()
-            log.info('Installing programs...')
-            install.install(install_list, operational_system)
         if function_list:
             web.wait_for_internet_connection()
             log.info('Executing functions...')
             functions(function_list)
+        if install_list:
+            web.wait_for_internet_connection()
+            log.info('Installing programs...')
+            install.install(install_list, operational_system)
 
 except Exception as e:
     log.error(f"An error occurred: {e}")

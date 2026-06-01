@@ -8,7 +8,7 @@ on:
   push:
     branches:
       - main
-      - beta
+      - develop
     paths:
       - "**/*.py"
       - "install/**"
@@ -27,7 +27,7 @@ on:
   pull_request:
     branches:
       - main
-      - beta
+      - develop
     paths:
       - "**/*.py"
       - "install/**"
@@ -338,7 +338,7 @@ jobs:
             PRE="false"
           else
             TAG="auto-v$(date -u +'%Y.%m.%d')-${GITHUB_RUN_NUMBER}"
-            if [[ "${GITHUB_REF}" == "refs/heads/beta" ]]; then
+            if [[ "${GITHUB_REF}" == "refs/heads/develop" ]]; then
               NAME="Pre-release"
               PRE="true"
             else

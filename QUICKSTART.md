@@ -1,150 +1,40 @@
-# Quick Start Guide 🚀
+# Quick Start Guide
 
-## Setup Local (5 minutos)
+## Local setup
 
-### 1️⃣ Install
-
-```bash
-npm install
-# Instala todas as dependências
-```
-
-### 2️⃣ Dev Server
+- Install Python 3.12 or newer.
+- Install project dependencies:
 
 ```bash
-# Terminal 1: App
-npm run dev
-# → Abre em http://localhost:5173
-
-# Terminal 2: Log Server
-cd client/public
-# Start a simple HTTP server on a port in the `99xx` range (replace `<port>`):
-python -m http.server <port>
-# → Log server em http://localhost:<port>
+python -m pip install -r requirements.txt
 ```
 
-### 3️⃣ Abrir Navegador
-
-- [x] Vá para `http://localhost:5173`
-- [x] Se não houver logs, crie `client/public/log.log`
-
----
-
-## Build & Deploy
-
-### Build Local
+- Run the app from source:
 
 ```bash
-npm run build
-# → Saída em dist/
+python main.py
 ```
 
-### Deploy Vercel (automático)
+## Build
 
-```bash
-git push origin main
-# → Deploy automático via GitHub
-```
+- Windows: `build.bat`
+- Linux: `build.sh`
+- macOS: `build-mac.sh`
 
----
+## Run
 
-## Arquivos Importantes
+- Windows: `run.ps1`
+- Linux and macOS: `run.sh`
 
-### 📄 Ler Primeiro
+## What to verify
 
-- **[ARCHITECTURE.md](./ARCHITECTURE.md)** - Arquitetura técnica
+- `main.py` opens the two UI screens and then runs the selected actions.
+- The log server uses a free port in the `9900-9999` range.
+- The website is opened with `?port=NNNN`.
+- `uninstall`, `function`, and `install` entries run in that order.
 
-### 🧪 Antes de Mergear
+## Related files
 
-1. **[TESTING_CHECKLIST.md](./TESTING_CHECKLIST.md)** - Guia de testes
-
-### 💻 Para Developers
-
-1. `client/src/constants/app.ts` - Config centralizada
-2. `client/src/hooks/useLogMonitor.ts` - Custom hook
-3. `client/src/lib/logParser.ts` - Parse logic
-4. `client/src/lib/logFetcher.ts` - Fetch logic
-
----
-
-## Estrutura Rápida
-
-```plaintext
-Home.tsx (60 linhas)
-├── useLogMonitor() hook
-├── LogContainer (info/warning/error)
-├── HistoryView (seção histórico)
-└── ContactFooter (footer)
-
-useLogMonitor (130 linhas)
-├── Usa logFetcher (streaming)
-├── Usa logParser (parse + classify)
-├── Gerencia estado (info/warning/error/history)
-└── Cleanup on unmount
-
-Constants (50 linhas)
-├── URLs, timeouts
-├── Mensagens (i18n ready)
-├── Cores/estilos
-└── Icon names
-```
-
----
-
-## Próximas Tarefas
-
-### Imediato
-
-- [ ] Executar checklist de testes (TESTING_CHECKLIST.md)
-- [ ] Code review com team
-- [ ] Deploy em staging
-
-### Curto Prazo
-
-- [ ] Unit tests (Jest)
-- [ ] E2E tests (Playwright)
-- [ ] CI/CD pipeline
-
-### Futuro
-
-- [ ] i18n (tradução - MESSAGES pronto)
-- [ ] Dark mode
-- [ ] WebSocket real-time
-
----
-
-## Troubleshooting
-
-| Problema             | Solução                                                                                                                       |
-| -------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| Página em branco     | Abra console (F12), check logs                                                                                                |
-| "Porta indisponível" | Inicie o servidor de logs na porta indicada na URL (`?port=NNNN`) ou em qualquer porta `99xx`: `python -m http.server <port>` |
-| TypeScript error     | Rode: `npm run type-check`                                                                                                    |
-| Build falha          | Limpe: `rm -rf node_modules dist` → `npm install`                                                                             |
-
----
-
-## Contato
-
-Para dúvidas:
-
-1. Leia a documentação relevante (veja acima)
-2. Consulte ARCHITECTURE.md para detalhes técnicos
-3. Abra issue no GitHub com contexto
-
----
-
-## Validação Final
-
-```bash
-# Tudo OK?
-npm run type-check    # ✅ Zero errors
-npm run build         # ✅ Success
-npm run dev           # ✅ Running at localhost:5173
-```
-
-**Status:** ✅ **PRONTO PARA USAR**
-
----
-
-## Que comece a diversão! 🎉
+- `README.md`
+- `ARCHITECTURE.md`
+- `TESTING_CHECKLIST.md`

@@ -1,223 +1,64 @@
 # Programs Manager
 
-Programs Manager is a cross-platform installer/uninstaller and startup manager. The Windows build includes installer categories and additional custom actions such as startup management and system personalization.
+Programs Manager is a Python desktop application for selecting package-manager actions and custom functions, then running those actions in the background while sharing a live log stream with the website.
 
-This is a program manager for easy installation or removal of software when preparing a machine, reconfiguring it, or performing an optimization.
+## What it does
 
-## Contents
+- Shows a primary screen to pick categories.
+- Shows a secondary screen to pick install, uninstall, and function entries.
+- Starts a local shared log server on a free `99xx` port.
+- Opens the Programs Manager website with the selected port in `?port=NNNN`.
+- Runs actions in this order: uninstall, function, install.
 
-- [Frontend](#frontend-program)
-- [Backend](#backend-program)
-- [GitHub Actions](#github-actions)
-- [GitHub RAW](#github-raw)
-  - [Run](#run)
+## Repository layout
 
-## System icon
+- [main.py](main.py) is the entry point.
+- [lib/](lib) contains the runtime modules for screens, logging, package actions, updates, and functions.
+- [system/](system) contains runtime JSON files per operating system.
+- [build.bat](build.bat), [build.sh](build.sh), and [build-mac.sh](build-mac.sh) build the packaged app.
+- [run.ps1](run.ps1) and [run.sh](run.sh) download or reuse a packaged build.
 
-![System icon](src/assets/icon/icon.ico)
+## Runtime JSON
 
-### Frontend (Program)
+The app reads JSON from `system/<os>/json/` at runtime. Those files are fetched from GitHub RAW and are not bundled into the build artifacts.
 
-#### UI language
+The expected path is:
 
-English (En-US)
+`https://raw.githubusercontent.com/JLBBARCO/programs-manager/<branch>/system/<operating_system>/json/<file_name>.json`
 
-#### First screen
+## Build scripts
 
-- The title is dynamic and reflects the detected operating system.
-- A container shows each function category as a checklist.
-- Bottom-left: a button to select or deselect all checkboxes in the main container.
-- Bottom-right: a "Next" button that closes the first screen and opens the second screen, passing an array containing only the selected options.
+- Windows: run [build.bat](build.bat).
+- Linux: run [build.sh](build.sh).
+- macOS: run [build-mac.sh](build-mac.sh).
 
-#### Second screen
+The Windows script skips the final pause automatically in CI.
 
-##### Main container
+## Run scripts
 
-When the second screen opens, it displays the `data` array from each JSON object present in the `json_data` array and shows those entries in the main container.
-
-##### Dropdown menu (tabs)
-
-Each tab corresponds to the `name` field of a JSON object loaded by the JSON reader; selecting a tab shows that JSON's entries in alphabetical order in the content container.
-
-##### Content
-
-The content panel displays a checklist for the selected JSON with these columns:
-
-- First column: checkbox
-- Second column: function name
-- Third column: function type (`install`, `uninstall`, or `function`)
-
-##### Button container
-
-Bottom-left contains two buttons:
-
-- `Add Program`: opens a search dialog (screen 3.1) with:
-  - a search input and a Search button at the top;
-  - when the user searches, the backend queries the package manager and returns matching programs;
-  - the results are shown in three columns: an action button (toggles Add/Remove), program name, and program id.
-- `Remove Programs`: opens a removal dialog (screen 3.2) with a similar layout to 3.1.
-
-##### Run button
-
-Bottom-right has a `RUN` button that closes the UI and starts the main background process.
-
-### Backend (Program)
-
-#### JSON
-
-##### Writing JSON
-
-When the program writes JSON, it checks for `user.json` in `C:\Users\<user>\Downloads\Programs Manager`. If the file does not exist, it is created with the following structure:
-
-```json
-{
-  "name": "User",
-  "description": "User data generated after execution of write system",
-  "data": []
-}
-```
-
-##### Reading JSON
-
-###### Internal JSON
-
-Internal JSON reading behaves like the write flow, except it only reads the file and places the result into the `json_data` array.
-
-###### External JSON
-
-External JSON is fetched from GitHub RAW using the URL:
-`https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/program/system/<operating_system>/json/<file_name>.json` and each JSON payload is added to `json_data`.
-
-#### Logging (`log.log`)
-
-Log messages use three severity tags:
-
-- `[INFO]`
-- `[WARNING]`
-- `[ERROR]`
-
-`[INFO]` indicates normal progress (examples: `Start system`, `Find and read essentials.json`, `End system`).
-`[WARNING]` denotes partial or recoverable problems (examples: `Find and not read essentials.json`, `Visual Studio Code updated`).
-`[ERROR]` is used for fatal failures (examples: `Not found essentials.json`, `Visual Studio Code not installed and not updated`).
-
-#### Add Program (screen 2)
-
-When the user clicks `Add Program`, the search UI queries the system package manager (e.g., WinGet on Windows). Selected items are saved into `user.json` appended to the `data` array as:
-
-```json
-{
-  "name": "<program_name>",
-  "type": "install",
-  "checkbox": true,
-  "id": "<program_id>"
-}
-```
-
-#### Remove Program (screen 2)
-
-When the user clicks `Remove Programs`, the UI lists installed packages and selected items are saved into `user.json` as:
-
-```json
-{
-  "name": "<program_name>",
-  "type": "uninstall",
-  "checkbox": true,
-  "id": "<program_id>"
-}
-```
-
-Those entries are intended for package-manager commands such as `winget uninstall -id <program_id>`.
-
-#### Default terminal flags
-
-- Windows: WinGet commands should include `--accept-source-agreements --accept-package-agreements >nul 2>&1` to suppress progress and accept agreements.
-- Linux/macOS: shell commands should redirect output to `/dev/null` with `> /dev/null 2>&1` when appropriate.
-- PowerShell runs should redirect to `$null` when needed (e.g. `*> $null`).
-
-#### Background execution
-
-When the user presses `RUN`, all windows close and the program continues running in the background. It writes `[dd/mm/yyyy hh:mm:ss] [INFO] Start system` to `log.log`, exposes `log.log` via an HTTP endpoint on a dynamically chosen `localhost` port in the range `9900–9999` (the program will bind a free `99xx` port), and opens the Programs Manager website including the selected port as a query parameter (for example: `https://programs-manager-website.vercel.app?port=9936`).
-
-Startup tasks are executed in this order:
-
-- Update the package manager (example: Microsoft.AppInstaller on Windows)
-- Read internal JSON and store it into `json_data`
-- Fetch external JSON and append it to `json_data`
-- For each JSON read, log success or failure:
-  - Success:
-
-    ```log
-    [dd/mm/yyyy hh:mm:ss] [INFO] Read <file_name> successfully
-    ```
-
-  - Failure:
-
-    ```log
-    [dd/mm/yyyy hh:mm:ss] [ERROR] Read <file_name> with error <error>
-    ```
-
-- Process the `json_data` array and separate entries by type: `install`, `uninstall`, and `function`.
-- Execute actions in this order:
-  1. Uninstall packages listed in `uninstall` (e.g. `winget uninstall -id <program_id>`)
-  2. Run `function` entries (execute configured functions)
-  3. Install packages listed in `install`
-
-## GitHub Actions
-
-GitHub Actions should build the program for each OS when the branch is `main` or `develop`.
-
-Use `build.bat`, `build.sh`, and `build-mac.sh` to produce OS-specific builds, package them (e.g. zip), and attach them to a GitHub Release. Rules:
-
-- `main` branch builds are published as the Last Release
-- `beta` branch builds are published as Pre-release
-
-The `system` folder is not included in the build artifacts because those files are fetched at runtime via GitHub RAW.
-
-Actions should also capture screenshots for each OS as WEBP and replace these files in the repository:
-
-![Print MacOS](src/assets/img/macos.webp)
-![Print Linux](src/assets/img/linux.webp)
-![Print Windows](src/assets/img/windows.webp)
-
-An aggregated thumbnail combining the three screenshots will replace:
-![Print from all system prints compiled](src/assets/img/thumbnail.webp)
-
-## GitHub RAW
-
-### Run
-
-Use `./run.ps1` and `./run.sh` to download and run the appropriate build for Windows, Linux, or macOS directly from the Last Release.
-
-Examples:
-
-Windows (PowerShell):
+Windows:
 
 ```powershell
 irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1 | iex
 ```
 
-Linux:
+Linux or macOS:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.sh | bash
 ```
 
-macOS:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.sh | bash
-```
-
-Optional branch override (useful for testing, e.g. `develop`):
-
-PowerShell:
+Branch override for testing:
 
 ```powershell
 $env:AIP_BRANCH='develop'; irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1 | iex
 ```
 
-Bash:
-
 ```bash
 AIP_BRANCH=develop curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.sh | bash
 ```
+
+## GitHub Actions
+
+- [.github/workflows/build.yml](.github/workflows/build.yml) builds for `main` and `beta`.
+- [.github/workflows/auto-install-programs-macos-installer.yml](.github/workflows/auto-install-programs-macos-installer.yml) publishes the macOS installer from tagged releases.

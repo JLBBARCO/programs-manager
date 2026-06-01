@@ -24,7 +24,7 @@ _programs_manager_site_url = os.getenv(
 )
 _programs_manager_site_fallback_url = os.getenv(
 	'PROGRAMS_MANAGER_SITE_FALLBACK_URL',
-	'https://passwords-manager-jlbbarco.vercel.app',
+	'https://programs-manager-website.vercel.app',
 )
 _internet_check_interval_seconds = 30
 _internet_check_url = 'https://www.google.com/generate_204'
