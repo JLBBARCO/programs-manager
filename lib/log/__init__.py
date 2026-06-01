@@ -25,6 +25,18 @@ def log(message, level="INFO"):
         _log_file.flush()
 
 
+def info(message):
+    log(message, 'INFO')
+
+
+def warning(message):
+    log(message, 'WARNING')
+
+
+def error(message):
+    log(message, 'ERROR')
+
+
 # initial separator for new run
 with _lock:
     _log_file.write('\n')

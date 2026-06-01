@@ -60,6 +60,18 @@
       "type": "function",
       "id": "bios_shortcut",
       "checkbox": true
+    },
+    {
+      "name": "Correctly Internal Drive",
+      "type": "function",
+      "id": "correctly_internal_drive",
+      "checkbox": true
+    },
+    {
+      "name": "Clear Temporary Files",
+      "type": "function",
+      "id": "clear_temp_files",
+      "checkbox": true
     }
   ]
 }

@@ -225,7 +225,7 @@ def _install_linux_vendor(package_manager: str, vendor: str) -> str:
 
 
 def video_drivers():
-    current_system = system.nameSO()
+    current_system = system.name()
 
     try:
         if current_system == 'Windows':
@@ -233,17 +233,17 @@ def video_drivers():
             vendors = _detect_gpu_vendors(gpu_descriptions)
             if not vendors:
                 message = 'No supported GPU vendor was detected on Windows.'
-                log.log(message, level='WARNING')
+                log.warning(message)
                 return message
 
             results = []
             for vendor in vendors:
                 try:
                     result = _install_windows_vendor(vendor)
-                    log.log(result, level='INFO')
+                    log.info(result)
                     results.append(result)
                 except Exception as error:
-                    log.log(f'Failed to install {vendor} video drivers on Windows: {error}', level='ERROR')
+                    log.error(f'Failed to install {vendor} video drivers on Windows: {error}')
                     results.append(f'Failed to install {vendor} drivers: {error}')
 
             return '; '.join(results)
@@ -253,31 +253,31 @@ def video_drivers():
             vendors = _detect_gpu_vendors(gpu_descriptions)
             if not vendors:
                 message = 'No supported GPU vendor was detected on Linux.'
-                log.log(message, level='WARNING')
+                log.warning(message)
                 return message
 
             package_manager = _linux_package_manager()
             if not package_manager:
                 message = 'No supported Linux package manager was found.'
-                log.log(message, level='ERROR')
+                log.error(message)
                 return message
 
             results = []
             for vendor in vendors:
                 try:
                     result = _install_linux_vendor(package_manager, vendor)
-                    log.log(result, level='INFO')
+                    log.info(result)
                     results.append(result)
                 except Exception as error:
-                    log.log(f'Failed to install {vendor} video drivers on Linux: {error}', level='ERROR')
+                    log.error(f'Failed to install {vendor} video drivers on Linux: {error}')
                     results.append(f'Failed to install {vendor} drivers: {error}')
 
             return '; '.join(results)
 
         message = f'Video driver installation is not supported on {current_system}.'
-        log.log(message, level='WARNING')
+        log.warning(message)
         return message
     except Exception as error:
         message = f'Failed to install video drivers: {error}'
-        log.log(message, level='ERROR')
+        log.error(message)
         return message

@@ -14,20 +14,20 @@ def read_internal_json(file):
     folder = find_folders.get_ProgramsManager_folder()
     file_path = folder / f'{file}.json'
     if not file_path.exists():
-        log.log(f'File {file}.json not found, creating default file.', level='WARNING')
+        log.warning(f'File {file}.json not found, creating default file.')
         write_json()
     return read_json(file_path)
 
 
 def read_external_json(file):
-    url_path = f'https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/system/{system.nameSO().lower()}/json/{file}.json'
+    url_path = f'https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/system/{system.name().lower()}/json/{file}.json'
     try:
         import requests
         response = requests.get(url_path, timeout=20)
         response.raise_for_status()
         return response.json()
     except Exception as fallback_error:
-        log.log(f"Failed to fetch external JSON: {fallback_error}", level="ERROR")
+        log.error(f"Failed to fetch external JSON: {fallback_error}")
     return None
 
 

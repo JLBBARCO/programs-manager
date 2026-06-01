@@ -1,6 +1,6 @@
 import platform
 
-def nameSO():
+def name():
     system = platform.system()
 
     if system == "Windows":

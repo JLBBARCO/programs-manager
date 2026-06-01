@@ -15,9 +15,9 @@ def uninstall(data, system):
                 subprocess.run(["sudo", "apt", "remove", "-y", item['id']], check=True)
             elif system == 'MacOS':
                 subprocess.run(["brew", "uninstall", item['id']], check=True)
-            log.log(f"Uninstalled {item['name']} successfully.", level="INFO")
+            log.info(f"Uninstalled {item['name']} successfully.")
         except subprocess.CalledProcessError as e:
-            log.log(f"Failed to uninstall {item['name']}: {e}", level="ERROR")
+            log.error(f"Failed to uninstall {item['name']}: {e}")
 
         for _ in range(10):
             web.wait_for_internet_connection()

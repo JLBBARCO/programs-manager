@@ -5,7 +5,7 @@ from lib import system
 
 
 def get_user_documents_folder():
-    if system.nameSO() == "Windows":
+    if system.name() == "Windows":
         import winreg
         chave_registro = r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
         try:
@@ -26,7 +26,7 @@ def get_ProgramsManager_folder():
 
 
 def get_StartMenu_Programs_folder():
-    if system.nameSO() == "Windows":
+    if system.name() == "Windows":
         start_menu_programs = Path(os.environ.get('APPDATA', '')) / 'Microsoft' / 'Windows' / 'Start Menu' / 'Programs'
         start_menu_programs.mkdir(parents=True, exist_ok=True)
         return start_menu_programs

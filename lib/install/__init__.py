@@ -15,9 +15,9 @@ def install(data, system):
                 subprocess.run(["sudo", "apt", "install", "-y", item['id']], check=True)
             elif system == 'MacOS':
                 subprocess.run(["brew", "install", item['id']], check=True)
-            log.log(f"Installed {item['name']} successfully.", level="INFO")
+            log.info(f"Installed {item['name']} successfully.")
         except subprocess.CalledProcessError as e:
-            log.log(f"Failed to install {item['name']}: {e}", level="ERROR")
+            log.error(f"Failed to install {item['name']}: {e}")
 
         for _ in range(10):
             web.wait_for_internet_connection()

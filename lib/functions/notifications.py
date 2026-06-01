@@ -122,7 +122,7 @@ def finalize_notification():
 	message = 'Todas as instalações, desinstalações, atualizações e funções foram finalizadas.'
 
 	try:
-		current_system = system.nameSO()
+		current_system = system.name()
 
 		if current_system == 'Windows':
 			if not _show_windows_notification(title, message):

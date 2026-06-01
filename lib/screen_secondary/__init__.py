@@ -205,11 +205,11 @@ class ScreenSecondary(ctk.CTk):
             payload = json_data.read_external_json(normalized_name)
 
         if not isinstance(payload, dict):
-            log.log(f'Failed to read {normalized_name}.json', level='ERROR')
+            log.error(f'Failed to read {normalized_name}.json')
             return None
 
         normalized_payload = self._normalize_payload(payload, normalized_name)
-        log.log(f'Read {normalized_name}.json successfully', level='INFO')
+        log.info(f'Read {normalized_name}.json successfully')
         return normalized_payload
 
     def _build_tabs(self, loaded_records: list[dict[str, object]]):
@@ -399,6 +399,11 @@ class ScreenSecondary(ctk.CTk):
 
     def _collect_selected_by_type(self) -> dict[str, list[dict[str, object]]]:
         grouped_entries: dict[str, list[dict[str, object]]] = {'install': [], 'uninstall': [], 'function': []}
+        seen_entries: dict[str, set[tuple[str, str, str]]] = {
+            'install': set(),
+            'uninstall': set(),
+            'function': set(),
+        }
 
         for payload in self.file_payloads_by_key.values():
             entries = payload.get('data', []) if isinstance(payload, dict) else []
@@ -415,6 +420,16 @@ class ScreenSecondary(ctk.CTk):
                 entry_type = str(entry.get('type', '')).strip().lower()
                 if entry_type not in grouped_entries:
                     continue
+
+                entry_key = (
+                    str(entry.get('name', '')).strip().lower(),
+                    entry_type,
+                    str(entry.get('id', '')).strip().lower(),
+                )
+                if entry_key in seen_entries[entry_type]:
+                    continue
+
+                seen_entries[entry_type].add(entry_key)
 
                 grouped_entries[entry_type].append(self._public_entry(entry))
 
@@ -458,7 +473,7 @@ class ScreenSecondary(ctk.CTk):
 
         results = self._search_remote_programs(query)
         if not results:
-            self.status_label.configure(text=f'No search results found for {system.nameSO()}.')
+            self.status_label.configure(text=f'No search results found for {system.name()}.')
             return
 
         self._open_selection_dialog('Add Programs', results, 'install')
@@ -466,7 +481,7 @@ class ScreenSecondary(ctk.CTk):
     def uninstall_programs(self):
         results = self._list_installed_programs()
         if not results:
-            self.status_label.configure(text=f'No installed programs found for {system.nameSO()}.')
+            self.status_label.configure(text=f'No installed programs found for {system.name()}.')
             return
 
         self._open_selection_dialog('Remove Programs', results, 'uninstall')
@@ -602,7 +617,7 @@ class ScreenSecondary(ctk.CTk):
         return label.strip(), ''
 
     def _search_remote_programs(self, query: str) -> list[dict[str, str]]:
-        system_name = system.nameSO()
+        system_name = system.name()
 
         if system_name == 'Windows':
             return self._run_and_parse_packages(['winget', 'search', '--query', query, '--accept-source-agreements'])
@@ -621,7 +636,7 @@ class ScreenSecondary(ctk.CTk):
         return []
 
     def _list_installed_programs(self) -> list[dict[str, str]]:
-        system_name = system.nameSO()
+        system_name = system.name()
 
         if system_name == 'Windows':
             return self._run_and_parse_packages(['winget', 'list', '--accept-source-agreements'])
@@ -657,6 +672,22 @@ class ScreenSecondary(ctk.CTk):
             shell=False,
         )
         return (process.stdout or '') + ('\n' + process.stderr if process.stderr else '')
+
+    def _is_progress_line(self, line: str) -> bool:
+        stripped = line.strip()
+        if not stripped:
+            return False
+
+        if re.search(r'\b\d{1,3}%\b', stripped) and len(stripped) < 120:
+            return True
+
+        if len(stripped) < 120 and set(stripped) <= {'.', '-', '=', ' '}:
+            return True
+
+        if len(stripped) < 120 and re.fullmatch(r'[\W_]+', stripped):
+            return True
+
+        return False
 
     def _parse_simple_package_output(self, output: str) -> list[dict[str, str]]:
         results: list[dict[str, str]] = []
@@ -840,27 +871,6 @@ class ScreenSecondary(ctk.CTk):
             unique_packages[name.lower()] = {'name': name, 'id': str(package.get('id', name)).strip() or name}
 
         return sorted(unique_packages.values(), key=lambda item: item['name'].lower())
-        installed_items: list[dict[str, str]] = []
-        seen_ids: set[str] = set()
-
-        for source in ('winget', 'msstore'):
-            process = subprocess.run(
-                ['winget', 'list', '--source', source, '--accept-source-agreements'],
-                capture_output=True,
-                text=True,
-                encoding='utf-8',
-                errors='ignore',
-                shell=False,
-            )
-            combined = (process.stdout or '') + ('\n' + process.stderr if process.stderr else '')
-            for item in self._parse_winget_rows(combined):
-                item_id = str(item.get('id', '')).strip().lower()
-                if not item_id or item_id in seen_ids:
-                    continue
-                seen_ids.add(item_id)
-                installed_items.append(item)
-
-        return sorted(installed_items, key=lambda item: str(item.get('name', '')).lower())
 
     def _parse_winget_rows(self, output: str) -> list[dict[str, str]]:
         results: list[dict[str, str]] = []
@@ -869,6 +879,9 @@ class ScreenSecondary(ctk.CTk):
         for line in output.splitlines():
             raw = line.strip()
             if not raw:
+                continue
+
+            if self._is_progress_line(raw):
                 continue
 
             lowered = raw.lower()

@@ -98,16 +98,16 @@ def _normalize_startup_name(value: str) -> str:
 
 
 def vision_cursor_black():
-	if system.nameSO() != 'Windows':
+	if system.name() != 'Windows':
 		return 'Vision Cursor Black is supported only on Windows.'
 
 	destination_directory = _vision_cursor_install_path()
 	try:
 		_download_vision_cursor_files(destination_directory)
 		_apply_windows_cursor_scheme(destination_directory)
-		log.log(f'Vision Cursor Black applied from {destination_directory}.', level='INFO')
+		log.info(f'Vision Cursor Black applied from {destination_directory}.')
 		return f'Vision Cursor Black applied from {destination_directory}.'
 	except Exception as error:
-		log.log(f'Failed to apply Vision Cursor Black: {error}', level='ERROR')
+		log.error(f'Failed to apply Vision Cursor Black: {error}')
 		return f'Failed to apply Vision Cursor Black: {error}'
 

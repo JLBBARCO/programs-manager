@@ -95,7 +95,7 @@
     {
       "name": "Proton VPN",
       "type": "install",
-      "id": "ProtonVPN.ProtonVPN",
+      "id": "Proton.ProtonVPN",
       "checkbox": true
     },
     {

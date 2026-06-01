@@ -1,18 +1,18 @@
 import os
 import subprocess
 
-from lib import system
+from lib import system, log
 
 
-def bios_shortcut() -> str:
-	if system.nameSO() != 'Windows':
-		return 'BIOS shortcut is currently supported only on Windows.'
+def bios_shortcut():
+	if system.name() != 'Windows':
+		log.error('BIOS shortcut is currently supported only on Windows.')
 
 	from lib.find_folders import get_StartMenu_Programs_folder
 	bios_shortcut_ink = get_StartMenu_Programs_folder() / 'BIOS Shortcut.lnk'
 
 	if bios_shortcut_ink.exists():
-		return 'BIOS shortcut already exists in Start Menu.'
+		log.warning('BIOS shortcut already exists in Start Menu.')
 
 	try:
 		start_menu_programs = os.path.join(
@@ -23,7 +23,7 @@ def bios_shortcut() -> str:
 			'Programs',
 		)
 		if not start_menu_programs:
-			return 'Could not resolve Start Menu path.'
+			log.error('Could not resolve Start Menu path.')
 
 		os.makedirs(start_menu_programs, exist_ok=True)
 		shortcut_path = os.path.join(start_menu_programs, 'BIOS Shortcut.lnk')
@@ -49,9 +49,9 @@ def bios_shortcut() -> str:
 
 		if process.returncode != 0:
 			stderr = (process.stderr or '').strip()
-			return f'Failed to create BIOS shortcut: {stderr or "unknown error"}'
+			log.error(f'Failed to create BIOS shortcut: {stderr or "unknown error"}')
 
-		return 'BIOS shortcut created in Start Menu.'
+		log.info('BIOS shortcut created successfully in Start Menu.')
 	except Exception as error:
-		return f'Failed to create BIOS shortcut: {error}'
+		log.error(f'Failed to create BIOS shortcut: {error}')
 
