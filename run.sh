@@ -10,6 +10,8 @@ SCRIPT_BRANCH="$(printf '%s' "$SCRIPT_BRANCH" | tr '[:upper:]' '[:lower:]' | xar
 
 OS_TYPE=$(uname -s)
 INSTALL_ROOT="${HOME}/.programs-manager"
+APP_NAME="Programs Manager"
+APP_SLUG="programs-manager"
 mkdir -p "$INSTALL_ROOT"
 
 if [ "$OS_TYPE" == "Linux" ]; then
@@ -19,6 +21,50 @@ else
     ASSET_PATTERN="programs-manager-macos.tar.gz"
     BINARY_NAME="Programs Manager.app/Contents/MacOS/Programs Manager"
 fi
+
+shell_quote() {
+    printf "%q" "$1"
+}
+
+ensure_unix_shortcut() {
+    local executable_path="$1"
+
+    if [ -z "$executable_path" ] || [ ! -x "$executable_path" ]; then
+        return 0
+    fi
+
+    if [ "$OS_TYPE" = "Linux" ]; then
+        local app_dir="${HOME}/.local/share/applications"
+        local shortcut_path="${app_dir}/${APP_SLUG}.desktop"
+        mkdir -p "$app_dir"
+        cat > "$shortcut_path" <<EOF
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=${APP_NAME}
+Exec="${executable_path}"
+Terminal=false
+Categories=Utility;Security;
+StartupWMClass=${APP_SLUG}
+EOF
+        chmod +x "$shortcut_path"
+        echo "[programs-manager] Atalho atualizado: $shortcut_path"
+    elif [ "$OS_TYPE" = "Darwin" ]; then
+        local app_dir="${HOME}/Applications"
+        local shortcut_path="${app_dir}/${APP_NAME}.command"
+        local executable_dir
+        executable_dir="$(dirname "$executable_path")"
+        mkdir -p "$app_dir"
+        cat > "$shortcut_path" <<EOF
+#!/usr/bin/env bash
+# ${APP_SLUG}
+cd $(shell_quote "$executable_dir")
+exec $(shell_quote "$executable_path")
+EOF
+        chmod +x "$shortcut_path"
+        echo "[programs-manager] Atalho atualizado: $shortcut_path"
+    fi
+}
 
 resolve_local_build() {
     local source_path
@@ -49,6 +95,7 @@ resolve_local_build() {
 LOCAL_BUILD_PATH="$(resolve_local_build 2>/dev/null || true)"
 if [ -n "$LOCAL_BUILD_PATH" ]; then
     echo "[programs-manager] Build local encontrado: $LOCAL_BUILD_PATH"
+    ensure_unix_shortcut "$LOCAL_BUILD_PATH"
     exec "$LOCAL_BUILD_PATH"
 fi
 
@@ -105,4 +152,5 @@ PY
 fi
 
 # Executa
+ensure_unix_shortcut "$INSTALL_ROOT/$BINARY_NAME"
 exec "$INSTALL_ROOT/$BINARY_NAME"

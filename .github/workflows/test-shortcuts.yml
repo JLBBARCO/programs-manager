@@ -40,17 +40,17 @@ jobs:
                     - os: windows-latest
                       shell: pwsh
                       install_display: false
-                      command: .\scripts\test-shortcuts-integration.ps1 -Cleanup
+                      command: .\scripts\test-shortcuts-integration.ps1
 
                     - os: ubuntu-latest
                       shell: bash
                       install_display: true
-                      command: ./scripts/test-shortcuts-integration.sh --cleanup
+                      command: ./scripts/test-shortcuts-integration.sh
 
                     - os: macos-latest
                       shell: bash
                       install_display: false
-                      command: ./scripts/test-shortcuts-integration.sh --cleanup
+                      command: ./scripts/test-shortcuts-integration.sh
 
         steps:
             - name: Checkout code

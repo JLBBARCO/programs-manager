@@ -13,8 +13,8 @@ from src.lib.windows_shortcuts import (
 )
 
 
-APP_NAME = "Passwords Manager"
-APP_SLUG = "passwords-manager"
+APP_NAME = "Programs Manager"
+APP_SLUG = "programs-manager"
 
 
 def _project_root() -> Path:

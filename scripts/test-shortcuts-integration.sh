@@ -9,19 +9,22 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 echo "=========================================="
-echo "Passwords Manager - Shortcut Integration Test"
+echo "Programs Manager - Shortcut Integration Test"
 echo "=========================================="
 echo ""
 echo "Project root: $PROJECT_ROOT"
 echo "Platform: $(uname -s)"
 echo ""
 
+APP_NAME="$(cd "$PROJECT_ROOT" && python -c 'from src.lib.shortcuts import APP_NAME; print(APP_NAME)')"
+APP_SLUG="$(cd "$PROJECT_ROOT" && python -c 'from src.lib.shortcuts import APP_SLUG; print(APP_SLUG)')"
+
 if [ "$(uname -s)" = "Darwin" ]; then
     APP_DIR="$HOME/Applications"
-    EXPECTED_LAUNCHER="$APP_DIR/Passwords Manager.command"
+    EXPECTED_LAUNCHER="$APP_DIR/$APP_NAME.command"
 elif [ "$(uname -s)" = "Linux" ]; then
     APP_DIR="$HOME/.local/share/applications"
-    EXPECTED_LAUNCHER="$APP_DIR/passwords-manager.desktop"
+    EXPECTED_LAUNCHER="$APP_DIR/$APP_SLUG.desktop"
 else
     echo "Error: Unsupported platform"
     exit 1
@@ -87,7 +90,7 @@ if [ -f "$EXPECTED_LAUNCHER" ]; then
     echo "✓ Shortcut created/exists: $EXPECTED_LAUNCHER"
     
     # Verify content
-    if grep -q "passwords-manager" "$EXPECTED_LAUNCHER" 2>/dev/null; then
+    if grep -q "$APP_SLUG" "$EXPECTED_LAUNCHER" 2>/dev/null; then
         echo "✓ Shortcut contains correct executable reference"
     else
         echo "✗ Shortcut missing executable reference"

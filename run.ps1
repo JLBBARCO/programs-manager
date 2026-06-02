@@ -18,6 +18,7 @@ $ScriptBranch = $ScriptBranch.Trim().ToLowerInvariant()
 # Use the current user's profile directory (works on Windows reliably).
 $installRoot = Join-Path $env:USERPROFILE ".programs-manager"
 $expectedExePath = Join-Path $installRoot "Programs Manager\Programs Manager.exe"
+$appName = "Programs Manager"
 
 Write-Host "[programs-manager] Script em execução: $PSCommandPath"
 
@@ -40,6 +41,41 @@ function Resolve-ExePath {
     }
 
     return $null
+}
+
+function Ensure-WindowsShortcuts {
+    param(
+        [string]$ExePath
+    )
+
+    if (-not $ExePath -or -not (Test-Path $ExePath)) {
+        return
+    }
+
+    $shortcutDirectories = @()
+    if ($env:APPDATA) {
+        $shortcutDirectories += Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
+    }
+    if ($env:USERPROFILE) {
+        $shortcutDirectories += Join-Path $env:USERPROFILE "Desktop"
+    }
+
+    foreach ($shortcutDirectory in $shortcutDirectories) {
+        try {
+            New-Item -ItemType Directory -Path $shortcutDirectory -Force | Out-Null
+            $shortcutPath = Join-Path $shortcutDirectory "$appName.lnk"
+            $shell = New-Object -ComObject WScript.Shell
+            $shortcut = $shell.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $ExePath
+            $shortcut.Arguments = ""
+            $shortcut.WorkingDirectory = Split-Path -Parent $ExePath
+            $shortcut.IconLocation = $ExePath
+            $shortcut.Save()
+            Write-Host "[programs-manager] Atalho atualizado: $shortcutPath"
+        } catch {
+            Write-Host "[programs-manager] Não foi possível criar atalho em '$shortcutDirectory': $_" -ForegroundColor Yellow
+        }
+    }
 }
 
 function Resolve-LocalBuildPath {
@@ -145,5 +181,6 @@ if (-not $exePath -or -not (Test-Path $exePath)) {
 # 2. Executa o binário diretamente (Sem Python, sem VENV)
 Write-Host "[programs-manager] Iniciando..."
 Write-Host "[programs-manager] Executável: $exePath"
+Ensure-WindowsShortcuts -ExePath $exePath
 $exeWorkingDirectory = Split-Path -Parent $exePath
 Start-Process -FilePath $exePath -WorkingDirectory $exeWorkingDirectory
