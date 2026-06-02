@@ -2,6 +2,8 @@ import re
 import subprocess
 import winreg
 from time import sleep
+import urllib.request
+import json as std_json
 
 from lib import json, log, system
 
@@ -41,6 +43,23 @@ def _normalize_startup_name(value: str) -> str:
 
 def _load_whitelist_terms(whitelist_content=None):
     """Parse whitelist content and return a set of normalized terms."""
+    # If no whitelist content provided, attempt to fetch from the canonical GitHub raw URL
+    remote_url = (
+        "https://raw.githubusercontent.com/JLBBARCO/programs-manager/refs/heads/main/system/windows/json/initialization_whitelist.json"
+    )
+    if whitelist_content is None:
+        try:
+            with urllib.request.urlopen(remote_url, timeout=5) as resp:
+                if getattr(resp, 'status', 200) == 200:
+                    body = resp.read().decode('utf-8')
+                    try:
+                        whitelist_content = std_json.loads(body)
+                        log.info("Loaded initialization whitelist from remote URL.")
+                    except Exception:
+                        whitelist_content = None
+        except Exception:
+            whitelist_content = None
+
     if whitelist_content is None:
         whitelist_content = json.read_external_json('initialization_whitelist')
 
