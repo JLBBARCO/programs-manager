@@ -1,5 +1,6 @@
 from typing import Any
 
+from src.lib.shortcuts import ensure_platform_shortcuts_best_effort
 from lib import system, log, screen_primary, screen_secondary, updates, install, uninstall, web
 
 from lib.functions import functions, notifications
@@ -10,6 +11,9 @@ system_title = f'{operational_system} Programs Manager'
 
 
 log.info('Start System')
+log.info(f'Start Programs Manager')
+log.info(f'Operating System: {operational_system}')
+ensure_platform_shortcuts_best_effort()
 
 try:
     web.start_internet_monitor()

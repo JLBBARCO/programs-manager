@@ -29,6 +29,10 @@ def info(message):
     log(message, 'INFO')
 
 
+def debug(message):
+    log(message, 'DEBUG')
+
+
 def warning(message):
     log(message, 'WARNING')
 
