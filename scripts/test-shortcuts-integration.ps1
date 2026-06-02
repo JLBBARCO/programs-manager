@@ -5,12 +5,20 @@ param(
 $ErrorActionPreference = 'Continue'
 
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "Passwords Manager - Shortcut Integration Test (Windows)" -ForegroundColor Cyan
+Write-Host "Programs Manager - Shortcut Integration Test (Windows)" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 Write-Host ""
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
+Push-Location $ProjectRoot
+try {
+    $ShortcutMetadata = python -c "from src.lib.shortcuts import APP_NAME; print(APP_NAME)"
+}
+finally {
+    Pop-Location
+}
+$AppName = $ShortcutMetadata.Trim()
 
 Write-Host "Project root: $ProjectRoot"
 Write-Host "Platform: Windows"
@@ -18,8 +26,8 @@ Write-Host ""
 
 $StartMenuDir = "$env:APPDATA\Microsoft\Windows\Start Menu\Programs"
 $DesktopDir = "$env:USERPROFILE\Desktop"
-$StartMenuShortcut = Join-Path $StartMenuDir "Passwords Manager.lnk"
-$DesktopShortcut = Join-Path $DesktopDir "Passwords Manager.lnk"
+$StartMenuShortcut = Join-Path $StartMenuDir "$AppName.lnk"
+$DesktopShortcut = Join-Path $DesktopDir "$AppName.lnk"
 
 Write-Host "Testing shortcut creation on app startup..."
 Write-Host "Expected Start Menu shortcut: $StartMenuShortcut"

@@ -15,6 +15,7 @@ if str(PROJECT_ROOT) not in sys.path:
 
 def validate_windows_shortcuts():
     """Validate Windows Start Menu and Desktop shortcuts."""
+    from src.lib.shortcuts import APP_NAME
     from src.lib.windows_shortcuts import (
         windows_start_menu_directories,
         windows_desktop_directories,
@@ -30,14 +31,14 @@ def validate_windows_shortcuts():
         return found_shortcuts, errors
 
     for start_menu_dir in start_menu_dirs:
-        start_menu_shortcut = start_menu_dir / "Passwords Manager.lnk"
+        start_menu_shortcut = start_menu_dir / f"{APP_NAME}.lnk"
         if start_menu_shortcut.exists():
             found_shortcuts.append(str(start_menu_shortcut))
         else:
             errors.append(f"Start Menu shortcut not found: {start_menu_shortcut}")
 
     for desktop_dir in windows_desktop_directories():
-        desktop_shortcut = desktop_dir / "Passwords Manager.lnk"
+        desktop_shortcut = desktop_dir / f"{APP_NAME}.lnk"
         if desktop_shortcut.exists():
             found_shortcuts.append(str(desktop_shortcut))
         else:
@@ -48,8 +49,10 @@ def validate_windows_shortcuts():
 
 def validate_linux_shortcuts():
     """Validate Linux .desktop files."""
+    from src.lib.shortcuts import APP_SLUG
+
     app_dir = Path.home() / ".local" / "share" / "applications"
-    app_entry = app_dir / "passwords-manager.desktop"
+    app_entry = app_dir / f"{APP_SLUG}.desktop"
 
     errors = []
     found_shortcuts = []
@@ -63,7 +66,7 @@ def validate_linux_shortcuts():
 
         try:
             content = app_entry.read_text(encoding="utf-8")
-            if "passwords-manager" in content:
+            if APP_SLUG in content:
                 found_shortcuts.append(f"{app_entry} (verified: contains executable reference)")
             else:
                 errors.append(f"Desktop entry missing executable reference: {app_entry}")
@@ -77,8 +80,10 @@ def validate_linux_shortcuts():
 
 def validate_macos_shortcuts():
     """Validate macOS .command launcher files."""
+    from src.lib.shortcuts import APP_NAME, APP_SLUG
+
     app_dir = Path.home() / "Applications"
-    app_launcher = app_dir / "Passwords Manager.command"
+    app_launcher = app_dir / f"{APP_NAME}.command"
 
     errors = []
     found_shortcuts = []
@@ -92,7 +97,7 @@ def validate_macos_shortcuts():
 
         try:
             content = app_launcher.read_text(encoding="utf-8")
-            if "passwords-manager" in content:
+            if APP_SLUG in content:
                 found_shortcuts.append(f"{app_launcher} (verified: contains executable reference)")
             else:
                 errors.append(f"Launcher missing executable reference: {app_launcher}")
@@ -112,7 +117,7 @@ def validate_macos_shortcuts():
 def main():
     """Main validation routine."""
     print("=" * 70)
-    print("Passwords Manager - Shortcut Validation")
+    print("Programs Manager - Shortcut Validation")
     print("=" * 70)
     print()
 
