@@ -11,13 +11,13 @@ def update_package_manager(nameSO):
     try:
         web.wait_for_internet_connection()
         if name_so == "Windows":
-            subprocess.run(["winget", "upgrade", "--id", 'Microsoft.AppInstaller'], check=True)
+            subprocess.run(["winget", "upgrade", "--id", 'Microsoft.AppInstaller', "-e", "--accept-source-agreements", "--accept-package-agreements",], shell=True, startupinfo=startupinfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             log.info("Package manager updated successfully.")
         elif name_so == "Linux":
-            subprocess.run(["sudo", "apt", "update"], check=True)
+            subprocess.run(["sudo", "apt", "update"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             log.info("Package manager updated successfully.")
         elif name_so == "MacOS":
-            subprocess.run(["brew", "update"], check=True)
+            subprocess.run(["brew", "update"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             log.info("Package manager updated successfully.")
         else:
             log.error(f"Unsupported operating system: {name_so}")
