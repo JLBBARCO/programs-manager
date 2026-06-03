@@ -66,7 +66,7 @@ try:
         web.wait_for_internet_connection()
         web.open_programs_manager_site(web.get_shared_log_server_port())
 
-        updates.update_package_manager(operational_system, log.info)
+        updates.update_package_manager(operational_system)
         if uninstall_list:
             try:
                 web.wait_for_internet_connection()
