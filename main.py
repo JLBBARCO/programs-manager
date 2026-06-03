@@ -45,17 +45,21 @@ try:
             uninstall_list.extend(item for item in secondary_result.get('uninstall', []) if isinstance(item, dict))
             function_list.extend(item for item in secondary_result.get('function', []) if isinstance(item, dict))
         elif isinstance(secondary_result, list):
-            for programs in secondary_result:
-                if not isinstance(programs, dict):
-                    continue
+            try:
+                for programs in secondary_result:
+                    if not isinstance(programs, dict):
+                        continue
 
-                entry_type = str(programs.get('type', '')).strip().lower()
-                if entry_type == 'install':
-                    install_list.append(programs)
-                elif entry_type == 'uninstall':
-                    uninstall_list.append(programs)
-                elif entry_type == 'function':
-                    function_list.append(programs)
+                    entry_type = str(programs.get('type', '')).strip().lower()
+                    if entry_type == 'install':
+                        install_list.append(programs)
+                    elif entry_type == 'uninstall':
+                        uninstall_list.append(programs)
+                    elif entry_type == 'function':
+                        function_list.append(programs)
+                log.info('Data Successfully separated into its reference array')
+            except Exception as e:
+                log.error(f'Error in separated data in yours reference array: {e}')
 
 
         web.start_shared_log_server()
@@ -64,17 +68,26 @@ try:
 
         updates.update_package_manager(operational_system, log.info)
         if uninstall_list:
-            web.wait_for_internet_connection()
-            log.info('Uninstalling programs...')
-            uninstall.uninstall(uninstall_list, operational_system)
+            try:
+                web.wait_for_internet_connection()
+                log.info('Uninstalling programs...')
+                uninstall.uninstall(uninstall_list, operational_system)
+            except Exception as e:
+                log.error(f'Error to run Uninstall System: {e}')
         if function_list:
-            web.wait_for_internet_connection()
-            log.info('Executing functions...')
-            functions(function_list)
+            try:
+                web.wait_for_internet_connection()
+                log.info('Executing functions...')
+                functions(function_list)
+            except Exception as e:
+                log.error(f'Error to run Functions System: {e}')
         if install_list:
-            web.wait_for_internet_connection()
-            log.info('Installing programs...')
-            install.install(install_list, operational_system)
+            try:
+                web.wait_for_internet_connection()
+                log.info('Installing programs...')
+                install.install(install_list, operational_system)
+            except Exception as e:
+                log.error(f'Error to run Install System: {e}')
 
 except Exception as e:
     log.error(f"An error occurred: {e}")
