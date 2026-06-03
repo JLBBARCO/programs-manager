@@ -74,13 +74,6 @@ try:
                 uninstall.uninstall(uninstall_list, operational_system)
             except Exception as e:
                 log.error(f'Error to run Uninstall System: {e}')
-        if function_list:
-            try:
-                web.wait_for_internet_connection()
-                log.info('Executing functions...')
-                functions(function_list)
-            except Exception as e:
-                log.error(f'Error to run Functions System: {e}')
         if install_list:
             try:
                 web.wait_for_internet_connection()
@@ -88,6 +81,14 @@ try:
                 install.install(install_list, operational_system)
             except Exception as e:
                 log.error(f'Error to run Install System: {e}')
+        if function_list:
+            try:
+                web.wait_for_internet_connection()
+                log.info('Executing functions...')
+                functions(function_list)
+            except Exception as e:
+                log.error(f'Error to run Functions System: {e}')
+
 
 except Exception as e:
     log.error(f"An error occurred: {e}")
