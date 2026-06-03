@@ -1,4 +1,7 @@
-def update_package_manager(nameSO, log):
+from lib import log
+
+
+def update_package_manager(nameSO):
     import subprocess
 
     from lib import web
@@ -9,14 +12,14 @@ def update_package_manager(nameSO, log):
         web.wait_for_internet_connection()
         if name_so == "Windows":
             subprocess.run(["winget", "upgrade", "--id", 'Microsoft.AppInstaller'], check=True)
-            log("Package manager updated successfully.", level="INFO")
+            log.info("Package manager updated successfully.")
         elif name_so == "Linux":
             subprocess.run(["sudo", "apt", "update"], check=True)
-            log("Package manager updated successfully.", level="INFO")
+            log.info("Package manager updated successfully.")
         elif name_so == "MacOS":
             subprocess.run(["brew", "update"], check=True)
-            log("Package manager updated successfully.", level="INFO")
+            log.info("Package manager updated successfully.")
         else:
-            log(f"Unsupported operating system: {name_so}", level="ERROR")
+            log.error(f"Unsupported operating system: {name_so}")
     except subprocess.CalledProcessError as e:
-        log(f"Failed to update package manager: {e}", level="ERROR")
+        log.error(f"Failed to update package manager: {e}")
