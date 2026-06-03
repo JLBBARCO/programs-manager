@@ -548,8 +548,15 @@ class ScreenSecondary(ctk.CTk):
         user_payload['description'] = DEFAULT_USER_DESCRIPTION
         user_payload['data'] = merged_entries
 
-        json_data.write_json(user_payload)
-        self.status_label.configure(text=f'Saved {len(merged_entries)} program(s) in user.json.')
+        try:
+            json_data.write_json(user_payload)
+            self.status_label.configure(text=f'Saved {len(selected_items)} program(s) in user.json.')
+            log.info(f'Saved {len(selected_items)} user program(s) to user.json')
+        except Exception as e:
+            self.status_label.configure(text=f'Error saving user programs: {e}')
+            log.error(f'Failed to write user.json: {e}')
+            return
+
         self._reload_all_entries()
 
     def _normalize_selected_program(self, item: dict[str, str]) -> tuple[str, str]:
