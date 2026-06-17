@@ -10,8 +10,8 @@
     },
     {
       "name": "Rainmeter",
-      "type": "install",
-      "id": "Rainmeter.Rainmeter",
+      "type": "function",
+      "id": "rainmeter",
       "checkbox": true
     },
     {

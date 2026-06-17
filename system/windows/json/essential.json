@@ -103,6 +103,12 @@
       "type": "function",
       "id": "video_drivers",
       "checkbox": true
+    },
+    {
+      "name": "Google QuickShare",
+      "type": "install",
+      "id": "Google.QuickShare",
+      "checkbox": true
     }
   ]
 }

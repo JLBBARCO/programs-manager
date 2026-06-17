@@ -5,7 +5,7 @@ from pathlib import Path
 from time import sleep
 
 from lib import log, system
-from . import bios_shortcut, clear_temp_files, correctly_internal_drive, dark_mode, essential_programs_initialization, notifications, video_drivers, vision_cursor_black
+from . import bios_shortcut, clear_temp_files, correctly_internal_drive, dark_mode, essential_programs_initialization, notifications, video_drivers, vision_cursor_black, rainmeter
 from .essential_programs_initialization import (
     disable_startup_programs,
     enable_startup_whitelist,

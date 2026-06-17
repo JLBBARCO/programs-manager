@@ -1,13 +1,10 @@
 import os
 import subprocess
 
-from lib import system, log
+from lib import log
 
 
 def bios_shortcut():
-	if system.name() != 'Windows':
-		log.error('BIOS shortcut is currently supported only on Windows.')
-
 	from lib.find_folders import get_StartMenu_Programs_folder
 	bios_shortcut_ink = get_StartMenu_Programs_folder() / 'BIOS Shortcut.lnk'
 
