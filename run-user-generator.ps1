@@ -1,8 +1,16 @@
 $ErrorActionPreference = "Stop"
 
-$repo = "JLBBARCO/programs-manager-user-generator"
+$repo = "JLBBARCO/programs-manager"
 $appName = "Programs Manager User Generator"
 $asset = "programs-manager-user-generator-windows.zip"
+$scriptBranch = if ($env:AIP_BRANCH) {
+    $env:AIP_BRANCH
+} elseif ($env:SCRIPT_BRANCH) {
+    $env:SCRIPT_BRANCH
+} else {
+    "main"
+}
+$scriptBranch = $scriptBranch.Trim().ToLowerInvariant()
 $workdir = Join-Path ([System.IO.Path]::GetTempPath()) ("pmug-" + [System.Guid]::NewGuid().ToString("N"))
 $archive = Join-Path $workdir $asset
 
@@ -10,8 +18,25 @@ try {
     New-Item -ItemType Directory -Path $workdir | Out-Null
 
     Write-Host "Downloading latest $appName release..."
+    if ($scriptBranch -eq "develop") {
+        $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$repo/releases" -UseBasicParsing
+        $prerelease = $releases | Where-Object { $_.prerelease } | Sort-Object -Property published_at -Descending | Select-Object -First 1
+        $releaseAsset = if ($prerelease) {
+            $prerelease.assets | Where-Object { $_.name -eq $asset } | Select-Object -First 1
+        } else {
+            $null
+        }
+        $downloadUrl = if ($releaseAsset) {
+            $releaseAsset.browser_download_url
+        } else {
+            "https://github.com/$repo/releases/latest/download/$asset"
+        }
+    } else {
+        $downloadUrl = "https://github.com/$repo/releases/latest/download/$asset"
+    }
+
     Invoke-WebRequest `
-        -Uri "https://github.com/$repo/releases/latest/download/$asset" `
+        -Uri $downloadUrl `
         -OutFile $archive
 
     Expand-Archive -Path $archive -DestinationPath $workdir -Force

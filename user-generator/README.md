@@ -18,13 +18,13 @@ Cada item gerado segue esta estrutura:
 Linux e macOS:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager-user-generator/main/run.sh | bash
+curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run-user-generator.sh | bash
 ```
 
 Windows PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/JLBBARCO/programs-manager-user-generator/main/run.ps1 | iex
+irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run-user-generator.ps1 | iex
 ```
 
 Os scripts baixam o artefato mais recente da release `latest`, extraem em uma pasta temporaria e executam o programa.
@@ -34,28 +34,28 @@ Os scripts baixam o artefato mais recente da release `latest`, extraem em uma pa
 Windows:
 
 ```bat
-build.bat
+build-user-generator.bat
 ```
 
 Linux:
 
 ```bash
-chmod +x build.sh
-./build.sh
+chmod +x build-user-generator.sh
+./build-user-generator.sh
 ```
 
 macOS:
 
 ```bash
-chmod +x build-mac.sh
-./build-mac.sh
+chmod +x build-mac-user-generator.sh
+./build-mac-user-generator.sh
 ```
 
 Os arquivos compilados ficam em `dist/Programs Manager User Generator/`.
 
 ## GitHub Actions
 
-O workflow em `.github/workflows/build-release.yml` roda automaticamente em pushes para a branch `main` e tambem pode ser iniciado manualmente pelo GitHub Actions.
+O workflow em `.github/workflows/build-user-generator.yml` roda automaticamente em pushes para `main` e `develop` quando o user-generator muda, e tambem pode ser iniciado manualmente pelo GitHub Actions.
 
 Ele compila o programa em:
 
@@ -63,7 +63,7 @@ Ele compila o programa em:
 - Linux, usando `build.sh`;
 - macOS, usando `build-mac.sh`.
 
-Depois de compilar, o workflow empacota os builds e publica/substitui os arquivos na release `latest`:
+Depois de compilar, o workflow empacota os builds. O workflow `.github/workflows/release.yml` publica/substitui os arquivos na release correta:
 
 - `programs-manager-user-generator-windows.zip`
 - `programs-manager-user-generator-linux.tar.gz`
@@ -80,5 +80,5 @@ python -m pip install -r requirements.txt
 Execute o programa em modo fonte:
 
 ```bash
-python main.py
+python user-generator/main.py
 ```

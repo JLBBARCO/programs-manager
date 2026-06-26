@@ -1,17 +1,38 @@
-name: Build and Release
+name: Build Multi-Platform User Generator
 
 on:
-  push:
-    branches:
-      - main
   workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - "user-generator/**"
+      - "src/assets/icon/**"
+      - "requirements.txt"
+      - "build-user-generator.bat"
+      - "build-user-generator.sh"
+      - "build-mac-user-generator.sh"
+      - "run-user-generator.ps1"
+      - "run-user-generator.sh"
+      - ".github/workflows/build-user-generator.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "user-generator/**"
+      - "src/assets/icon/**"
+      - "requirements.txt"
+      - "build-user-generator.bat"
+      - "build-user-generator.sh"
+      - "build-mac-user-generator.sh"
+      - "run-user-generator.ps1"
+      - "run-user-generator.sh"
+      - ".github/workflows/build-user-generator.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
-    name: Build ${{ matrix.name }}
+    name: Build user generator (${{ matrix.name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -38,6 +59,12 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
 
       - name: Build on Windows
         if: runner.os == 'Windows'
@@ -71,44 +98,3 @@ jobs:
           name: ${{ matrix.asset }}
           path: release/${{ matrix.asset }}
           if-no-files-found: error
-
-  release:
-    name: Publish latest release
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: release
-          merge-multiple: true
-
-      - name: Move latest tag
-        run: |
-          git tag -f latest "$GITHUB_SHA"
-          git push origin -f latest
-
-      - name: Create or update latest release
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          if gh release view latest >/dev/null 2>&1; then
-            gh release edit latest \
-              --title "Latest Release" \
-              --notes "Automatic build from main at $GITHUB_SHA." \
-              --latest
-          else
-            gh release create latest \
-              --title "Latest Release" \
-              --notes "Automatic build from main at $GITHUB_SHA." \
-              --latest
-          fi
-
-          gh release upload latest release/* --clobber

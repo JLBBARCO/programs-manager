@@ -1,81 +1,80 @@
 #!/usr/bin/env python3
-"""Assemble three platform screenshots into individual webp files and a combined thumbnail.
+"""Normalize screenshots and assemble the website/platform thumbnail."""
 
-Usage:
-  python scripts/assemble_thumbnails.py --windows path --linux path --macos path --output thumbnail.webp
-
-The script will also write the individual images to `src/assets/img/{windows,linux,macos}.webp` if paths provided.
-"""
 import argparse
 import os
-from PIL import Image
+from pathlib import Path
+
+from PIL import Image, ImageOps
 
 
-def load_or_none(path):
-    if path and os.path.exists(path):
-        try:
-            return Image.open(path).convert('RGBA')
-        except Exception as e:
-            print(f"Failed to open {path}: {e}")
-            return None
-    return None
+def load_image(path: str | None) -> Image.Image | None:
+    if not path or not os.path.exists(path):
+        return None
+    try:
+        return Image.open(path).convert("RGB")
+    except Exception as error:
+        print(f"Failed to open {path}: {error}")
+        return None
 
 
-def compose_side_by_side(images, spacing=8, bg=(255, 255, 255, 0)):
-    widths, heights = zip(*(im.size for im in images))
-    total_width = sum(widths) + spacing * (len(images) - 1)
-    max_height = max(heights)
-
-    result = Image.new('RGBA', (total_width, max_height), bg)
-    x = 0
-    for im in images:
-        y = (max_height - im.size[1]) // 2
-        result.paste(im, (x, y), im)
-        x += im.size[0] + spacing
-    return result
+def fit_image(image: Image.Image, size: tuple[int, int]) -> Image.Image:
+    return ImageOps.fit(image, size, method=Image.Resampling.LANCZOS)
 
 
-def main():
-    p = argparse.ArgumentParser()
-    p.add_argument('--windows', required=True)
-    p.add_argument('--linux', required=True)
-    p.add_argument('--macos', required=True)
-    p.add_argument('--out-windows', default='src/assets/img/windows.webp')
-    p.add_argument('--out-linux', default='src/assets/img/linux.webp')
-    p.add_argument('--out-macos', default='src/assets/img/macos.webp')
-    p.add_argument('--output', default='src/assets/img/thumbnail.webp')
-    args = p.parse_args()
-
-    imgs = []
-    imgs.append(load_or_none(args.windows))
-    imgs.append(load_or_none(args.linux))
-    imgs.append(load_or_none(args.macos))
-
-    # Determine target size from first available image, or fallback
-    target_size = None
-    for im in imgs:
-        if im is not None:
-            target_size = im.size
-            break
-    if target_size is None:
-        target_size = (1280, 720)
-
-    # Replace missing images with plain placeholders
-    for i, im in enumerate(imgs):
-        if im is None:
-            print(f"Warning: screenshot missing for index {i}; inserting placeholder {target_size}.")
-            imgs[i] = Image.new('RGBA', target_size, (255, 255, 255, 255))
-
-    # Save individual images (normalize to webp)
-    os.makedirs(os.path.dirname(args.out_windows), exist_ok=True)
-    imgs[0].save(args.out_windows, 'WEBP', quality=85)
-    imgs[1].save(args.out_linux, 'WEBP', quality=85)
-    imgs[2].save(args.out_macos, 'WEBP', quality=85)
-
-    combined = compose_side_by_side(imgs, spacing=12)
-    combined.save(args.output, 'WEBP', quality=85)
-    print(f"Wrote {args.out_windows}, {args.out_linux}, {args.out_macos}, and {args.output}")
+def save_if_source(source: str | None, destination: str, size: tuple[int, int]) -> None:
+    image = load_image(source)
+    if image is None:
+        return
+    Path(destination).parent.mkdir(parents=True, exist_ok=True)
+    fit_image(image, size).save(destination, "WEBP", quality=86)
 
 
-if __name__ == '__main__':
+def compose_grid(paths: list[str], output: str, cell_size: tuple[int, int], spacing: int = 14) -> None:
+    images: list[Image.Image] = []
+    for path in paths:
+        image = load_image(path)
+        if image is None:
+            image = Image.new("RGB", cell_size, (246, 247, 249))
+        images.append(fit_image(image, cell_size))
+
+    width = cell_size[0] * 2 + spacing
+    height = cell_size[1] * 2 + spacing
+    canvas = Image.new("RGB", (width, height), (255, 255, 255))
+
+    positions = [(0, 0), (cell_size[0] + spacing, 0), (0, cell_size[1] + spacing), (cell_size[0] + spacing, cell_size[1] + spacing)]
+    for image, position in zip(images, positions):
+        canvas.paste(image, position)
+
+    Path(output).parent.mkdir(parents=True, exist_ok=True)
+    canvas.save(output, "WEBP", quality=86)
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--windows")
+    parser.add_argument("--linux")
+    parser.add_argument("--macos")
+    parser.add_argument("--site")
+    parser.add_argument("--out-windows", default="src/assets/img/windows.webp")
+    parser.add_argument("--out-linux", default="src/assets/img/linux.webp")
+    parser.add_argument("--out-macos", default="src/assets/img/macos.webp")
+    parser.add_argument("--out-site", default="src/assets/img/site.webp")
+    parser.add_argument("--output", default="src/assets/img/thumbnail.webp")
+    args = parser.parse_args()
+
+    cell_size = (960, 540)
+    save_if_source(args.windows, args.out_windows, cell_size)
+    save_if_source(args.linux, args.out_linux, cell_size)
+    save_if_source(args.macos, args.out_macos, cell_size)
+    save_if_source(args.site, args.out_site, cell_size)
+
+    compose_grid(
+        [args.out_windows, args.out_linux, args.out_macos, args.out_site],
+        args.output,
+        cell_size,
+    )
+
+
+if __name__ == "__main__":
     main()

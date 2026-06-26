@@ -1,61 +1,50 @@
-name: Test Shortcuts
+name: Test Shortcuts Core App
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
     paths:
-      - core-app/main.py
-      - user-generator/main.py
-      - src/lib/shortcuts/**
-      - scripts/validate_shortcuts.py
-      - scripts/test-shortcuts-integration.ps1
-      - scripts/test-shortcuts-integration.sh
-      - scripts/SHORTCUTS_TESTING.md
-      - requirements.txt
-      - .github/workflows/test-shortcuts.yml
+      - "core-app/**"
+      - "src/lib/shortcuts/**"
+      - "src/lib/windows_shortcuts.py"
+      - "scripts/validate_shortcuts.py"
+      - "scripts/test-shortcuts-integration.ps1"
+      - "scripts/test-shortcuts-integration.sh"
+      - "requirements.txt"
+      - ".github/workflows/test-shortcuts-core-app.yml"
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
     paths:
-      - core-app/main.py
-      - user-generator/main.py
-      - src/lib/shortcuts/**
-      - scripts/validate_shortcuts.py
-      - scripts/test-shortcuts-integration.ps1
-      - scripts/test-shortcuts-integration.sh
-      - scripts/SHORTCUTS_TESTING.md
-      - requirements.txt
-      - .github/workflows/test-shortcuts.yml
+      - "core-app/**"
+      - "src/lib/shortcuts/**"
+      - "src/lib/windows_shortcuts.py"
+      - "scripts/validate_shortcuts.py"
+      - "scripts/test-shortcuts-integration.ps1"
+      - "scripts/test-shortcuts-integration.sh"
+      - "requirements.txt"
+      - ".github/workflows/test-shortcuts-core-app.yml"
+
+permissions:
+  contents: read
 
 jobs:
   test-shortcuts:
-    name: Test shortcuts on ${{ matrix.os }}
+    name: Test core shortcuts (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         include:
           - os: windows-latest
-            shell: pwsh
-            install_display: false
             command: .\scripts\test-shortcuts-integration.ps1
-
           - os: ubuntu-latest
-            shell: bash
-            install_display: true
             command: ./scripts/test-shortcuts-integration.sh
-
           - os: macos-latest
-            shell: bash
-            install_display: false
             command: ./scripts/test-shortcuts-integration.sh
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -64,27 +53,24 @@ jobs:
           python-version: "3.12"
 
       - name: Install Linux display dependencies
-        if: matrix.install_display
-        shell: bash
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y xvfb
+          sudo apt-get install -y xvfb python3-tk
 
       - name: Install Python dependencies
         shell: bash
         run: |
           python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then
-            python -m pip install -r requirements.txt
-          fi
+          python -m pip install -r requirements.txt
 
       - name: Run Windows shortcut integration test
         if: runner.os == 'Windows'
         shell: pwsh
         run: ${{ matrix.command }}
 
-      - name: Run Unix shortcut integration test
-        if: runner.os != 'Windows' && matrix.install_display
+      - name: Run Linux shortcut integration test
+        if: runner.os == 'Linux'
         shell: bash
         run: |
           chmod +x scripts/test-shortcuts-integration.sh
@@ -99,5 +85,4 @@ jobs:
 
       - name: Validate shortcut metadata
         shell: bash
-        run: |
-          python scripts/validate_shortcuts.py
+        run: python scripts/validate_shortcuts.py

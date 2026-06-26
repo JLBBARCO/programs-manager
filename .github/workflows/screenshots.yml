@@ -1,0 +1,203 @@
+name: Screenshots
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - "core-app/**"
+      - "src/lib/shortcuts/**"
+      - "src/assets/icon/**"
+      - "requirements.txt"
+      - "build.bat"
+      - "build.sh"
+      - "build-mac.sh"
+      - "client/**"
+      - "server/**"
+      - "shared/**"
+      - "api/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "vite.config.ts"
+      - "vercel.json"
+      - "scripts/ci_screenshot.py"
+      - "scripts/assemble_thumbnails.py"
+      - ".github/workflows/screenshots.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      core: ${{ steps.filter.outputs.core }}
+      site: ${{ steps.filter.outputs.site }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Detect changed areas
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            core:
+              - 'core-app/**'
+              - 'src/lib/shortcuts/**'
+              - 'src/assets/icon/**'
+              - 'requirements.txt'
+              - 'build.bat'
+              - 'build.sh'
+              - 'build-mac.sh'
+              - 'scripts/ci_screenshot.py'
+              - 'scripts/assemble_thumbnails.py'
+              - '.github/workflows/screenshots.yml'
+            site:
+              - 'client/**'
+              - 'server/**'
+              - 'shared/**'
+              - 'api/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+              - 'vite.config.ts'
+              - 'vercel.json'
+              - 'scripts/assemble_thumbnails.py'
+              - '.github/workflows/screenshots.yml'
+
+  desktop-screenshots:
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.core == 'true'
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            script: build.bat
+            name: windows
+            launch: dist/Programs Manager/Programs Manager.exe
+          - os: ubuntu-latest
+            script: build.sh
+            name: linux
+            launch: dist/Programs Manager/Programs Manager
+          - os: macos-latest
+            script: build-mac.sh
+            name: macos
+            launch: dist/Programs Manager.app/Contents/MacOS/Programs Manager
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk xvfb x11-utils xdotool
+
+      - name: Build app on Windows
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: call ${{ matrix.script }}
+
+      - name: Build app on Unix
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          chmod +x "${{ matrix.script }}"
+          ./"${{ matrix.script }}"
+
+      - name: Install screenshot dependencies
+        shell: bash
+        run: python -m pip install mss pillow
+
+      - name: Capture screenshot
+        shell: bash
+        run: |
+          mkdir -p screenshots
+          if [ "$RUNNER_OS" = "Linux" ]; then
+            xvfb-run -s "-screen 0 1366x768x24" python scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch "${{ matrix.launch }}"
+          else
+            python scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch "${{ matrix.launch }}"
+          fi
+
+      - name: Upload screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-${{ matrix.name }}
+          path: screenshots/${{ matrix.name }}.webp
+          if-no-files-found: error
+
+  site-screenshot:
+    needs: detect-changes
+    if: github.event_name == 'workflow_dispatch' || needs.detect-changes.outputs.site == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Capture site screenshot with Microlink
+        shell: bash
+        run: |
+          mkdir -p screenshots
+          SITE_URL="https://programs-manager-website-jlbbarco.vercel.app"
+          MICROLINK_URL="https://api.microlink.io/?url=${SITE_URL}&screenshot=true&meta=false&embed=screenshot.url&viewport.width=1366&viewport.height=768&type=webp"
+          curl -fsSL "$MICROLINK_URL" -o screenshots/site.webp
+          test -s screenshots/site.webp
+
+      - name: Upload site screenshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshot-site
+          path: screenshots/site.webp
+          if-no-files-found: error
+
+  update-assets:
+    needs: [detect-changes, desktop-screenshots, site-screenshot]
+    if: always() && github.event_name == 'push' && (needs.desktop-screenshots.result == 'success' || needs.desktop-screenshots.result == 'skipped') && (needs.site-screenshot.result == 'success' || needs.site-screenshot.result == 'skipped') && (needs.detect-changes.outputs.core == 'true' || needs.detect-changes.outputs.site == 'true')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download screenshot artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: screenshot-*
+          path: screenshots
+          merge-multiple: true
+        continue-on-error: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Assemble changed images and thumbnail
+        run: |
+          python -m pip install pillow
+          python scripts/assemble_thumbnails.py \
+            --windows screenshots/windows.webp \
+            --linux screenshots/linux.webp \
+            --macos screenshots/macos.webp \
+            --site screenshots/site.webp
+
+      - name: Commit and push screenshots
+        env:
+          GIT_AUTHOR_NAME: github-actions[bot]
+          GIT_AUTHOR_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+          GIT_COMMITTER_NAME: github-actions[bot]
+          GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
+        run: |
+          git add src/assets/img/windows.webp src/assets/img/linux.webp src/assets/img/macos.webp src/assets/img/site.webp src/assets/img/thumbnail.webp
+          if git diff --cached --quiet; then
+            echo "No screenshot changes to commit"
+          else
+            git commit -m "ci: update screenshots"
+            git push
+          fi

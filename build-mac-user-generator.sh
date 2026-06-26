@@ -11,12 +11,13 @@ python -m pip install -r requirements.txt
 echo "Starting macOS build with PyInstaller..."
 python -m PyInstaller --noconfirm --onedir \
     --name "Programs Manager User Generator" \
+    --paths "user-generator" \
     --add-data "user-generator/lib:lib" \
     --add-data "src/assets/icon/icon.ico:src/assets/icon" \
     --collect-all customtkinter \
     --collect-all psutil \
     --noupx \
-    "main.py"
+    "user-generator/main.py"
 
 echo
 echo "Build completed successfully!"

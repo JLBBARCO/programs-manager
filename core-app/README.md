@@ -60,5 +60,5 @@ AIP_BRANCH=develop curl -fsSL https://raw.githubusercontent.com/JLBBARCO/program
 
 ## GitHub Actions
 
-- [.github/workflows/build.yml](.github/workflows/build.yml) builds for `main` and `beta`.
+- [.github/workflows/build-core-app.yml](../.github/workflows/build-core-app.yml) builds for `main` and `develop`.
 - [.github/workflows/auto-install-programs-macos-installer.yml](.github/workflows/auto-install-programs-macos-installer.yml) publishes the macOS installer from tagged releases.

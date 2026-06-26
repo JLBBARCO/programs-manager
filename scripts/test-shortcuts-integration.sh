@@ -68,13 +68,13 @@ echo ""
 # Try to run with timeout (use gtimeout on macOS if available, fall back to shell background job)
 if command -v gtimeout &> /dev/null; then
     # macOS with coreutils installed
-    gtimeout 8 python main.py || true
+    gtimeout 8 python core-app/main.py || true
 elif command -v timeout &> /dev/null; then
     # Linux timeout command
-    timeout 8 python main.py || true
+    timeout 8 python core-app/main.py || true
 else
     # Fallback: background job with kill
-    python main.py &
+    python core-app/main.py &
     APP_PID=$!
     sleep 8
     kill $APP_PID 2>/dev/null || true

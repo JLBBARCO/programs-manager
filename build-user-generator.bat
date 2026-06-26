@@ -13,11 +13,13 @@ echo Adding install directory to bundle...
 python -m PyInstaller --noconfirm --onedir --windowed ^
     --name "Programs Manager User Generator" ^
     --icon "src/assets/icon/icon.ico" ^
+    --paths "user-generator" ^
     --add-data "user-generator/lib;lib" ^
+    --add-data "src/assets/icon/icon.ico;src/assets/icon" ^
     --collect-all customtkinter ^
     --collect-all psutil ^
     --noupx ^
-    "main.py"
+    "user-generator/main.py"
 
 if errorlevel 1 (
     echo.

@@ -1,0 +1,165 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows:
+      - Build Multi-Platform Core App
+      - Build Multi-Platform User Generator
+      - Installer macOS Core App
+      - Installer macOS User Generator
+    types: [completed]
+    branches: [main, develop]
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: release-${{ github.event.workflow_run.head_branch || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+          ref: ${{ github.event.workflow_run.head_branch || github.ref_name }}
+
+      - name: Resolve branch
+        id: branch
+        shell: bash
+        run: |
+          BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
+          if [[ "$BRANCH" != "main" && "$BRANCH" != "develop" ]]; then
+            echo "Unsupported branch: $BRANCH"
+            exit 1
+          fi
+          echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
+          if [[ "$BRANCH" == "develop" ]]; then
+            echo "version_key=Pre-release" >> "$GITHUB_OUTPUT"
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            echo "latest=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "version_key=Latest release" >> "$GITHUB_OUTPUT"
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            echo "latest=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Download workflow artifacts
+        if: github.event_name == 'workflow_run'
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          path: release
+          merge-multiple: true
+
+      - name: Download current artifacts
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          mkdir -p release
+          for workflow in \
+            "Build Multi-Platform Core App" \
+            "Build Multi-Platform User Generator" \
+            "Installer macOS Core App" \
+            "Installer macOS User Generator"; do
+            run_id="$(gh run list --workflow "$workflow" --branch "${{ steps.branch.outputs.name }}" --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
+            if [[ -n "$run_id" ]]; then
+              gh run download "$run_id" --dir release || true
+            fi
+          done
+          find release -mindepth 2 -type f -exec mv -f {} release/ \;
+          find release -mindepth 1 -type d -empty -delete
+
+      - name: Check artifacts
+        shell: bash
+        run: |
+          find release -maxdepth 1 -type f
+          if ! find release -maxdepth 1 -type f \( -name "*.zip" -o -name "*.tar.gz" -o -name "*.pkg" \) | grep -q .; then
+            echo "No release artifacts found."
+            exit 1
+          fi
+
+      - name: Resolve version
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TARGET_SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        shell: bash
+        run: |
+          git fetch --tags --force
+          VERSION_FILE=".github/version.txt"
+          KEY="${{ steps.branch.outputs.version_key }}"
+          CURRENT="$(awk -F= -v key="$KEY" '$1 == key { gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2 }' "$VERSION_FILE")"
+          if [[ ! "$CURRENT" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+            echo "Invalid version for $KEY: $CURRENT"
+            exit 1
+          fi
+
+          IFS='.' read -r major minor patch extra <<< "$CURRENT"
+          if [[ -n "${extra:-}" || -z "${minor:-}" || -z "${patch:-}" ]]; then
+            echo "Version must use major.minor.patch format: $CURRENT"
+            exit 1
+          fi
+
+          VERSION="$CURRENT"
+          while gh release view "v$VERSION" >/dev/null 2>&1 || git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; do
+            EXISTING_SHA="$(git rev-parse -q --verify "refs/tags/v$VERSION^{}" 2>/dev/null || true)"
+            if [[ -n "$EXISTING_SHA" && "$EXISTING_SHA" == "$TARGET_SHA" ]]; then
+              break
+            fi
+            patch="$((10#$patch + 1))"
+            VERSION="${major}.${minor}.${patch}"
+          done
+
+          if [[ "$VERSION" != "$CURRENT" ]]; then
+            awk -v key="$KEY" -v version="$VERSION" 'BEGIN { FS=OFS="=" } $1 == key { $2=version } { print }' "$VERSION_FILE" > "$VERSION_FILE.tmp"
+            mv "$VERSION_FILE.tmp" "$VERSION_FILE"
+          fi
+
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "changed=$([[ "$VERSION" != "$CURRENT" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
+
+      - name: Commit bumped version
+        if: steps.version.outputs.changed == 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/version.txt
+          git commit -m "ci: bump release version to ${{ steps.version.outputs.value }}"
+          git push origin "HEAD:${{ steps.branch.outputs.name }}"
+
+      - name: Create or update release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          TAG="${{ steps.version.outputs.tag }}"
+          TITLE="${{ steps.branch.outputs.version_key }} ${{ steps.version.outputs.value }}"
+          NOTES="Automatic release from ${{ steps.branch.outputs.name }}."
+          RELEASE_FLAGS=()
+          if [[ "${{ steps.branch.outputs.prerelease }}" == "true" ]]; then
+            RELEASE_FLAGS+=(--prerelease)
+          else
+            RELEASE_FLAGS+=(--latest)
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release edit "$TAG" --title "$TITLE" --notes "$NOTES" "${RELEASE_FLAGS[@]}"
+          else
+            gh release create "$TAG" release/* --target "${{ github.event.workflow_run.head_sha || github.sha }}" --title "$TITLE" --notes "$NOTES" "${RELEASE_FLAGS[@]}"
+            exit 0
+          fi
+
+          gh release upload "$TAG" release/* --clobber

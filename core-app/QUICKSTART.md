@@ -12,7 +12,7 @@ python -m pip install -r requirements.txt
 - Run the app from source:
 
 ```bash
-python main.py
+python core-app/main.py
 ```
 
 ## Build

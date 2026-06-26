@@ -5,11 +5,10 @@ import sys
 import urllib.request
 import winreg
 from pathlib import Path
-
 from lib import log, system
 
 
-GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/JLBBARCO/programs-manager/main"
+GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/"
 VISION_CURSOR_FILES = {
 	'pointer': 'pointer.cur',
 	'help': 'help.cur',
@@ -64,7 +63,7 @@ def _fetch_github_file(relative_path: str, timeout: int = 30) -> bytes:
 def _download_vision_cursor_files(destination_directory: Path):
 	destination_directory.mkdir(parents=True, exist_ok=True)
 
-	base_cursor_path = "system/windows/install/vision-cursor-black"
+	base_cursor_path = "core-app/system/windows/install/vision-cursor-black"
 
 	for file_name in set(VISION_CURSOR_FILES.values()):
 		try:

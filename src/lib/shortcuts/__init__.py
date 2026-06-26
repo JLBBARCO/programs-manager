@@ -24,7 +24,7 @@ def _project_root() -> Path:
 def _launcher_command() -> list[str]:
     if getattr(sys, "frozen", False):
         return [sys.executable]
-    return [sys.executable, str(_project_root() / "main.py")]
+    return [sys.executable, str(_project_root() / "core-app" / "main.py")]
 
 
 def _launcher_text() -> str:

@@ -1,0 +1,49 @@
+name: Test Shortcuts User Generator
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - "user-generator/**"
+      - "run-user-generator.ps1"
+      - "run-user-generator.sh"
+      - ".github/workflows/test-shortcuts-user-generator.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "user-generator/**"
+      - "run-user-generator.ps1"
+      - "run-user-generator.sh"
+      - ".github/workflows/test-shortcuts-user-generator.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  import-entrypoint:
+    name: Validate user generator entrypoint
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Python dependencies
+        shell: bash
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Validate imports
+        shell: bash
+        run: python -m py_compile user-generator/main.py

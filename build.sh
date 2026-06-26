@@ -72,13 +72,16 @@ echo "Starting build with PyInstaller..."
 # Prepare PyInstaller command with conditional install directory
 PYINSTALLER_CMD="python3 -m PyInstaller --noconfirm --onedir --windowed \\
     --name \"Programs Manager\" \\
-    --add-data \"core-app/lib:lib\""
+    --paths \"core-app\" \\
+    --add-data \"core-app/lib:lib\" \\
+    --add-data \"core-app/system:system\" \\
+    --add-data \"src:src\""
 
 # Complete the command
 PYINSTALLER_CMD="$PYINSTALLER_CMD \\
     --collect-all customtkinter \\
     --collect-all psutil \\
-    \"main.py\""
+    \"core-app/main.py\""
 
 eval "$PYINSTALLER_CMD"
 

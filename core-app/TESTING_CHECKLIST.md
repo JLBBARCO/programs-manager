@@ -8,7 +8,7 @@
 
 ## Smoke tests
 
-- Start the application with `python main.py`.
+- Start the application with `python core-app/main.py`.
 - Confirm the first screen opens with the detected operating system in the title.
 - Select entries and confirm the second screen opens.
 - Confirm the selected entries are separated into install, uninstall, and function groups.
@@ -42,7 +42,7 @@ Expected results:
 
 - Local builds are used first when present.
 - The scripts fall back to release downloads when no local build is found.
-- The branch override selects prerelease assets when `AIP_BRANCH` or `SCRIPT_BRANCH` is set to `beta`.
+- The branch override selects prerelease assets when `AIP_BRANCH` or `SCRIPT_BRANCH` is set to `develop`.
 
 ## Documentation checks
 

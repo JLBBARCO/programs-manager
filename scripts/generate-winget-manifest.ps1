@@ -19,7 +19,7 @@ function Get-DefaultReleaseTag {
     return $InputTag
   }
 
-  if ($InputVersion -match '^beta') {
+  if ($InputVersion -match '^develop') {
     return $InputVersion
   }
 

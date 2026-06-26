@@ -2,7 +2,7 @@
 owner="JLBBARCO"
 repo="programs-manager"
 
-# When this script is fetched from the 'beta' branch it should use the
+# When this script is fetched from the 'develop' branch it should use the
 # latest prerelease artifact; when fetched from 'main' it should use the
 # latest stable release. Set here according to file branch.
 SCRIPT_BRANCH="${AIP_BRANCH:-${SCRIPT_BRANCH:-main}}"
@@ -103,7 +103,7 @@ fi
 if [ ! -x "$INSTALL_ROOT/$BINARY_NAME" ]; then
     echo "[programs-manager] Baixando binário nativo para $OS_TYPE..."
 
-    if [ "$SCRIPT_BRANCH" = "beta" ]; then
+    if [ "$SCRIPT_BRANCH" = "develop" ]; then
         # Find most recent prerelease using Python when available.
         if command -v python3 >/dev/null 2>&1; then
             URL=$(python3 - "$owner" "$repo" "$ASSET_PATTERN" <<'PY'

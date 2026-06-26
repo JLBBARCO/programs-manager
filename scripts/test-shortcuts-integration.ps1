@@ -62,7 +62,7 @@ python -c "from src.lib.shortcuts import ensure_platform_shortcuts_best_effort; 
 Write-Host ""
 
 # Start app with 8-second timeout (give app time to create shortcuts before closing)
-$process = Start-Process python -ArgumentList "main.py" -PassThru -NoNewWindow -ErrorAction SilentlyContinue
+$process = Start-Process python -ArgumentList "core-app/main.py" -PassThru -NoNewWindow -ErrorAction SilentlyContinue
 Start-Sleep -Seconds 8
 $process | Stop-Process -Force -ErrorAction SilentlyContinue
 Wait-Process -InputObject $process -ErrorAction SilentlyContinue

@@ -4,9 +4,9 @@ $repo = "programs-manager"
 
 # Set this script's branch. When this file is fetched from:
 #  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1  -> set to 'main'
-#  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/run.ps1 -> set to 'beta'
+#  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/develop/run.ps1 -> set to 'develop'
 # The branch controls whether the script downloads the latest stable release (main)
-# or the most-recent prerelease (beta). Allow an environment override for testing.
+# or the most-recent prerelease (develop). Allow an environment override for testing.
 $ScriptBranch = if ($env:AIP_BRANCH) {
     $env:AIP_BRANCH
 } elseif ($env:SCRIPT_BRANCH) {
@@ -125,7 +125,7 @@ if (-not $exePath) {
 
     try {
         # Decide which release to fetch based on the script branch.
-        if ($ScriptBranch -eq 'beta') {
+        if ($ScriptBranch -eq 'develop') {
             # Find the most recent prerelease
             $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases" -UseBasicParsing
             $prerelease = $releases | Where-Object { $_.prerelease } | Sort-Object -Property published_at -Descending | Select-Object -First 1
@@ -175,7 +175,7 @@ if (-not $exePath) {
 
 # Final check
 if (-not $exePath -or -not (Test-Path $exePath)) {
-    throw "Executável não encontrado. Tente executar: python main.py ou .\build.bat"
+    throw "Executável não encontrado. Tente executar: python core-app/main.py ou .\build.bat"
 }
 
 # 2. Executa o binário diretamente (Sem Python, sem VENV)

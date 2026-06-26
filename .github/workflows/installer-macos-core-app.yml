@@ -1,16 +1,25 @@
-name: build-programs-manager-macos-installer
+name: Installer macOS Core App
 
 on:
-  push:
-    tags:
-      - "v*"
   workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - "core-app/**"
+      - "src/lib/shortcuts/**"
+      - "src/assets/icon/**"
+      - "requirements.txt"
+      - "build-mac.sh"
+      - ".github/workflows/installer-macos-core-app.yml"
+
+permissions:
+  contents: read
 
 jobs:
   build-installer:
     runs-on: macos-latest
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Python
@@ -18,31 +27,16 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        shell: bash
-        run: |
-          python -m pip install --upgrade pip
-          if [[ -f requirements.txt ]]; then
-            pip install -r requirements.txt
-          fi
-
       - name: Build app
         shell: bash
         run: |
           chmod +x build-mac.sh
           ./build-mac.sh
 
-      - name: Verify app bundle exists
-        shell: bash
-        run: |
-          if [[ ! -d "dist/Programs Manager.app" ]]; then
-            echo "App bundle not found at dist/Programs Manager.app"
-            exit 1
-          fi
-
       - name: Build pkg installer
         shell: bash
         run: |
+          test -d "dist/Programs Manager.app"
           pkgbuild \
             --component "dist/Programs Manager.app" \
             --install-location /Applications \
@@ -52,7 +46,6 @@ jobs:
       - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: macos-installer
+          name: programs-manager-macos-installer.pkg
           path: programs-manager-macos-installer.pkg
           if-no-files-found: error
-          retention-days: 30

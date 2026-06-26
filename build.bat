@@ -13,11 +13,14 @@ echo Adding install directory to bundle...
 python -m PyInstaller --noconfirm --onedir --windowed ^
     --name "Programs Manager" ^
     --icon "src/assets/icon/icon.ico" ^
+    --paths "core-app" ^
     --add-data "core-app/lib;lib" ^
+    --add-data "core-app/system;system" ^
+    --add-data "src;src" ^
     --collect-all customtkinter ^
     --collect-all psutil ^
     --noupx ^
-    "main.py"
+    "core-app/main.py"
 
 if errorlevel 1 (
     echo.

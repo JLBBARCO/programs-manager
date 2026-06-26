@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REPO="JLBBARCO/programs-manager-user-generator"
+REPO="JLBBARCO/programs-manager"
 APP_NAME="Programs Manager User Generator"
+SCRIPT_BRANCH="${AIP_BRANCH:-${SCRIPT_BRANCH:-main}}"
+SCRIPT_BRANCH="$(printf '%s' "$SCRIPT_BRANCH" | tr '[:upper:]' '[:lower:]' | xargs)"
 
 case "$(uname -s)" in
     Linux*) ASSET="programs-manager-user-generator-linux.tar.gz" ;;
@@ -26,7 +28,38 @@ WORKDIR="$(mktemp -d)"
 trap 'rm -rf "$WORKDIR"' EXIT
 
 echo "Downloading latest ${APP_NAME} release..."
-"${DOWNLOAD_CMD[@]}" "https://github.com/${REPO}/releases/latest/download/${ASSET}" > "${WORKDIR}/${ASSET}"
+if [ "$SCRIPT_BRANCH" = "develop" ]; then
+    if command -v python3 >/dev/null 2>&1; then
+        URL=$(python3 - "$REPO" "$ASSET" <<'PY'
+import json
+import sys
+import urllib.request
+
+repo, asset_name = sys.argv[1:3]
+with urllib.request.urlopen(f"https://api.github.com/repos/{repo}/releases") as response:
+    releases = json.load(response)
+
+for release in sorted((r for r in releases if r.get("prerelease")), key=lambda r: r.get("published_at") or "", reverse=True):
+    for asset in release.get("assets", []):
+        if asset.get("name") == asset_name:
+            print(asset.get("browser_download_url", ""))
+            raise SystemExit(0)
+
+raise SystemExit(1)
+PY
+)
+    else
+        URL=""
+    fi
+else
+    URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
+fi
+
+if [ -z "${URL:-}" ]; then
+    URL="https://github.com/${REPO}/releases/latest/download/${ASSET}"
+fi
+
+"${DOWNLOAD_CMD[@]}" "$URL" > "${WORKDIR}/${ASSET}"
 
 tar -xzf "${WORKDIR}/${ASSET}" -C "${WORKDIR}"
 
