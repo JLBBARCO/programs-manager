@@ -72,6 +72,12 @@
       "type": "function",
       "id": "clear_temp_files",
       "checkbox": true
+    },
+    {
+      "name": "WizTree",
+      "type": "install",
+      "id": "AntibodySoftware.WizTree",
+      "checkbox": true
     }
   ]
 }

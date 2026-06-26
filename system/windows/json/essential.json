@@ -109,6 +109,12 @@
       "type": "install",
       "id": "Google.QuickShare",
       "checkbox": true
+    },
+    {
+      "name": "HP Smart",
+      "type": "install",
+      "id": "9WZDNCRFHWLH",
+      "checkbox": true
     }
   ]
 }

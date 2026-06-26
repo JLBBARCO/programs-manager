@@ -43,6 +43,24 @@
       "type": "install",
       "id": "Overwolf.CurseForge",
       "checkbox": true
+    },
+    {
+      "name": "GOG Galaxy",
+      "type": "install",
+      "id": "GOG.Galaxy",
+      "checkbox": true
+    },
+    {
+      "name": "Ubisoft Connect",
+      "type": "install",
+      "id": "Ubisoft.Connect",
+      "checkbox": true
+    },
+    {
+      "name": "Battle.net",
+      "type": "install",
+      "id": "Blizzard.BattleNet",
+      "checkbox": true
     }
   ]
 }
