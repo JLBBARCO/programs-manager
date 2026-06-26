@@ -13,7 +13,7 @@ echo "Starting build with PyInstaller..."
 
 python3 -m PyInstaller --noconfirm --onedir --windowed \
     --name "Programs Manager" \
-    --add-data "lib:lib" \
+    --add-data "core-app/lib:lib" \
     --collect-all customtkinter \
     --collect-all psutil \
     "main.py"

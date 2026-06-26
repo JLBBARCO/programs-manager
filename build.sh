@@ -72,7 +72,7 @@ echo "Starting build with PyInstaller..."
 # Prepare PyInstaller command with conditional install directory
 PYINSTALLER_CMD="python3 -m PyInstaller --noconfirm --onedir --windowed \\
     --name \"Programs Manager\" \\
-    --add-data \"lib:lib\""
+    --add-data \"core-app/lib:lib\""
 
 # Complete the command
 PYINSTALLER_CMD="$PYINSTALLER_CMD \\
