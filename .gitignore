@@ -128,3 +128,4 @@ venv/
 .ruff_cache/
 *.spec
 *.pyc
+.env*

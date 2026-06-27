@@ -10,9 +10,9 @@ on:
       - "src/lib/windows_shortcuts.py"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build.bat"
-      - "build.sh"
-      - "build-mac.sh"
+      - "build-compilers/build.bat"
+      - "build-compilers/build.sh"
+      - "build-compilers/build-mac.sh"
       - "run.ps1"
       - "run.sh"
       - ".github/workflows/build-core-app.yml"
@@ -24,9 +24,9 @@ on:
       - "src/lib/windows_shortcuts.py"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build.bat"
-      - "build.sh"
-      - "build-mac.sh"
+      - "build-compilers/build.bat"
+      - "build-compilers/build.sh"
+      - "build-compilers/build-mac.sh"
       - "run.ps1"
       - "run.sh"
       - ".github/workflows/build-core-app.yml"
@@ -44,15 +44,15 @@ jobs:
         include:
           - name: Windows
             os: windows-latest
-            script: build.bat
+            script: build-compilers/build.bat
             asset: programs-manager-windows.zip
           - name: Linux
             os: ubuntu-latest
-            script: build.sh
+            script: build-compilers/build.sh
             asset: programs-manager-linux.tar.gz
           - name: macOS
             os: macos-latest
-            script: build-mac.sh
+            script: build-compilers/build-mac.sh
             asset: programs-manager-macos.tar.gz
 
     steps:

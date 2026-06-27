@@ -8,9 +8,9 @@ on:
       - "user-generator/**"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build-user-generator.bat"
-      - "build-user-generator.sh"
-      - "build-mac-user-generator.sh"
+      - "build-compilers/build-user-generator.bat"
+      - "build-compilers/build-user-generator.sh"
+      - "build-compilers/build-mac-user-generator.sh"
       - "run-user-generator.ps1"
       - "run-user-generator.sh"
       - ".github/workflows/build-user-generator.yml"
@@ -20,9 +20,9 @@ on:
       - "user-generator/**"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build-user-generator.bat"
-      - "build-user-generator.sh"
-      - "build-mac-user-generator.sh"
+      - "build-compilers/build-user-generator.bat"
+      - "build-compilers/build-user-generator.sh"
+      - "build-compilers/build-mac-user-generator.sh"
       - "run-user-generator.ps1"
       - "run-user-generator.sh"
       - ".github/workflows/build-user-generator.yml"
@@ -40,15 +40,15 @@ jobs:
         include:
           - name: Windows
             os: windows-latest
-            script: build-user-generator.bat
+            script: build-compilers/build-user-generator.bat
             asset: programs-manager-user-generator-windows.zip
           - name: Linux
             os: ubuntu-latest
-            script: build-user-generator.sh
+            script: build-compilers/build-user-generator.sh
             asset: programs-manager-user-generator-linux.tar.gz
           - name: macOS
             os: macos-latest
-            script: build-mac-user-generator.sh
+            script: build-compilers/build-mac-user-generator.sh
             asset: programs-manager-user-generator-macos.tar.gz
 
     steps:

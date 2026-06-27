@@ -163,9 +163,9 @@ if (-not $exePath) {
         $scriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
         if ($scriptPath) {
             $scriptDir = Split-Path -Parent $scriptPath
-            $buildScript = Join-Path $scriptDir "build.bat"
+            $buildScript = Join-Path $scriptDir "build-compilers\build.bat"
             if (Test-Path $buildScript) {
-                Write-Host "[programs-manager] Executando build.bat..."
+                Write-Host "[programs-manager] Executando build-compilers\build.bat..."
                 & $buildScript
                 $exePath = Resolve-LocalBuildPath
             }
@@ -175,7 +175,7 @@ if (-not $exePath) {
 
 # Final check
 if (-not $exePath -or -not (Test-Path $exePath)) {
-    throw "Executável não encontrado. Tente executar: python core-app/main.py ou .\build.bat"
+    throw "Executável não encontrado. Tente executar: python core-app/main.py ou .\build-compilers\build.bat"
 }
 
 # 2. Executa o binário diretamente (Sem Python, sem VENV)

@@ -1,4 +1,8 @@
 #!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
 
 # Detectar se estamos em um sistema de arquivos Windows montado
 # Detect if we're on a mounted Windows file system
@@ -17,7 +21,7 @@ if [[ $CURRENT_PATH == /mnt/* ]]; then
     echo ""
     echo "OPTION 1 (Recommended for Windows): Native Windows build"
     echo "  Run in Windows PowerShell:"
-    echo "    .\\build.bat"
+    echo "    .\\build-compilers\\build.bat"
     echo "  This will create a .exe executable for Windows."
     echo ""
     echo "OPTION 2: Linux build on Linux file system"
@@ -99,7 +103,7 @@ else
     echo "============================================"
     echo ""
     echo "Check the errors above for more details."
-    echo "Consider using build-wsl.sh or build.bat"
+    echo "Consider using build-wsl.sh or build-compilers/build.bat"
     echo ""
     exit 1
 fi

@@ -9,7 +9,7 @@ on:
       - "src/lib/shortcuts/**"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build-mac.sh"
+      - "build-compilers/build-mac.sh"
       - ".github/workflows/installer-macos-core-app.yml"
 
 permissions:
@@ -30,8 +30,8 @@ jobs:
       - name: Build app
         shell: bash
         run: |
-          chmod +x build-mac.sh
-          ./build-mac.sh
+          chmod +x build-compilers/build-mac.sh
+          ./build-compilers/build-mac.sh
 
       - name: Build pkg installer
         shell: bash

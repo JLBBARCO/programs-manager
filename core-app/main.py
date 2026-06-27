@@ -3,8 +3,10 @@ from typing import Any
 import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
+APP_ROOT = Path(__file__).resolve().parent
+for import_path in (PROJECT_ROOT, APP_ROOT):
+    if str(import_path) not in sys.path:
+        sys.path.insert(0, str(import_path))
 
 from src.lib.shortcuts import ensure_platform_shortcuts_best_effort
 from lib import system, log, screen_primary, screen_secondary, updates, install, uninstall, web

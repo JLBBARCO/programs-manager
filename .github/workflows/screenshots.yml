@@ -9,9 +9,9 @@ on:
       - "src/lib/shortcuts/**"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build.bat"
-      - "build.sh"
-      - "build-mac.sh"
+      - "build-compilers/build.bat"
+      - "build-compilers/build.sh"
+      - "build-compilers/build-mac.sh"
       - "client/**"
       - "server/**"
       - "shared/**"
@@ -47,9 +47,9 @@ jobs:
               - 'src/lib/shortcuts/**'
               - 'src/assets/icon/**'
               - 'requirements.txt'
-              - 'build.bat'
-              - 'build.sh'
-              - 'build-mac.sh'
+              - 'build-compilers/build.bat'
+              - 'build-compilers/build.sh'
+              - 'build-compilers/build-mac.sh'
               - 'scripts/ci_screenshot.py'
               - 'scripts/assemble_thumbnails.py'
               - '.github/workflows/screenshots.yml'
@@ -74,15 +74,15 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            script: build.bat
+            script: build-compilers/build.bat
             name: windows
             launch: dist/Programs Manager/Programs Manager.exe
           - os: ubuntu-latest
-            script: build.sh
+            script: build-compilers/build.sh
             name: linux
             launch: dist/Programs Manager/Programs Manager
           - os: macos-latest
-            script: build-mac.sh
+            script: build-compilers/build-mac.sh
             name: macos
             launch: dist/Programs Manager.app/Contents/MacOS/Programs Manager
 

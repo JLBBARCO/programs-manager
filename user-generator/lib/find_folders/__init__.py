@@ -6,7 +6,11 @@ from lib import system
 
 def get_user_documents_folder():
     if system.name() == "Windows":
-        import winreg
+        try:
+            import winreg
+        except ImportError:
+            return Path.home() / "Documents"
+
         chave_registro = r"Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders"
         try:
             with winreg.OpenKey(winreg.HKEY_CURRENT_USER, chave_registro) as key:

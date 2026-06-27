@@ -3,9 +3,13 @@ import os
 import re
 import sys
 import urllib.request
-import winreg
 from pathlib import Path
 from lib import log, system
+
+try:
+	import winreg
+except ImportError:
+	winreg = None
 
 
 GITHUB_REPO_RAW_URL = "https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/"
@@ -75,6 +79,9 @@ def _download_vision_cursor_files(destination_directory: Path):
 
 
 def _apply_windows_cursor_scheme(target_directory: Path):
+	if winreg is None:
+		raise RuntimeError('Windows registry is not available on this platform.')
+
 	cursor_values = {key: str(target_directory / file_name) for key, file_name in VISION_CURSOR_REGISTRY_VALUES.items()}
 	scheme_text = ','.join(str(target_directory / file_name) for file_name in VISION_CURSOR_REGISTRY_VALUES.values())
 
@@ -97,7 +104,7 @@ def _normalize_startup_name(value: str) -> str:
 
 
 def vision_cursor_black():
-	if system.name() != 'Windows':
+	if system.name() != 'Windows' or winreg is None:
 		return 'Vision Cursor Black is supported only on Windows.'
 
 	destination_directory = _vision_cursor_install_path()

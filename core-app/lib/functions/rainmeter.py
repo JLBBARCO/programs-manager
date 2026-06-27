@@ -16,14 +16,15 @@ rainmeter_install_data = [
 # O Windows permite ler desta pasta sem ser administrador
 rainmeter_shortcut_start_menu = r'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Rainmeter.lnk'
 
-# 2. Caminho de DESTINO (A pasta Startup do usuário atual)
-# Aqui você tem permissão total de escrita sem precisar de admin
-user_appdata = os.environ['APPDATA']
-startup_folder = os.path.join(user_appdata, r'Microsoft\Windows\Start Menu\Programs\Startup')
-
-
 def _create_rainmeter_shortcut():
     """Busca o atalho global e copia para a inicialização do usuário atual."""
+    user_appdata = os.environ.get('APPDATA')
+    if not user_appdata:
+        log.error('APPDATA environment variable is not available.')
+        return
+
+    startup_folder = os.path.join(user_appdata, r'Microsoft\Windows\Start Menu\Programs\Startup')
+
     try:
         # Garante que a pasta Startup do usuário existe
         if not os.path.exists(startup_folder):
@@ -47,6 +48,10 @@ def _open_rainmeter_skins_site():
 
 
 def rainmeter():
+    if system.name() != 'Windows':
+        log.warning('Rainmeter setup is supported only on Windows.')
+        return
+
     from lib import install
     
     # Executa a instalação (pode pedir a janela de Admin do Windows se o winget exigir)

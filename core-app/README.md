@@ -15,7 +15,7 @@ Programs Manager is a Python desktop application for selecting package-manager a
 - [main.py](main.py) is the entry point.
 - [lib/](lib) contains the runtime modules for screens, logging, package actions, updates, and functions.
 - [system/](system) contains runtime JSON files per operating system.
-- [build.bat](build.bat), [build.sh](build.sh), and [build-mac.sh](build-mac.sh) build the packaged app.
+- [build.bat](../build-compilers/build.bat), [build.sh](../build-compilers/build.sh), and [build-mac.sh](../build-compilers/build-mac.sh) build the packaged app.
 - [run.ps1](run.ps1) and [run.sh](run.sh) download or reuse a packaged build.
 
 ## Runtime JSON
@@ -28,9 +28,9 @@ The expected path is:
 
 ## Build scripts
 
-- Windows: run [build.bat](build.bat).
-- Linux: run [build.sh](build.sh).
-- macOS: run [build-mac.sh](build-mac.sh).
+- Windows: run [build.bat](../build-compilers/build.bat).
+- Linux: run [build.sh](../build-compilers/build.sh).
+- macOS: run [build-mac.sh](../build-compilers/build-mac.sh).
 
 The Windows script skips the final pause automatically in CI.
 

@@ -1,18 +1,24 @@
 import re
 import subprocess
-import winreg
 from time import sleep
 import urllib.request
 import json as std_json
 
 from lib import json, log, system
 
+try:
+    import winreg
+except ImportError:
+    winreg = None
 
-REG_PATHS = {
-    "HKEY_CURRENT_USER": (winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"),
-    "HKEY_LOCAL_MACHINE (32-bit)": (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"),
-    "HKEY_LOCAL_MACHINE (64-bit/WOW64)": (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"),
-}
+
+REG_PATHS = {}
+if winreg is not None:
+    REG_PATHS = {
+        "HKEY_CURRENT_USER": (winreg.HKEY_CURRENT_USER, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"),
+        "HKEY_LOCAL_MACHINE (32-bit)": (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows\CurrentVersion\Run"),
+        "HKEY_LOCAL_MACHINE (64-bit/WOW64)": (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\Run"),
+    }
 APPROVED_PATHS = {
     "HKEY_CURRENT_USER": r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run",
     "HKEY_LOCAL_MACHINE (32-bit)": r"SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\StartupApproved\Run",
@@ -45,7 +51,7 @@ def _load_whitelist_terms(whitelist_content=None):
     """Parse whitelist content and return a set of normalized terms."""
     # If no whitelist content provided, attempt to fetch from the canonical GitHub raw URL
     remote_url = (
-        "https://raw.githubusercontent.com/JLBBARCO/programs-manager/refs/heads/main/system/windows/json/initialization_whitelist.json"
+        "https://raw.githubusercontent.com/JLBBARCO/programs-manager/refs/heads/main/core-app/system/windows/json/initialization_whitelist.json"
     )
     if whitelist_content is None:
         try:
@@ -100,6 +106,9 @@ def _is_whitelisted(entry_name: str, whitelist_terms) -> bool:
 
 def disable_startup_programs():
     """Disable startup entries that are not present in the GitHub whitelist."""
+    if system.name() != "Windows" or winreg is None:
+        return "Startup program management is supported only on Windows."
+
     try:
         whitelist_terms = _load_whitelist_terms()
     except Exception as error:
@@ -149,6 +158,10 @@ def disable_startup_programs():
 
 def save_startup_keys():
     """Save the current startup registry state for audit/debugging."""
+    if system.name() != "Windows" or winreg is None:
+        log.warning("Startup registry export is supported only on Windows.")
+        return
+
     from lib import find_folders
     output_path = find_folders.get_ProgramsManager_folder() / 'programs.log'
 
@@ -173,6 +186,9 @@ def save_startup_keys():
 
 def enable_startup_whitelist():
     """Re-enable whitelisted startup entries from GitHub."""
+    if system.name() != "Windows" or winreg is None:
+        return "Startup whitelist management is supported only on Windows."
+
     try:
         whitelist_terms = _load_whitelist_terms()
     except Exception as error:

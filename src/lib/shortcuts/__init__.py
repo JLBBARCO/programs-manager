@@ -18,6 +18,8 @@ APP_SLUG = "programs-manager"
 
 
 def _project_root() -> Path:
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).resolve().parent
     return Path(__file__).resolve().parents[3]
 
 
@@ -41,7 +43,8 @@ def _create_windows_shortcut(shortcut_path: Path) -> None:
     target = command[0]
     arguments = " ".join(command[1:])
     icon_path = _project_root() / "src" / "assets" / "icon" / "icon.ico"
-    icon = str(icon_path) if icon_path.exists() else target
+    bundled_icon_path = Path(getattr(sys, "_MEIPASS", "")) / "src" / "assets" / "icon" / "icon.ico"
+    icon = str(icon_path) if icon_path.exists() else str(bundled_icon_path) if bundled_icon_path.exists() else target
 
     ps_script = (
         "$shell = New-Object -ComObject WScript.Shell; "

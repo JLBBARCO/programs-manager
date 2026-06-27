@@ -1,7 +1,8 @@
 @echo off
+pushd "%~dp0\.."
 echo Cleaning old builds...
 rd /s /q dist build 2>nul
-del /f /q "Programs Manager.spec" 2>nul
+del /f /q "Programs Manager User Generator.spec" 2>nul
 
 echo Installing required dependencies...
 python -m pip install --upgrade pip
@@ -11,21 +12,21 @@ echo Iniciando o Build com PyInstaller...
 
 echo Adding install directory to bundle...
 python -m PyInstaller --noconfirm --onedir --windowed ^
-    --name "Programs Manager" ^
+    --name "Programs Manager User Generator" ^
     --icon "src/assets/icon/icon.ico" ^
-    --paths "core-app" ^
-    --add-data "core-app/lib;lib" ^
-    --add-data "core-app/system;system" ^
-    --add-data "src;src" ^
+    --paths "user-generator" ^
+    --add-data "user-generator/lib;lib" ^
+    --add-data "src/assets/icon/icon.ico;src/assets/icon" ^
     --collect-all customtkinter ^
     --collect-all psutil ^
     --noupx ^
-    "core-app/main.py"
+    "user-generator/main.py"
 
 if errorlevel 1 (
     echo.
     echo ERROR: Build failed!
     echo Check the errors above.
+    popd
     exit /b 1
 )
 
@@ -33,6 +34,7 @@ echo.
 echo Build completed successfully!
 echo %%%%
 echo.
-echo O executavel esta em: dist/Programs Manager/
+echo O executavel esta em: dist/Programs Manager User Generator/
 echo.
 if not defined CI pause
+popd

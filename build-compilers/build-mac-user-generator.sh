@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
 echo "Cleaning old builds..."
 rm -rf dist build "Programs Manager User Generator.spec"
 
@@ -8,7 +11,7 @@ echo "Installing required dependencies..."
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 
-echo "Starting Linux build with PyInstaller..."
+echo "Starting macOS build with PyInstaller..."
 python -m PyInstaller --noconfirm --onedir \
     --name "Programs Manager User Generator" \
     --paths "user-generator" \

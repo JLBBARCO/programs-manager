@@ -34,21 +34,21 @@ Os scripts baixam o artefato mais recente da release `latest`, extraem em uma pa
 Windows:
 
 ```bat
-build-user-generator.bat
+build-compilers/build-user-generator.bat
 ```
 
 Linux:
 
 ```bash
-chmod +x build-user-generator.sh
-./build-user-generator.sh
+chmod +x build-compilers/build-user-generator.sh
+./build-compilers/build-user-generator.sh
 ```
 
 macOS:
 
 ```bash
-chmod +x build-mac-user-generator.sh
-./build-mac-user-generator.sh
+chmod +x build-compilers/build-mac-user-generator.sh
+./build-compilers/build-mac-user-generator.sh
 ```
 
 Os arquivos compilados ficam em `dist/Programs Manager User Generator/`.
@@ -59,9 +59,9 @@ O workflow em `.github/workflows/build-user-generator.yml` roda automaticamente 
 
 Ele compila o programa em:
 
-- Windows, usando `build.bat`;
-- Linux, usando `build.sh`;
-- macOS, usando `build-mac.sh`.
+- Windows, usando `build-compilers/build-user-generator.bat`;
+- Linux, usando `build-compilers/build-user-generator.sh`;
+- macOS, usando `build-compilers/build-mac-user-generator.sh`.
 
 Depois de compilar, o workflow empacota os builds. O workflow `.github/workflows/release.yml` publica/substitui os arquivos na release correta:
 
