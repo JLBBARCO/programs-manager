@@ -15,7 +15,7 @@ Cada item gerado segue esta estrutura:
 
 ## Executar direto pelo terminal
 
-Linux e macOS:
+Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run-user-generator.sh | bash
@@ -44,13 +44,6 @@ chmod +x build-compilers/build-user-generator.sh
 ./build-compilers/build-user-generator.sh
 ```
 
-macOS:
-
-```bash
-chmod +x build-compilers/build-mac-user-generator.sh
-./build-compilers/build-mac-user-generator.sh
-```
-
 Os arquivos compilados ficam em `dist/Programs Manager User Generator/`.
 
 ## GitHub Actions
@@ -61,13 +54,11 @@ Ele compila o programa em:
 
 - Windows, usando `build-compilers/build-user-generator.bat`;
 - Linux, usando `build-compilers/build-user-generator.sh`;
-- macOS, usando `build-compilers/build-mac-user-generator.sh`.
 
 Depois de compilar, o workflow empacota os builds. O workflow `.github/workflows/release.yml` publica/substitui os arquivos na release correta:
 
 - `programs-manager-user-generator-windows.zip`
 - `programs-manager-user-generator-linux.tar.gz`
-- `programs-manager-user-generator-macos.tar.gz`
 
 ## Desenvolvimento
 

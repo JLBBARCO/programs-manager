@@ -4,7 +4,7 @@
 
 - Python 3.12 or newer
 - Project dependencies installed with `python -m pip install -r requirements.txt`
-- A Windows, Linux, or macOS machine for the matching build script
+- A Windows or Linux machine for the matching build script
 
 ## Smoke tests
 
@@ -25,18 +25,16 @@
 
 - Windows: `build-compilers/build.bat`
 - Linux: `build-compilers/build.sh`
-- macOS: `build-compilers/build-mac.sh`
 
 Expected results:
 
 - Windows produces `dist/Programs Manager/Programs Manager.exe`.
 - Linux produces `dist/Programs Manager/Programs Manager`.
-- macOS produces `dist/Programs Manager.app`.
 
 ## Launcher verification
 
 - Windows: `run.ps1`
-- Linux and macOS: `run.sh`
+- Linux: `run.sh`
 
 Expected results:
 

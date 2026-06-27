@@ -30,7 +30,6 @@ The expected path is:
 
 - Windows: run [build.bat](../build-compilers/build.bat).
 - Linux: run [build.sh](../build-compilers/build.sh).
-- macOS: run [build-mac.sh](../build-compilers/build-mac.sh).
 
 The Windows script skips the final pause automatically in CI.
 
@@ -42,7 +41,7 @@ Windows:
 irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1 | iex
 ```
 
-Linux or macOS:
+Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.sh | bash
@@ -61,4 +60,3 @@ AIP_BRANCH=develop curl -fsSL https://raw.githubusercontent.com/JLBBARCO/program
 ## GitHub Actions
 
 - [.github/workflows/build-core-app.yml](../.github/workflows/build-core-app.yml) builds for `main` and `develop`.
-- [.github/workflows/auto-install-programs-macos-installer.yml](.github/workflows/auto-install-programs-macos-installer.yml) publishes the macOS installer from tagged releases.

@@ -19,12 +19,11 @@ python core-app/main.py
 
 - Windows: `build-compilers/build.bat`
 - Linux: `build-compilers/build.sh`
-- macOS: `build-compilers/build-mac.sh`
 
 ## Run
 
 - Windows: `run.ps1`
-- Linux and macOS: `run.sh`
+- Linux: `run.sh`
 
 ## What to verify
 

@@ -148,10 +148,4 @@ dist/Programs Manager/install/Windows/white_list.txt
 dist/Programs Manager/install/Windows/white_list.txt
 ```
 
-**macOS**:
-
-```text
-dist/Programs Manager/open dist/Auto\ Install\ Programs.app/Contents/Resources/install/Windows/white_list.txt
-```
-
 Você pode editar o arquivo e executar o programa novamente.

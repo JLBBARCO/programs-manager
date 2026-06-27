@@ -18,14 +18,13 @@ python scripts/validate_shortcuts.py
 
 - On Windows: Checks for `Passwords Manager.lnk` in Start Menu and Desktop
 - On Linux: Checks for `passwords-manager.desktop` in `~/.local/share/applications`
-- On macOS: Checks for `Passwords Manager.command` in `~/Applications`
 
 **Exit codes:**
 
 - `0`: All shortcuts validated successfully
 - `1`: One or more shortcuts missing or invalid
 
-### `test-shortcuts-integration.sh` (Linux/macOS)
+### `test-shortcuts-integration.sh` (Linux)
 
 Integration test that runs the app and validates shortcut creation.
 
@@ -69,7 +68,7 @@ Integration test for Windows (PowerShell).
 A dedicated GitHub Actions workflow already exists at [`.github/workflows/test-shortcuts.yml`](.github/workflows/test-shortcuts.yml) that:
 
 - **Runs on every push/PR** to `main` and `develop` branches
-- **Runs on all platforms**: Windows, Linux, macOS
+- **Runs on all platforms**: Windows, Linux
 - **Tests shortcut creation** on first app run
 - **Validates** that shortcuts exist and are properly configured
 - **Cleans up** test shortcuts after validation
@@ -86,7 +85,7 @@ The workflow is triggered when changes are made to:
 To add shortcut validation to existing workflows:
 
 ```yaml
-- name: Validate shortcuts (Linux/macOS)
+- name: Validate shortcuts (Linux)
   if: runner.os != 'Windows'
   run: chmod +x scripts/test-shortcuts-integration.sh && scripts/test-shortcuts-integration.sh
 
@@ -125,16 +124,6 @@ Or use just the validator:
 
 - `~/.local/share/applications/passwords-manager.desktop`
 
-### macOS
-
-- **Package (Homebrew)**: Package post_install hook creates `.command` launcher
-- **Portable**: App creates `.command` launcher on first run at startup
-- **Pre-compiled**: Shortcuts created at first run
-
-**Shortcut location:**
-
-- `~/Applications/Passwords Manager.command`
-
 ## Troubleshooting
 
 ### Shortcuts not created
@@ -143,7 +132,7 @@ Or use just the validator:
 2. Check permissions: Python process must have write access to target directories
 3. Inspect `ensure_platform_shortcuts_best_effort()` in `src/lib/shortcuts/__init__.py`
 
-### Permission errors on Linux/macOS
+### Permission errors on Linux
 
 - Ensure `~/.local/share/applications` or `~/Applications` directories exist
 - Check directory ownership and permissions
