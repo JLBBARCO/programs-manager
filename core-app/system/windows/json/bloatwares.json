@@ -1,0 +1,222 @@
+{
+  "name": "Remove Bloatware",
+  "description": "Remove all programs considered bloatware on Windows",
+  "data": [
+    {
+      "name": "Outlook for Windows",
+      "type": "uninstall",
+      "id": "Microsoft.OutlookForWindows_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Microsoft Power Automate",
+      "type": "uninstall",
+      "id": "Microsoft.PowerAutomateDesktop_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "FeedBack Hub",
+      "type": "uninstall",
+      "id": "Microsoft.WindowsFeedbackHub_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Sound Recorder",
+      "type": "uninstall",
+      "id": "Microsoft.WindowsSoundRecorder_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Xbox Game Bar",
+      "type": "uninstall",
+      "id": "Microsoft.XboxGamingOverlay_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Microsoft Quick Assist",
+      "type": "uninstall",
+      "id": "MicrosoftCorporationII.QuickAssist_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft Get Started",
+      "type": "uninstall",
+      "id": "Microsoft.Getstarted_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Your Phone",
+      "type": "uninstall",
+      "id": "Microsoft.YourPhone_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Windows Camera",
+      "type": "uninstall",
+      "id": "WindowsCamera_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft Zune Tube",
+      "type": "uninstall",
+      "id": "Microsoft.ZuneVideo_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Windows Multimedia Player",
+      "type": "uninstall",
+      "id": "Microsoft.ZuneMusic_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Microsoft Edge",
+      "type": "uninstall",
+      "id": "Microsoft.MicrosoftEdge_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft To Do",
+      "type": "uninstall",
+      "id": "Microsoft.Todos_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Screen Sketch",
+      "type": "uninstall",
+      "id": "Microsoft.ScreenSketch_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft People",
+      "type": "uninstall",
+      "id": "Microsoft.People_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft Get Help",
+      "type": "uninstall",
+      "id": "Microsoft.GetHelp_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Xbox Gaming App",
+      "type": "uninstall",
+      "id": "Microsoft.GamingApp_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "MSN Weather",
+      "type": "uninstall",
+      "id": "Microsoft.BingWeather_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "MSN News",
+      "type": "uninstall",
+      "id": "Microsoft.BingNews_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "MSN Sports",
+      "type": "uninstall",
+      "id": "Microsoft.BingSports_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "MSN Money",
+      "type": "uninstall",
+      "id": "Microsoft.BingFinance_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "MSN Health & Fitness",
+      "type": "uninstall",
+      "id": "Microsoft.BingHealthAndFitness_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Microsoft Bing News",
+      "type": "uninstall",
+      "id": "Microsoft.BingNews_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft Bing Sports",
+      "type": "uninstall",
+      "id": "Microsoft.BingSports_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft Bing Finance",
+      "type": "uninstall",
+      "id": "Microsoft.BingFinance_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft Bing Health & Fitness",
+      "type": "uninstall",
+      "id": "Microsoft.BingHealthAndFitness_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft Bing Weather",
+      "type": "uninstall",
+      "id": "Microsoft.BingWeather_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Microsoft Bing Maps",
+      "type": "uninstall",
+      "id": "Microsoft.BingMaps_8wekyb3d8bbwe",
+      "checkbox": false
+    },
+    {
+      "name": "Clipchamp",
+      "type": "uninstall",
+      "id": "Clipchamp.Clipchamp_yxz26nhyzhsrt",
+      "checkbox": true
+    },
+    {
+      "name": "Windows Photos",
+      "type": "uninstall",
+      "id": "Microsoft.Windows.Photos_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Windows Alarms & Clock",
+      "type": "uninstall",
+      "id": "Microsoft.WindowsAlarms_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Windows Communication Apps",
+      "type": "uninstall",
+      "id": "microsoft.windowscommunicationsapps_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Windows Maps",
+      "type": "uninstall",
+      "id": "Microsoft.WindowsMaps_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Microsoft Office Hub",
+      "type": "uninstall",
+      "id": "Microsoft.MicrosoftOfficeHub_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Windows Calculator",
+      "type": "uninstall",
+      "id": "Microsoft.WindowsCalculator_8wekyb3d8bbwe",
+      "checkbox": true
+    },
+    {
+      "name": "Microsoft Sticky Notes",
+      "type": "uninstall",
+      "id": "Microsoft.MicrosoftStickyNotes_8wekyb3d8bbwe",
+      "checkbox": true
+    }
+  ]
+}
