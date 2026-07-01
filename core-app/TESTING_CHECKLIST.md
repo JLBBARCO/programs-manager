@@ -23,8 +23,8 @@
 
 ## Build verification
 
-- Windows: `build-compilers/build.bat`
-- Linux: `build-compilers/build.sh`
+- Windows: `core-app/build.bat`
+- Linux: `core-app/build.sh`
 
 Expected results:
 

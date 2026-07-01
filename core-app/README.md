@@ -15,7 +15,7 @@ Programs Manager is a Python desktop application for selecting package-manager a
 - [main.py](main.py) is the entry point.
 - [lib/](lib) contains the runtime modules for screens, logging, package actions, updates, and functions.
 - [system/](system) contains runtime JSON files per operating system.
-- [build.bat](../build-compilers/build.bat), [build.sh](../build-compilers/build.sh), and [build-mac.sh](../build-compilers/build-mac.sh) build the packaged app.
+- [build.bat](build.bat) and [build.sh](build.sh) build the packaged app.
 - [run.ps1](run.ps1) and [run.sh](run.sh) download or reuse a packaged build.
 
 ## Runtime JSON
@@ -28,8 +28,8 @@ The expected path is:
 
 ## Build scripts
 
-- Windows: run [build.bat](../build-compilers/build.bat).
-- Linux: run [build.sh](../build-compilers/build.sh).
+- Windows: run [build.bat](build.bat).
+- Linux: run [build.sh](build.sh).
 
 The Windows script skips the final pause automatically in CI.
 
@@ -38,23 +38,23 @@ The Windows script skips the final pause automatically in CI.
 Windows:
 
 ```powershell
-irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1 | iex
+irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.ps1 | iex
 ```
 
 Linux:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.sh | bash
+curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.sh | bash
 ```
 
 Branch override for testing:
 
 ```powershell
-$env:AIP_BRANCH='develop'; irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1 | iex
+$env:AIP_BRANCH='develop'; irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.ps1 | iex
 ```
 
 ```bash
-AIP_BRANCH=develop curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.sh | bash
+AIP_BRANCH=develop curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.sh | bash
 ```
 
 ## GitHub Actions

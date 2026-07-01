@@ -14,8 +14,6 @@ def install(data, system):
                 subprocess.run(["winget", "install", "--id", item['id'], "-e", "--accept-source-agreements", "--accept-package-agreements",], shell=True, startupinfo=startupinfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             elif system == 'Linux':
                 subprocess.run(["sudo", "apt", "install", "-y", item['id']], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            elif system == 'MacOS':
-                subprocess.run(["brew", "install", item['id']], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             log.info(f"Installed {item['name']} successfully.")
         except subprocess.CalledProcessError as e:
             log.error(f"Failed to install {item['name']}: {e}")

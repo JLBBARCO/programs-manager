@@ -21,7 +21,7 @@ if [[ $CURRENT_PATH == /mnt/* ]]; then
     echo ""
     echo "OPTION 1 (Recommended for Windows): Native Windows build"
     echo "  Run in Windows PowerShell:"
-    echo "    .\\build-compilers\\build.bat"
+    echo "    .\\core-app\\build.bat"
     echo "  This will create a .exe executable for Windows."
     echo ""
     echo "OPTION 2: Linux build on Linux file system"
@@ -103,7 +103,7 @@ else
     echo "============================================"
     echo ""
     echo "Check the errors above for more details."
-    echo "Consider using build-wsl.sh or build-compilers/build.bat"
+    echo "Consider using build-wsl.sh or core-app/build.bat"
     echo ""
     exit 1
 fi

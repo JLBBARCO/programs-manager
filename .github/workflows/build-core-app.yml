@@ -10,11 +10,10 @@ on:
       - "src/lib/windows_shortcuts.py"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build-compilers/build.bat"
-      - "build-compilers/build.sh"
-      - "build-compilers/build-mac.sh"
-      - "run.ps1"
-      - "run.sh"
+      - "core-app/build.bat"
+      - "core-app/build.sh"
+      - "core-app/run.ps1"
+      - "core-app/run.sh"
       - ".github/workflows/build-core-app.yml"
   pull_request:
     branches: [main, develop]
@@ -24,11 +23,10 @@ on:
       - "src/lib/windows_shortcuts.py"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build-compilers/build.bat"
-      - "build-compilers/build.sh"
-      - "build-compilers/build-mac.sh"
-      - "run.ps1"
-      - "run.sh"
+      - "core-app/build.bat"
+      - "core-app/build.sh"
+      - "core-app/run.ps1"
+      - "core-app/run.sh"
       - ".github/workflows/build-core-app.yml"
 
 permissions:
@@ -44,16 +42,12 @@ jobs:
         include:
           - name: Windows
             os: windows-latest
-            script: build-compilers/build.bat
+            script: core-app/build.bat
             asset: programs-manager-windows.zip
           - name: Linux
             os: ubuntu-latest
-            script: build-compilers/build.sh
+            script: core-app/build.sh
             asset: programs-manager-linux.tar.gz
-          - name: macOS
-            os: macos-latest
-            script: build-compilers/build-mac.sh
-            asset: programs-manager-macos.tar.gz
 
     steps:
       - name: Checkout repository
@@ -94,11 +88,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          if [ "$RUNNER_OS" = "macOS" ]; then
-            tar -czf "release/${{ matrix.asset }}" -C dist "Programs Manager.app"
-          else
-            tar -czf "release/${{ matrix.asset }}" -C dist "Programs Manager"
-          fi
+          tar -czf "release/${{ matrix.asset }}" -C dist "Programs Manager"
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

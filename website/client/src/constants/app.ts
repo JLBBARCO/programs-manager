@@ -8,9 +8,9 @@ export const MAX_DYNAMIC_LOG_SERVER_PORT = 9999;
 export const DEFAULT_LOG_SERVER_PORT = 9999;
 export const LOG_SERVER_PATH = "/log.log";
 export const DEFAULT_PROGRAMS_MANAGER_SITE_URL =
-  "https://jlbbarco.github.io/programs-manager";
+  "https://programs-manager-website-jlbbarco.vercel.app";
 export const FALLBACK_PROGRAMS_MANAGER_SITE_URL =
-  "https://passwords-manager-jlbbarco.vercel.app";
+  "https://programs-manager-website-jlbbarco.vercel.app";
 
 // URLs e Endpoints
 export const CONTACT_API_ENDPOINTS = [

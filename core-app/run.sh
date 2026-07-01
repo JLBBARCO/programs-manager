@@ -17,9 +17,6 @@ mkdir -p "$INSTALL_ROOT"
 if [ "$OS_TYPE" == "Linux" ]; then
     ASSET_PATTERN="programs-manager-linux.tar.gz"
     BINARY_NAME="Programs Manager/Programs Manager"
-else
-    ASSET_PATTERN="programs-manager-macos.tar.gz"
-    BINARY_NAME="Programs Manager.app/Contents/MacOS/Programs Manager"
 fi
 
 shell_quote() {

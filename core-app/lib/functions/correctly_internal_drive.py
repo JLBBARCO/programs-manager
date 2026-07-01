@@ -9,7 +9,7 @@ def correctly_internal_drive():
     """Detect whether the system/root drive is an internal (fixed) drive.
 
     Returns True when detected as internal/fixed, False otherwise.
-    Uses Windows API on Windows, `/sys/block` heuristics on Linux and `diskutil` on macOS.
+    Uses Windows API on Windows, `/sys/block` heuristics on Linux.
     """
     try:
         system = platform.system()
@@ -51,20 +51,6 @@ def correctly_internal_drive():
                 return False
             except Exception as e:
                 log.error(f"Linux drive detection failed: {e}")
-                return False
-
-        elif system == "Darwin":
-            # macOS: use diskutil info / and look for 'Internal: Yes'
-            try:
-                p = subprocess.run(["/usr/sbin/diskutil", "info", "/"], capture_output=True, text=True)
-                if "Internal: Yes" in p.stdout:
-                    log.info("Internal drive is correctly detected (macOS).")
-                    return True
-                else:
-                    log.warning("Internal drive is not correctly detected (macOS).")
-                    return False
-            except Exception as e:
-                log.error(f"macOS drive detection failed: {e}")
                 return False
 
         else:

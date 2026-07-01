@@ -43,7 +43,7 @@ function Resolve-ExePath {
     return $null
 }
 
-function Ensure-WindowsShortcuts {
+function Set-WindowsShortcuts {
     param(
         [string]$ExePath
     )
@@ -163,9 +163,9 @@ if (-not $exePath) {
         $scriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
         if ($scriptPath) {
             $scriptDir = Split-Path -Parent $scriptPath
-            $buildScript = Join-Path $scriptDir "build-compilers\build.bat"
+            $buildScript = Join-Path $scriptDir "build.bat"
             if (Test-Path $buildScript) {
-                Write-Host "[programs-manager] Executando build-compilers\build.bat..."
+                Write-Host "[programs-manager] Executando build.bat..."
                 & $buildScript
                 $exePath = Resolve-LocalBuildPath
             }
@@ -175,12 +175,12 @@ if (-not $exePath) {
 
 # Final check
 if (-not $exePath -or -not (Test-Path $exePath)) {
-    throw "Executável não encontrado. Tente executar: python core-app/main.py ou .\build-compilers\build.bat"
+    throw "Executável não encontrado. Tente executar: python core-app/main.py ou .\core-app\build.bat"
 }
 
 # 2. Executa o binário diretamente (Sem Python, sem VENV)
 Write-Host "[programs-manager] Iniciando..."
 Write-Host "[programs-manager] Executável: $exePath"
-Ensure-WindowsShortcuts -ExePath $exePath
+Set-WindowsShortcuts -ExePath $exePath
 $exeWorkingDirectory = Split-Path -Parent $exePath
 Start-Process -FilePath $exePath -WorkingDirectory $exeWorkingDirectory

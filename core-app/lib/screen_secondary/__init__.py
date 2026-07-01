@@ -629,9 +629,6 @@ class ScreenSecondary(ctk.CTk):
         if system_name == 'Windows':
             return self._run_and_parse_packages(['winget', 'search', '--query', query, '--accept-source-agreements'])
 
-        if system_name == 'MacOS' and shutil.which('brew'):
-            return self._parse_simple_package_output(self._run_command(['brew', 'search', query]))
-
         if system_name == 'Linux':
             if shutil.which('apt-cache'):
                 return self._parse_apt_search_output(self._run_command(['apt-cache', 'search', query]))
@@ -647,11 +644,6 @@ class ScreenSecondary(ctk.CTk):
 
         if system_name == 'Windows':
             return self._run_and_parse_packages(['winget', 'list', '--accept-source-agreements'])
-
-        if system_name == 'MacOS' and shutil.which('brew'):
-            installed_items = self._parse_simple_package_output(self._run_command(['brew', 'list', '--formula']))
-            installed_items.extend(self._parse_simple_package_output(self._run_command(['brew', 'list', '--cask'])))
-            return self._deduplicate_packages(installed_items)
 
         if system_name == 'Linux':
             if shutil.which('dpkg-query'):

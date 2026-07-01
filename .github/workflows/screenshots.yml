@@ -9,9 +9,8 @@ on:
       - "src/lib/shortcuts/**"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "build-compilers/build.bat"
-      - "build-compilers/build.sh"
-      - "build-compilers/build-mac.sh"
+      - "core-app/build.bat"
+      - "core-app/build.sh"
       - "client/**"
       - "server/**"
       - "shared/**"
@@ -47,9 +46,8 @@ jobs:
               - 'src/lib/shortcuts/**'
               - 'src/assets/icon/**'
               - 'requirements.txt'
-              - 'build-compilers/build.bat'
-              - 'build-compilers/build.sh'
-              - 'build-compilers/build-mac.sh'
+              - 'core-app/build.bat'
+              - 'core-app/build.sh'
               - 'scripts/ci_screenshot.py'
               - 'scripts/assemble_thumbnails.py'
               - '.github/workflows/screenshots.yml'
@@ -74,17 +72,13 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            script: build-compilers/build.bat
+            script: core-app/build.bat
             name: windows
             launch: dist/Programs Manager/Programs Manager.exe
           - os: ubuntu-latest
-            script: build-compilers/build.sh
+            script: core-app/build.sh
             name: linux
             launch: dist/Programs Manager/Programs Manager
-          - os: macos-latest
-            script: build-compilers/build-mac.sh
-            name: macos
-            launch: dist/Programs Manager.app/Contents/MacOS/Programs Manager
 
     steps:
       - name: Checkout repository
@@ -184,7 +178,6 @@ jobs:
           python scripts/assemble_thumbnails.py \
             --windows screenshots/windows.webp \
             --linux screenshots/linux.webp \
-            --macos screenshots/macos.webp \
             --site screenshots/site.webp
 
       - name: Commit and push screenshots
@@ -194,7 +187,7 @@ jobs:
           GIT_COMMITTER_NAME: github-actions[bot]
           GIT_COMMITTER_EMAIL: 41898282+github-actions[bot]@users.noreply.github.com
         run: |
-          git add src/assets/img/windows.webp src/assets/img/linux.webp src/assets/img/macos.webp src/assets/img/site.webp src/assets/img/thumbnail.webp
+          git add src/assets/img/windows.webp src/assets/img/linux.webp src/assets/img/site.webp src/assets/img/thumbnail.webp
           if git diff --cached --quiet; then
             echo "No screenshot changes to commit"
           else

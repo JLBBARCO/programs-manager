@@ -17,8 +17,8 @@ python core-app/main.py
 
 ## Build
 
-- Windows: `build-compilers/build.bat`
-- Linux: `build-compilers/build.sh`
+- Windows: `core-app/build.bat`
+- Linux: `core-app/build.sh`
 
 ## Run
 

@@ -54,11 +54,9 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--windows")
     parser.add_argument("--linux")
-    parser.add_argument("--macos")
     parser.add_argument("--site")
     parser.add_argument("--out-windows", default="src/assets/img/windows.webp")
     parser.add_argument("--out-linux", default="src/assets/img/linux.webp")
-    parser.add_argument("--out-macos", default="src/assets/img/macos.webp")
     parser.add_argument("--out-site", default="src/assets/img/site.webp")
     parser.add_argument("--output", default="src/assets/img/thumbnail.webp")
     args = parser.parse_args()
@@ -66,11 +64,10 @@ def main() -> None:
     cell_size = (960, 540)
     save_if_source(args.windows, args.out_windows, cell_size)
     save_if_source(args.linux, args.out_linux, cell_size)
-    save_if_source(args.macos, args.out_macos, cell_size)
     save_if_source(args.site, args.out_site, cell_size)
 
     compose_grid(
-        [args.out_windows, args.out_linux, args.out_macos, args.out_site],
+        [args.out_windows, args.out_linux, args.out_site],
         args.output,
         cell_size,
     )

@@ -6,8 +6,6 @@ on:
     workflows:
       - Build Multi-Platform Core App
       - Build Multi-Platform User Generator
-      - Installer macOS Core App
-      - Installer macOS User Generator
     types: [completed]
     branches: [main, develop]
 
@@ -70,8 +68,6 @@ jobs:
           for workflow in \
             "Build Multi-Platform Core App" \
             "Build Multi-Platform User Generator" \
-            "Installer macOS Core App" \
-            "Installer macOS User Generator"; do
             run_id="$(gh run list --workflow "$workflow" --branch "${{ steps.branch.outputs.name }}" --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
             if [[ -n "$run_id" ]]; then
               gh run download "$run_id" --dir release || true

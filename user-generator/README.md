@@ -18,13 +18,13 @@ Cada item gerado segue esta estrutura:
 Linux:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run-user-generator.sh | bash
+curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/user-generator/run.sh | bash
 ```
 
 Windows PowerShell:
 
 ```powershell
-irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run-user-generator.ps1 | iex
+irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/user-generator/run.ps1 | iex
 ```
 
 Os scripts baixam o artefato mais recente da release `latest`, extraem em uma pasta temporaria e executam o programa.
@@ -34,14 +34,14 @@ Os scripts baixam o artefato mais recente da release `latest`, extraem em uma pa
 Windows:
 
 ```bat
-build-compilers/build-user-generator.bat
+user-generator\build.bat
 ```
 
 Linux:
 
 ```bash
-chmod +x build-compilers/build-user-generator.sh
-./build-compilers/build-user-generator.sh
+chmod +x user-generator/build.sh
+./user-generator/build.sh
 ```
 
 Os arquivos compilados ficam em `dist/Programs Manager User Generator/`.
@@ -52,8 +52,8 @@ O workflow em `.github/workflows/build-user-generator.yml` roda automaticamente 
 
 Ele compila o programa em:
 
-- Windows, usando `build-compilers/build-user-generator.bat`;
-- Linux, usando `build-compilers/build-user-generator.sh`;
+- Windows, usando `user-generator/build.bat`;
+- Linux, usando `user-generator/build.sh`;
 
 Depois de compilar, o workflow empacota os builds. O workflow `.github/workflows/release.yml` publica/substitui os arquivos na release correta:
 

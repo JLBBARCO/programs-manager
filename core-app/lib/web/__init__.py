@@ -20,11 +20,11 @@ _shared_log_server_port_range = range(9900, 10000)
 _log_file_path = get_ProgramsManager_folder() / 'log.log'
 _programs_manager_site_url = os.getenv(
 	'PROGRAMS_MANAGER_SITE_URL',
-	'https://jlbbarco.github.io/programs-manager-website',
+	'https://programs-manager-website-jlbbarco.vercel.app',
 )
 _programs_manager_site_fallback_url = os.getenv(
 	'PROGRAMS_MANAGER_SITE_FALLBACK_URL',
-	'https://programs-manager-website.vercel.app',
+	'https://programs-manager-website-jlbbarco.vercel.app',
 )
 _internet_check_interval_seconds = 30
 _internet_check_url = 'https://www.google.com/generate_204'

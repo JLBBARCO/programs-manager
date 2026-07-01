@@ -128,16 +128,6 @@ def finalize_notification():
 			if not _show_windows_notification(title, message):
 				raise RuntimeError('could not create Windows notification')
 
-		elif current_system == 'MacOS':
-			process = subprocess.run(
-				["osascript", "-e", f'display notification "{message}" with title "{title}"'],
-				capture_output=True,
-				text=True,
-				shell=False,
-			)
-			if process.returncode != 0:
-				raise RuntimeError((process.stderr or process.stdout or '').strip() or 'unknown error')
-
 		elif current_system == 'Linux':
 			process = subprocess.run(
 				["notify-send", title, message],

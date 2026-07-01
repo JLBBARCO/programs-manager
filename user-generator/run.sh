@@ -8,7 +8,6 @@ SCRIPT_BRANCH="$(printf '%s' "$SCRIPT_BRANCH" | tr '[:upper:]' '[:lower:]' | xar
 
 case "$(uname -s)" in
     Linux*) ASSET="programs-manager-user-generator-linux.tar.gz" ;;
-    Darwin*) ASSET="programs-manager-user-generator-macos.tar.gz" ;;
     *)
         echo "Unsupported operating system. Use run.ps1 on Windows."
         exit 1

@@ -16,8 +16,6 @@ def uninstall(data, system):
                 subprocess.run(["winget", "uninstall", "--id", item['id'], "-e", "--accept-source-agreements", "--accept-package-agreements",], shell=True, startupinfo=startupinfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             elif system == 'Linux':
                 subprocess.run(["sudo", "apt", "remove", "-y", item['id']], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            elif system == 'MacOS':
-                subprocess.run(["brew", "uninstall", item['id']], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             log.info(f"Uninstalled {item['name']} successfully.")
         except subprocess.CalledProcessError as e:
             log.error(f"Failed to install {item['name']}: {e}")

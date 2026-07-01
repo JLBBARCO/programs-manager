@@ -54,3 +54,7 @@ On load the site probes the port specified by the query parameter `?port=NNNN` (
 Contact data is fetched from:
 
 `https://raw.githubusercontent.com/JLBBARCO/portfolio/main/src/json/areas/contact.json` and cached by Vercel hourly to minimize GitHub requests.
+
+### Deployment
+
+The project is deployed on Vercel using the settings in [vercel.json](vercel.json). The current Vercel domain is `programs-manager-website-jlbbarco.vercel.app`.
