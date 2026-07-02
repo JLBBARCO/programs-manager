@@ -1,0 +1,94 @@
+name: Build Multi-Platform User Generator
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, develop]
+    paths:
+      - "user-generator/**"
+      - "src/assets/icon/**"
+      - "requirements.txt"
+      - "user-generator/build.bat"
+      - "user-generator/build.sh"
+      - "user-generator/run.ps1"
+      - "user-generator/run.sh"
+      - ".github/workflows/build-user-generator.yml"
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - "user-generator/**"
+      - "src/assets/icon/**"
+      - "requirements.txt"
+      - "user-generator/build.bat"
+      - "user-generator/build.sh"
+      - "user-generator/run.ps1"
+      - "user-generator/run.sh"
+      - ".github/workflows/build-user-generator.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build user generator (${{ matrix.name }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            script: user-generator/build.bat
+            asset: programs-manager-user-generator-windows.zip
+          - name: Linux
+            os: ubuntu-latest
+            script: user-generator/build.sh
+            asset: programs-manager-user-generator-linux.tar.gz
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk
+
+      - name: Build on Windows
+        if: runner.os == 'Windows'
+        shell: cmd
+        run: call ${{ matrix.script }}
+
+      - name: Build on Unix
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          chmod +x "${{ matrix.script }}"
+          ./"${{ matrix.script }}"
+
+      - name: Package Windows build
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Path release -Force | Out-Null
+          Compress-Archive -Path "dist/Programs Manager User Generator" -DestinationPath "release/${{ matrix.asset }}" -Force
+
+      - name: Package Unix build
+        if: runner.os != 'Windows'
+        shell: bash
+        run: |
+          mkdir -p release
+          tar -czf "release/${{ matrix.asset }}" -C dist "Programs Manager User Generator"
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.asset }}
+          path: release/${{ matrix.asset }}
+          if-no-files-found: error
