@@ -19,8 +19,8 @@ on:
       - "pnpm-lock.yaml"
       - "vite.config.ts"
       - "vercel.json"
-      - "scripts/ci_screenshot.py"
-      - "scripts/assemble_thumbnails.py"
+      - "core-app/scripts/ci_screenshot.py"
+      - "core-app/scripts/assemble_thumbnails.py"
       - ".github/workflows/screenshots.yml"
 
 permissions:
@@ -48,8 +48,8 @@ jobs:
               - 'requirements.txt'
               - 'core-app/build.bat'
               - 'core-app/build.sh'
-              - 'scripts/ci_screenshot.py'
-              - 'scripts/assemble_thumbnails.py'
+              - 'core-app/scripts/ci_screenshot.py'
+              - 'core-app/scripts/assemble_thumbnails.py'
               - '.github/workflows/screenshots.yml'
             site:
               - 'client/**'
@@ -60,7 +60,7 @@ jobs:
               - 'pnpm-lock.yaml'
               - 'vite.config.ts'
               - 'vercel.json'
-              - 'scripts/assemble_thumbnails.py'
+              - 'core-app/scripts/assemble_thumbnails.py'
               - '.github/workflows/screenshots.yml'
 
   desktop-screenshots:
@@ -116,9 +116,9 @@ jobs:
         run: |
           mkdir -p screenshots
           if [ "$RUNNER_OS" = "Linux" ]; then
-            xvfb-run -s "-screen 0 1366x768x24" python scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch "${{ matrix.launch }}"
+            xvfb-run -s "-screen 0 1366x768x24" python core-app/scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch "${{ matrix.launch }}"
           else
-            python scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch "${{ matrix.launch }}"
+            python core-app/scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch "${{ matrix.launch }}"
           fi
 
       - name: Upload screenshot
@@ -175,7 +175,7 @@ jobs:
       - name: Assemble changed images and thumbnail
         run: |
           python -m pip install pillow
-          python scripts/assemble_thumbnails.py \
+          python core-app/scripts/assemble_thumbnails.py \
             --windows screenshots/windows.webp \
             --linux screenshots/linux.webp \
             --site screenshots/site.webp
