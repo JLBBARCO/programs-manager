@@ -5,12 +5,13 @@ import {
   LOG_MONITOR_TIMEOUT_MS,
   getLogServerUrl,
 } from "@/constants/app";
-import { fetchLogOnce } from "@/lib/logFetcher";
+import { fetchHistoricOnce } from "@/lib/logFetcher";
 import {
   bucketLogLevel,
   classifyLogSection,
   extractLogLineMetadata,
-  parseLogLine,
+  parseHistoricEntry,
+  type HistoricEntry,
   type LogLevel,
 } from "@/lib/logParser";
 
@@ -41,18 +42,18 @@ interface UseLogMonitorResult extends LogBuckets {
   systemName: string | null;
 }
 
-// Intervalo de polling para atualizar o log após a conexão inicial terminar (em ms)
+// Intervalo de polling para atualizar o historic.json após a conexão inicial terminar (em ms)
 const LOG_POLL_INTERVAL_MS = 5000; // 5 segundos
 
 /**
- * Hook customizado para monitorar logs em tempo real
+ * Hook customizado para monitorar o histórico de execução (historic.json)
  *
  * Responsabilidades:
- * - Conectar ao servidor de logs via streaming
- * - Fazer parse das linhas
+ * - Buscar o historic.json exposto pelo core-app via servidor local
+ * - Fazer parse dos registros
  * - Classificar e bucketizar os logs
  * - Gerenciar timeout e cancelamento
- * - Fazer polling periódico após a conexão terminar
+ * - Fazer polling periódico após a conexão inicial terminar
  * - Retornar estado atualizado
  *
  * @returns Estado dos logs e status do monitoramento
@@ -76,7 +77,7 @@ export function useLogMonitor(): UseLogMonitorResult {
   const timeoutIdRef = useRef<number | null>(null);
   const pollIntervalRef = useRef<number | null>(null);
   const loadTimeRef = useRef(new Date());
-  const processedLinesRef = useRef<Set<string>>(new Set());
+  const processedEntriesRef = useRef<Set<string>>(new Set());
   const isPollingRef = useRef(false);
   const historyGroupsRef = useRef<Map<string, ProgramHistoryGroup>>(new Map());
   const currentProgramNameRef = useRef<string | null>(null);
@@ -130,20 +131,20 @@ export function useLogMonitor(): UseLogMonitorResult {
     []
   );
 
-  // Função para processar linhas (usada tanto no streaming quanto no polling)
-  const processLogLine = useCallback(
-    (rawLine: string): boolean => {
-      const lineKey = rawLine.trim();
-      if (processedLinesRef.current.has(lineKey)) {
-        return false; // Já foi processada
-      }
-
-      const parsed = parseLogLine(rawLine);
+  // Função para processar um registro individual (usada tanto na carga inicial quanto no polling)
+  const processHistoricEntry = useCallback(
+    (rawEntry: HistoricEntry): boolean => {
+      const parsed = parseHistoricEntry(rawEntry);
       if (!parsed) {
         return false;
       }
 
-      processedLinesRef.current.add(lineKey);
+      const entryKey = `${parsed.timestampRaw}|${parsed.level}|${parsed.message}`;
+      if (processedEntriesRef.current.has(entryKey)) {
+        return false; // Já foi processado
+      }
+
+      processedEntriesRef.current.add(entryKey);
 
       const metadata = extractLogLineMetadata(parsed.message);
 
@@ -184,19 +185,19 @@ export function useLogMonitor(): UseLogMonitorResult {
     [appendLog]
   );
 
-  const processLogBatch = useCallback(
-    (lines: string[]) => {
+  const processHistoricBatch = useCallback(
+    (entries: HistoricEntry[]) => {
       let systemEnded = false;
 
-      for (const line of lines) {
-        if (processLogLine(line)) {
+      for (const entry of entries) {
+        if (processHistoricEntry(entry)) {
           systemEnded = true;
         }
       }
 
       return systemEnded;
     },
-    [processLogLine]
+    [processHistoricEntry]
   );
 
   // Função para fazer polling periódico
@@ -206,12 +207,12 @@ export function useLogMonitor(): UseLogMonitorResult {
 
     const poll = async () => {
       try {
-        const lines = await fetchLogOnce(
+        const entries = await fetchHistoricOnce(
           logServerUrl,
           controllerRef.current?.signal
         );
 
-        const systemEnded = processLogBatch(lines);
+        const systemEnded = processHistoricBatch(entries);
 
         // Se encontrou "End system", parar de fazer polling
         if (systemEnded) {
@@ -228,7 +229,7 @@ export function useLogMonitor(): UseLogMonitorResult {
     };
 
     pollIntervalRef.current = window.setInterval(poll, LOG_POLL_INTERVAL_MS);
-  }, [processLogBatch]);
+  }, [processHistoricBatch]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -249,14 +250,14 @@ export function useLogMonitor(): UseLogMonitorResult {
 
     const monitorLogs = async () => {
       try {
-        const initialLines = await fetchLogOnce(
+        const initialEntries = await fetchHistoricOnce(
           logServerUrl,
           controller.signal
         );
 
         setIsLoading(false);
 
-        if (processLogBatch(initialLines)) {
+        if (processHistoricBatch(initialEntries)) {
           controller.abort();
           window.clearTimeout(timeoutId);
           return;
@@ -267,7 +268,7 @@ export function useLogMonitor(): UseLogMonitorResult {
           setMonitorError(
             err instanceof Error
               ? err
-              : new Error("Erro desconhecido ao monitorar logs")
+              : new Error("Erro desconhecido ao monitorar o histórico")
           );
           setIsLoading(false);
           // Iniciar polling mesmo com erro
@@ -290,7 +291,7 @@ export function useLogMonitor(): UseLogMonitorResult {
       timeoutIdRef.current = null;
       isPollingRef.current = false;
     };
-  }, [processLogLine, startPolling]);
+  }, [processHistoricEntry, startPolling]);
 
   return {
     info,

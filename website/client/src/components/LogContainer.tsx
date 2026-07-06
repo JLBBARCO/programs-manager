@@ -67,7 +67,7 @@ export function LogContainer({ title, entries }: LogContainerProps) {
       <div
         ref={containerRef}
         onScroll={handleScroll}
-        className="log-container flex-1 overflow-auto border border-border rounded-lg bg-card shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+        className="log-container flex-1 overflow-y-auto overflow-x-hidden border border-border rounded-lg bg-card shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
         role="region"
         aria-label={`${title} logs`}
         aria-live="polite"

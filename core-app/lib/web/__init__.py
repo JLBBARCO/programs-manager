@@ -17,7 +17,6 @@ _server_lock = threading.Lock()
 _shared_log_server = None
 _shared_log_server_thread = None
 _shared_log_server_port_range = range(9900, 10000)
-_log_file_path = get_ProgramsManager_folder() / 'log.log'
 _programs_manager_site_url = os.getenv(
 	'PROGRAMS_MANAGER_SITE_URL',
 	'https://programs-manager-website-jlbbarco.vercel.app',
@@ -31,6 +30,8 @@ _internet_check_url = 'https://www.google.com/generate_204'
 _internet_online_event = threading.Event()
 _internet_monitor_stop_event = threading.Event()
 _internet_monitor_thread = None
+
+_historic_file_path = get_ProgramsManager_folder() / 'historic.json'
 
 
 def _build_site_url(base_url: str, port: int) -> str:
@@ -120,17 +121,19 @@ class _LogShareRequestHandler(BaseHTTPRequestHandler):
 		self.send_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 		self.send_header('Pragma', 'no-cache')
 
-	def _read_log_contents(self) -> str:
+	def _read_historic_contents(self) -> str:
 		try:
-			_log_file_path.touch(exist_ok=True)
+			if not _historic_file_path.exists():
+				_historic_file_path.write_text('[]', encoding='utf-8')
 		except Exception:
 			pass
 
 		try:
-			with open(_log_file_path, 'r', encoding='utf-8') as log_file:
-				return log_file.read()
+			with open(_historic_file_path, 'r', encoding='utf-8') as historic_file:
+				content = historic_file.read().strip()
+				return content if content else '[]'
 		except Exception as error:
-			return f'Unable to read log file: {error}'
+			return json.dumps({'error': f'Unable to read historic file: {error}'})
 
 	def do_OPTIONS(self):
 		self.send_response(204)
@@ -139,12 +142,12 @@ class _LogShareRequestHandler(BaseHTTPRequestHandler):
 
 	def do_GET(self):
 		parsed_path = urlparse(self.path)
-		if parsed_path.path in {'/', '/log', '/log.log', '/api/log'}:
-			payload = self._read_log_contents()
+		if parsed_path.path in {'/', '/historic', '/historic.json', '/api/log'}:
+			payload = self._read_historic_contents()
 			encoded_payload = payload.encode('utf-8')
 
 			self.send_response(200)
-			self.send_header('Content-Type', 'text/plain; charset=utf-8')
+			self.send_header('Content-Type', 'application/json; charset=utf-8')
 			self.send_header('Content-Length', str(len(encoded_payload)))
 			self._send_cors_headers()
 			self.end_headers()
@@ -152,7 +155,7 @@ class _LogShareRequestHandler(BaseHTTPRequestHandler):
 			return
 
 		if parsed_path.path == '/meta':
-			body = json.dumps({'logFile': str(_log_file_path)}).encode('utf-8')
+			body = json.dumps({'historicFile': str(_historic_file_path)}).encode('utf-8')
 			self.send_response(200)
 			self.send_header('Content-Type', 'application/json; charset=utf-8')
 			self.send_header('Content-Length', str(len(body)))

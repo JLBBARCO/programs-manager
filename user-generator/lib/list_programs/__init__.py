@@ -77,11 +77,33 @@ def _is_valid_package_id(item_id: str, package_manager: str) -> bool:
         return bool(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9@+._-]*', token))
 
 
+def _is_valid_version(value: str) -> bool:
+        """Returns True when `value` looks like a real, installable version
+        string (e.g. '1.2.3', '10.0.19041.1-1') rather than a placeholder
+        such as 'unknown', 'latest' or an empty value."""
+        token = _clean_terminal_text(value)
+        if not token:
+            return False
+
+        lowered = token.lower()
+        if lowered in {'unknown', 'installed', 'available', 'latest', 'none', 'n/a', '-'}:
+            return False
+        if re.search(r'\s', token):
+            return False
+
+        return bool(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9:._+~-]*', token))
+
+
 def _format_package(package: dict[str, str]) -> dict[str, str | bool]:
         name = str(package.get('name', '')).strip()
         item_id = str(package.get('id', name)).strip() or name
+        version = _clean_terminal_text(str(package.get('version', '')))
 
-        return {'name': name, 'type': 'install', 'id': item_id, 'checkbox': True}
+        formatted: dict[str, str | bool] = {'name': name, 'type': 'install', 'id': item_id, 'checkbox': True}
+        if _is_valid_version(version):
+            formatted['version'] = version
+
+        return formatted
 
 
 def _format_packages(packages: list[dict[str, str]], package_manager: str) -> list[dict[str, str | bool]]:
@@ -92,10 +114,11 @@ def _format_packages(packages: list[dict[str, str]], package_manager: str) -> li
 
             name = _clean_terminal_text(str(package.get('name', '')))
             item_id = _clean_terminal_text(str(package.get('id', name)) or name)
+            version = _clean_terminal_text(str(package.get('version', '')))
             if not name or _is_noise_line(name) or not _is_valid_package_id(item_id, package_manager):
                 continue
 
-            formatted_packages.append(_format_package({'name': name, 'id': item_id}))
+            formatted_packages.append(_format_package({'name': name, 'id': item_id, 'version': version}))
 
         return formatted_packages
 
@@ -106,9 +129,11 @@ def _append_package(
         name: str,
         item_id: str,
         package_manager: str,
+        version: str = '',
 ) -> None:
         name = _clean_terminal_text(name)
         item_id = _clean_terminal_text(item_id)
+        version = _clean_terminal_text(version)
         if not name or _is_noise_line(name) or not _is_valid_package_id(item_id, package_manager):
             return
 
@@ -117,7 +142,7 @@ def _append_package(
             return
 
         seen_ids.add(key)
-        results.append({'name': name, 'id': item_id})
+        results.append({'name': name, 'id': item_id, 'version': version})
 
 
 def _is_progress_line(line: str) -> bool:
@@ -159,10 +184,10 @@ def _looks_like_winget_id(value: str) -> bool:
         return bool(re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._-]*', token))
 
 
-def _extract_winget_name_and_id(label: str) -> tuple[str, str]:
+def _extract_winget_name_and_id(label: str) -> tuple[str, str, str]:
         tokens = [token for token in label.split() if token.strip()]
         if len(tokens) < 2:
-            return label.strip(), ''
+            return label.strip(), '', ''
 
         for index, token in enumerate(tokens):
             if not _looks_like_winget_id(token):
@@ -171,16 +196,17 @@ def _extract_winget_name_and_id(label: str) -> tuple[str, str]:
             next_token = tokens[index + 1] if index + 1 < len(tokens) else ''
             if index + 1 >= len(tokens) or _looks_like_winget_version(next_token) or _is_winget_source(next_token):
                 extracted_name = ' '.join(tokens[:index]).strip()
+                version = next_token if _looks_like_winget_version(next_token) else ''
                 if extracted_name:
-                    return extracted_name, token.strip()
+                    return extracted_name, token.strip(), version
 
         if len(tokens) >= 2 and _looks_like_winget_version(tokens[-1]):
             candidate_id = tokens[-2].strip()
             extracted_name = ' '.join(tokens[:-2]).strip()
             if extracted_name and _looks_like_winget_id(candidate_id):
-                return extracted_name, candidate_id
+                return extracted_name, candidate_id, tokens[-1].strip()
 
-        return label.strip(), ''
+        return label.strip(), '', ''
 
 
 def _parse_winget_rows(output: str) -> list[dict[str, str]]:
@@ -204,31 +230,36 @@ def _parse_winget_rows(output: str) -> list[dict[str, str]]:
                 continue
 
             parts = re.split(r'\s{2,}', raw)
+            version = ''
             if len(parts) < 2:
-                extracted_name, item_id = _extract_winget_name_and_id(raw)
+                extracted_name, item_id, version = _extract_winget_name_and_id(raw)
                 name = extracted_name
             else:
                 name = str(parts[0]).strip()
                 item_id = str(parts[1]).strip()
+                if len(parts) >= 3 and _looks_like_winget_version(parts[2]):
+                    version = str(parts[2]).strip()
 
             if not name or not item_id:
-                extracted_name, extracted_id = _extract_winget_name_and_id(raw)
+                extracted_name, extracted_id, extracted_version = _extract_winget_name_and_id(raw)
                 name = name or extracted_name
                 item_id = item_id or extracted_id
+                version = version or extracted_version
 
             if not name or not item_id:
                 continue
             if name.lower() in {'name', 'nome'}:
                 continue
             if _is_winget_source(item_id) or item_id.lower() in {'id', 'id.'}:
-                extracted_name, extracted_id = _extract_winget_name_and_id(raw)
+                extracted_name, extracted_id, extracted_version = _extract_winget_name_and_id(raw)
                 if extracted_name and extracted_id:
                     name = extracted_name
                     item_id = extracted_id
+                    version = version or extracted_version
                 else:
                     continue
 
-            _append_package(results, seen_ids, name, item_id, 'winget')
+            _append_package(results, seen_ids, name, item_id, 'winget', version)
 
         return sorted(results, key=lambda item: item['name'].lower())
 
@@ -253,6 +284,28 @@ def _parse_simple_package_output(output: str) -> list[dict[str, str]]:
         return sorted(results, key=lambda item: item['name'].lower())
 
 
+def _parse_name_version_pairs(output: str, package_manager: str) -> list[dict[str, str]]:
+        """Parses lines shaped like `<name> <version> [...]`, as produced by
+        commands such as `brew list --versions` or `pacman -Q`."""
+        results: list[dict[str, str]] = []
+        seen_ids: set[str] = set()
+
+        for line in output.splitlines():
+            raw = _clean_terminal_text(line)
+            if _is_noise_line(raw):
+                continue
+
+            tokens = raw.split()
+            if not tokens:
+                continue
+
+            name = tokens[0].strip()
+            version = tokens[1].strip() if len(tokens) > 1 else ''
+            _append_package(results, seen_ids, name, name, package_manager, version)
+
+        return sorted(results, key=lambda item: item['name'].lower())
+
+
 def _deduplicate_packages(packages: list[dict[str, str]]) -> list[dict[str, str | bool]]:
         unique_packages: dict[str, dict[str, str | bool]] = {}
         for package in packages:
@@ -260,9 +313,10 @@ def _deduplicate_packages(packages: list[dict[str, str]]) -> list[dict[str, str 
                 continue
             name = _clean_terminal_text(str(package.get('name', '')))
             item_id = _clean_terminal_text(str(package.get('id', name)) or name)
+            version = _clean_terminal_text(str(package.get('version', '')))
             if not name or _is_noise_line(name) or not _is_valid_package_id(item_id, 'brew'):
                 continue
-            unique_packages[item_id.lower()] = _format_package({'name': name, 'id': item_id})
+            unique_packages[item_id.lower()] = _format_package({'name': name, 'id': item_id, 'version': version})
 
         return sorted(unique_packages.values(), key=lambda item: item['name'].lower())
 
@@ -276,10 +330,12 @@ def _parse_dpkg_list_output(output: str) -> list[dict[str, str]]:
             if _is_noise_line(raw):
                 continue
 
-            package_name = raw.split('\t', 1)[0].strip()
+            columns = raw.split('\t')
+            package_name = columns[0].strip()
             if ':' in package_name:
                 package_name = package_name.split(':', 1)[0].strip()
-            _append_package(results, seen_ids, package_name, package_name, 'apt')
+            version = columns[1].strip() if len(columns) > 1 else ''
+            _append_package(results, seen_ids, package_name, package_name, 'apt', version)
 
         return sorted(results, key=lambda item: item['name'].lower())
 
@@ -293,8 +349,10 @@ def _parse_rpm_list_output(output: str) -> list[dict[str, str]]:
             if _is_noise_line(raw):
                 continue
 
-            package_name = raw.split('\t', 1)[0].strip()
-            _append_package(results, seen_ids, package_name, package_name, 'rpm')
+            columns = raw.split('\t')
+            package_name = columns[0].strip()
+            version = columns[1].strip() if len(columns) > 1 else ''
+            _append_package(results, seen_ids, package_name, package_name, 'rpm', version)
 
         return sorted(results, key=lambda item: item['name'].lower())
 
@@ -308,11 +366,16 @@ def _parse_dnf_list_output(output: str) -> list[dict[str, str]]:
             if _is_noise_line(raw):
                 continue
 
-            token = raw.split()[0].strip()
+            tokens = raw.split()
+            if not tokens:
+                continue
+
+            token = tokens[0].strip()
             if '.' in token:
                 token = token.split('.', 1)[0]
 
-            _append_package(results, seen_ids, token, token, 'dnf')
+            version = tokens[1].strip() if len(tokens) > 1 else ''
+            _append_package(results, seen_ids, token, token, 'dnf', version)
 
         return sorted(results, key=lambda item: item['name'].lower())
 
@@ -324,19 +387,18 @@ def run():
             return _format_packages(_run_and_parse_packages(['winget', 'list', '--accept-source-agreements']), 'winget')
 
         if system_name == 'MacOS' and shutil.which('brew'):
-            installed_items = _parse_simple_package_output(_run_command(['brew', 'list', '--formula']))
-            installed_items.extend(_parse_simple_package_output(_run_command(['brew', 'list', '--cask'])))
+            installed_items = _parse_name_version_pairs(_run_command(['brew', 'list', '--versions', '--formula']), 'brew')
+            installed_items.extend(_parse_name_version_pairs(_run_command(['brew', 'list', '--versions', '--cask']), 'brew'))
             return _deduplicate_packages(installed_items)
 
         if system_name == 'Linux':
             if shutil.which('dpkg-query'):
                 return _format_packages(_parse_dpkg_list_output(_run_command(['dpkg-query', '-W', '-f=${binary:Package}\t${Version}\n'])), 'apt')
             if shutil.which('pacman'):
-                return _format_packages(_parse_simple_package_output(_run_command(['pacman', '-Qq'])), 'pacman')
+                return _format_packages(_parse_name_version_pairs(_run_command(['pacman', '-Q']), 'pacman'), 'pacman')
             if shutil.which('rpm'):
                 return _format_packages(_parse_rpm_list_output(_run_command(['rpm', '-qa', '--qf', '%{NAME}\t%{VERSION}\n'])), 'rpm')
             if shutil.which('dnf'):
                 return _format_packages(_parse_dnf_list_output(_run_command(['dnf', 'list', 'installed'])), 'dnf')
 
         return []
-

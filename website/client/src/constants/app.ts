@@ -6,7 +6,9 @@
 export const MIN_DYNAMIC_LOG_SERVER_PORT = 9900;
 export const MAX_DYNAMIC_LOG_SERVER_PORT = 9999;
 export const DEFAULT_LOG_SERVER_PORT = 9999;
-export const LOG_SERVER_PATH = "/log.log";
+// O core-app agora expõe o histórico estruturado em JSON (historic.json)
+// no lugar do antigo arquivo de texto puro (log.log).
+export const LOG_SERVER_PATH = "/historic.json";
 export const DEFAULT_PROGRAMS_MANAGER_SITE_URL =
   "https://programs-manager-website-jlbbarco.vercel.app";
 export const FALLBACK_PROGRAMS_MANAGER_SITE_URL =

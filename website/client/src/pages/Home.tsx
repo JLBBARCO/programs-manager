@@ -54,8 +54,8 @@ export default function Home() {
       </header>
 
       <main className="container py-8">
-        <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-4">
-          <div className="h-96">
+        <div className="mb-8 gap-6" style={{ display: "flex", flexFlow: "row wrap" }}>
+          <div className="h-96 overflow-x-hidden" style={{ width: "fit-content", maxWidth: "100%" }}>
             {isLoading ? (
               <LogContainerSkeleton />
             ) : (
@@ -63,7 +63,7 @@ export default function Home() {
             )}
           </div>
 
-          <div className="h-96">
+          <div className="h-96 overflow-x-hidden" style={{ width: "fit-content", maxWidth: "100%" }}>
             {isLoading ? (
               <LogContainerSkeleton />
             ) : (
@@ -71,7 +71,7 @@ export default function Home() {
             )}
           </div>
 
-          <div className="h-96">
+          <div className="h-96 overflow-x-hidden" style={{ width: "fit-content", maxWidth: "100%" }}>
             {isLoading ? (
               <LogContainerSkeleton />
             ) : (
@@ -79,7 +79,7 @@ export default function Home() {
             )}
           </div>
 
-          <div className="h-96">
+          <div className="h-96 overflow-x-hidden" style={{ width: "fit-content", maxWidth: "100%" }}>
             {isLoading ? (
               <LogContainerSkeleton />
             ) : (

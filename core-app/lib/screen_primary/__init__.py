@@ -16,9 +16,9 @@ class CategoryConfig:
 
 CATEGORY_CONFIGS = (
     CategoryConfig("customization", "Customization", 0, supported_systems=("Windows",), installer_name="customization"),
-    CategoryConfig("development", "Developer Tools", 1, default_selected=True, installer_name="development"),
-    CategoryConfig("essentials", "Essential Programs", 3, default_selected=True, installer_name="essential"),
-    CategoryConfig("games", "Games", 4, supported_systems=("Windows", "Linux"), installer_name="game"),
+    CategoryConfig("developer", "Developer Tools", 1, default_selected=True, installer_name="developer"),
+    CategoryConfig("essentials", "Essential Programs", 3, default_selected=True, installer_name="essentials"),
+    CategoryConfig("games", "Games", 4, supported_systems=("Windows", "Linux"), installer_name="games"),
     CategoryConfig("bloatware", "Remove Bloatware", 5, default_selected=True, installer_name="bloatware"),
     CategoryConfig("screen", "Screen", 6, default_selected=True, installer_name="screen"),
     CategoryConfig("server", "Server Tools", 7, supported_systems=("Linux",), installer_name="server"),

@@ -4,11 +4,9 @@ export type LogBucket = "info" | "debug" | "warning" | "error";
 
 export type LogSection = "current" | "history";
 
-const LINE_RE =
-  /^\[(\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}:\d{2})\] \[(\w+)\](?: \[pid:(\d+)\])?(?: \[thread:([^\]]+)\])?(?: \[caller:([^\]]+)\])? ?(.*)$/;
-const SYSTEM_START_RE = /^Start System$/i;
 const PROGRAM_START_RE = /^Start\s+(.+)$/i;
 const OPERATING_SYSTEM_RE = /^Operating System:\s*(.+)$/i;
+const SYSTEM_START_RE = /^Start System$/i;
 const SYSTEM_END_RE = /^End system$/i;
 
 function parseBrDate(raw: string) {
@@ -17,6 +15,17 @@ function parseBrDate(raw: string) {
   const [hour, minute, second] = timePart.split(":").map(Number);
 
   return new Date(year, month - 1, day, hour, minute, second);
+}
+
+/**
+ * Formato de cada registro gravado pelo core-app em `historic.json`.
+ * Mantém a mesma tipagem de níveis usada anteriormente em `log.log`
+ * (INFO, WARNING, ERROR), com timestamp no formato dd/mm/yyyy HH:MM:SS.
+ */
+export interface HistoricEntry {
+  timestamp: string;
+  level: string;
+  message: string;
 }
 
 export interface ParsedLogLine {
@@ -36,27 +45,36 @@ export interface LogLineMetadata {
   systemName: string | null;
 }
 
-export function parseLogLine(raw: string): ParsedLogLine | null {
-  const line = raw.trim();
-  if (!line) {
+/**
+ * Converte um registro bruto de `historic.json` (JSON) em um `ParsedLogLine`
+ * normalizado, usado pelo restante do pipeline de exibição.
+ */
+export function parseHistoricEntry(raw: unknown): ParsedLogLine | null {
+  if (!raw || typeof raw !== "object") {
     return null;
   }
 
-  const match = line.match(LINE_RE);
-  if (!match) {
+  const entry = raw as Partial<HistoricEntry>;
+
+  const timestampRaw =
+    typeof entry.timestamp === "string" ? entry.timestamp.trim() : "";
+  const level =
+    typeof entry.level === "string" ? entry.level.trim().toUpperCase() : "";
+  const message =
+    typeof entry.message === "string" ? entry.message.trim() : "";
+
+  if (!timestampRaw || !level || !message) {
     return null;
   }
-
-  const [, dateRaw, level, pid, thread, caller, message] = match;
 
   return {
-    timestamp: parseBrDate(dateRaw),
-    timestampRaw: dateRaw,
-    level: level.toUpperCase() as LogLevel,
-    pid: pid ?? null,
-    thread: thread ?? null,
-    caller: caller ?? null,
-    message: message.trim(),
+    timestamp: parseBrDate(timestampRaw),
+    timestampRaw,
+    level: level as LogLevel,
+    pid: null,
+    thread: null,
+    caller: null,
+    message,
   };
 }
 

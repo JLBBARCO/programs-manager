@@ -1,72 +1,18 @@
 import { getLogServerDisplay, getLogServerPortFromUrl } from "@/constants/app";
-
-interface FetchLogStreamOptions {
-  signal?: AbortSignal;
-}
-
-export async function* fetchLogStream(
-  url: string,
-  options: FetchLogStreamOptions = {}
-) {
-  const portDisplay = getLogServerDisplay(getLogServerPortFromUrl(url));
-  const res = await fetch(url, {
-    headers: { Accept: "text/plain" },
-    signal: options.signal,
-  });
-
-  if (!res.ok) {
-    throw new Error(
-      `Servidor na porta ${portDisplay.port} respondeu ${res.status}`
-    );
-  }
-
-  if (!res.body) {
-    throw new Error(
-      "Resposta sem body - verifique se o servidor expõe o arquivo."
-    );
-  }
-
-  const reader = res.body.getReader();
-  const decoder = new TextDecoder("utf-8");
-  let buffer = "";
-
-  while (true) {
-    const { done, value } = await reader.read();
-
-    if (done) {
-      buffer += decoder.decode();
-      const finalLines = buffer.split(/\r?\n/).filter(line => line.trim());
-
-      for (const line of finalLines) {
-        yield line;
-      }
-      break;
-    }
-
-    buffer += decoder.decode(value, { stream: true });
-
-    const lines = buffer.split(/\r?\n/);
-    buffer = lines.pop() ?? "";
-
-    for (const line of lines) {
-      if (line.trim()) {
-        yield line;
-      }
-    }
-  }
-}
+import type { HistoricEntry } from "@/lib/logParser";
 
 /**
- * Fetcha o arquivo de log completo (sem streaming)
- * Útil para polling periódico após a conexão inicial terminar
+ * Busca o conteúdo completo de `historic.json`, servido pelo core-app na
+ * porta local, e retorna a lista de registros já desserializada.
+ * Útil tanto para a carga inicial quanto para o polling periódico.
  */
-export async function fetchLogOnce(
+export async function fetchHistoricOnce(
   url: string,
   signal?: AbortSignal
-): Promise<string[]> {
+): Promise<HistoricEntry[]> {
   const portDisplay = getLogServerDisplay(getLogServerPortFromUrl(url));
   const res = await fetch(url, {
-    headers: { Accept: "text/plain" },
+    headers: { Accept: "application/json" },
     signal,
   });
 
@@ -77,5 +23,27 @@ export async function fetchLogOnce(
   }
 
   const text = await res.text();
-  return text.split(/\r?\n/).filter(line => line.trim());
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return [];
+  }
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(trimmed);
+  } catch {
+    throw new Error(
+      "Não foi possível interpretar historic.json - conteúdo inválido."
+    );
+  }
+
+  if (Array.isArray(parsed)) {
+    return parsed as HistoricEntry[];
+  }
+
+  if (parsed && typeof parsed === "object" && Array.isArray((parsed as { data?: unknown }).data)) {
+    return (parsed as { data: HistoricEntry[] }).data;
+  }
+
+  return [];
 }

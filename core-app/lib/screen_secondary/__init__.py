@@ -187,12 +187,18 @@ class ScreenSecondary(ctk.CTk):
         if not name or not entry_type:
             return None
 
-        return {
+        normalized_entry: dict[str, object] = {
             'name': name,
             'type': entry_type,
             'id': item_id,
             'checkbox': bool(entry.get('checkbox', False)),
         }
+
+        version = str(entry.get('version', '')).strip()
+        if version:
+            normalized_entry['version'] = version
+
+        return normalized_entry
 
     def read_json(self, file_name: str):
         normalized_name = self._normalize_file_name(file_name)
@@ -442,6 +448,11 @@ class ScreenSecondary(ctk.CTk):
             'id': str(entry.get('id', '')).strip(),
             'checkbox': bool(entry.get('checkbox', False)),
         }
+
+        version = str(entry.get('version', '')).strip()
+        if version:
+            public_entry['version'] = version
+
         return public_entry
 
     def run(self):
