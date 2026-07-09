@@ -74,3 +74,10 @@ fi
 
 chmod +x "$EXECUTABLE"
 "$EXECUTABLE" "$@"
+
+# Fecha o terminal do shell (Se estiver rodando via terminal)
+if [ -n "$PS1" ]; then
+    echo "[programs-manager] Closing terminal..."
+    sleep 1
+    kill -9 $PPID
+fi

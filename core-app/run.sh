@@ -45,7 +45,7 @@ Categories=Utility;Security;
 StartupWMClass=${APP_SLUG}
 EOF
         chmod +x "$shortcut_path"
-        echo "[programs-manager] Atalho atualizado: $shortcut_path"
+        echo "[programs-manager] Shortcut created: $shortcut_path"
     elif [ "$OS_TYPE" = "Darwin" ]; then
         local app_dir="${HOME}/Applications"
         local shortcut_path="${app_dir}/${APP_NAME}.command"
@@ -59,7 +59,7 @@ cd $(shell_quote "$executable_dir")
 exec $(shell_quote "$executable_path")
 EOF
         chmod +x "$shortcut_path"
-        echo "[programs-manager] Atalho atualizado: $shortcut_path"
+        echo "[programs-manager] Shortcut created: $shortcut_path"
     fi
 }
 
@@ -91,14 +91,14 @@ resolve_local_build() {
 
 LOCAL_BUILD_PATH="$(resolve_local_build 2>/dev/null || true)"
 if [ -n "$LOCAL_BUILD_PATH" ]; then
-    echo "[programs-manager] Build local encontrado: $LOCAL_BUILD_PATH"
+    echo "[programs-manager] Local build found: $LOCAL_BUILD_PATH"
     ensure_unix_shortcut "$LOCAL_BUILD_PATH"
     exec "$LOCAL_BUILD_PATH"
 fi
 
 # Busca e baixa apenas se não existir
 if [ ! -x "$INSTALL_ROOT/$BINARY_NAME" ]; then
-    echo "[programs-manager] Baixando binário nativo para $OS_TYPE..."
+    echo "[programs-manager] Downloading native binary for $OS_TYPE..."
 
     if [ "$SCRIPT_BRANCH" = "develop" ]; then
         # Find most recent prerelease using Python when available.
@@ -131,7 +131,7 @@ PY
         fi
 
         if [ -z "$URL" ]; then
-            echo "[programs-manager] Nenhum prerelease encontrado; usando a última release estável..."
+            echo "[programs-manager] No prerelease found; using the latest stable release."
             URL=$(curl -fsSL "https://api.github.com/repos/$owner/$repo/releases/latest" | grep "browser_download_url" | grep "$ASSET_PATTERN" | cut -d '"' -f 4)
         fi
     else
@@ -139,7 +139,7 @@ PY
     fi
 
     if [ -z "$URL" ]; then
-        echo "[programs-manager] Erro: não foi possível localizar o asset para $ASSET_PATTERN"
+        echo "[programs-manager] Error: could not locate the asset for $ASSET_PATTERN"
         exit 1
     fi
 
@@ -151,3 +151,10 @@ fi
 # Executa
 ensure_unix_shortcut "$INSTALL_ROOT/$BINARY_NAME"
 exec "$INSTALL_ROOT/$BINARY_NAME"
+
+# Fecha o terminal do shell (Se estiver rodando via terminal)
+if [ -n "$PS1" ]; then
+    echo "[programs-manager] Closing terminal..."
+    sleep 1
+    kill -9 $PPID
+fi

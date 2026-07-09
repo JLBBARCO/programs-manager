@@ -81,3 +81,10 @@ finally {
         }
     }
 }
+
+# If the script is running in a console host, close the PowerShell terminal after execution
+if ($host.Name -eq 'ConsoleHost') {
+    Write-Host "[programs-manager] Closing PowerShell terminal..."
+    Start-Sleep -Seconds 1
+    Stop-Process -Id $PID
+}

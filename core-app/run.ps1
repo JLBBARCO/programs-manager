@@ -71,9 +71,9 @@ function Set-WindowsShortcuts {
             $shortcut.WorkingDirectory = Split-Path -Parent $ExePath
             $shortcut.IconLocation = $ExePath
             $shortcut.Save()
-            Write-Host "[programs-manager] Atalho atualizado: $shortcutPath"
+            Write-Host "[programs-manager] Shortcut created: $shortcutPath"
         } catch {
-            Write-Host "[programs-manager] Não foi possível criar atalho em '$shortcutDirectory': $_" -ForegroundColor Yellow
+            Write-Host "[programs-manager] Failed to create shortcut in '$shortcutDirectory': $_" -ForegroundColor Yellow
         }
     }
 }
@@ -111,7 +111,7 @@ New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
 # 1. Try local build first
 $exePath = Resolve-LocalBuildPath
 if ($exePath) {
-    Write-Host "[programs-manager] Build local encontrado: $exePath"
+    Write-Host "[programs-manager] Local build found: $exePath"
 }
 
 # 2. If no local build, try installed version
@@ -121,7 +121,7 @@ if (-not $exePath) {
 
 # 3. If still not found, try to download
 if (-not $exePath) {
-    Write-Host "[programs-manager] Tentando baixar versão compilada para Windows..."
+    Write-Host "[programs-manager] Trying to download the compiled version for Windows..."
 
     try {
         # Decide which release to fetch based on the script branch.
@@ -134,7 +134,7 @@ if (-not $exePath) {
             }
 
             if (-not $asset) {
-                Write-Host "[programs-manager] Nenhum prerelease encontrado; usando a última release estável." -ForegroundColor Yellow
+                Write-Host "[programs-manager] No prerelease found; using the latest stable release." -ForegroundColor Yellow
                 $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/latest" -UseBasicParsing
                 $asset = $release.assets | Where-Object { $_.name -eq "programs-manager-windows.zip" } | Select-Object -First 1
             }
@@ -145,7 +145,7 @@ if (-not $exePath) {
         }
 
         if (-not $asset) {
-            throw "Asset 'programs-manager-windows.zip' não encontrado na release escolhida." 
+            throw "Asset 'programs-manager-windows.zip' not found in the chosen release." 
         }
 
         $zipTemp = Join-Path $env:TEMP "aip_win.zip"
@@ -156,8 +156,8 @@ if (-not $exePath) {
 
         $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
     } catch {
-        Write-Host "[programs-manager] Erro ao baixar: $_" -ForegroundColor Yellow
-        Write-Host "[programs-manager] Tentando compilar localmente..." -ForegroundColor Yellow
+        Write-Host "[programs-manager] Error downloading: $_" -ForegroundColor Yellow
+        Write-Host "[programs-manager] Trying to compile locally..." -ForegroundColor Yellow
 
         # Try to compile locally as last resort
         $scriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
@@ -165,7 +165,7 @@ if (-not $exePath) {
             $scriptDir = Split-Path -Parent $scriptPath
             $buildScript = Join-Path $scriptDir "build.bat"
             if (Test-Path $buildScript) {
-                Write-Host "[programs-manager] Executando build.bat..."
+                Write-Host "[programs-manager] Run build.bat..."
                 & $buildScript
                 $exePath = Resolve-LocalBuildPath
             }
@@ -175,12 +175,19 @@ if (-not $exePath) {
 
 # Final check
 if (-not $exePath -or -not (Test-Path $exePath)) {
-    throw "Executável não encontrado. Tente executar: python core-app/main.py ou .\core-app\build.bat"
+    throw "Executable not found. Try run: python core-app/main.py ou .\core-app\build.bat"
 }
 
 # 2. Executa o binário diretamente (Sem Python, sem VENV)
-Write-Host "[programs-manager] Iniciando..."
-Write-Host "[programs-manager] Executável: $exePath"
+Write-Host "[programs-manager] Running..."
+Write-Host "[programs-manager] Executable: $exePath"
 Set-WindowsShortcuts -ExePath $exePath
 $exeWorkingDirectory = Split-Path -Parent $exePath
 Start-Process -FilePath $exePath -WorkingDirectory $exeWorkingDirectory
+
+# 3. Fecha o terminal do PowerShell (Se estiver rodando via terminal)
+if ($host.Name -eq 'ConsoleHost') {
+    Write-Host "[programs-manager] Closing PowerShell terminal..."
+    Start-Sleep -Seconds 1
+    Stop-Process -Id $PID
+}
