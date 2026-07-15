@@ -39,12 +39,6 @@
       "checkbox": false
     },
     {
-      "name": "Vision Cursor Black",
-      "type": "function",
-      "id": "vision_cursor_black",
-      "checkbox": false
-    },
-    {
       "name": "Essential Programs Initialization",
       "type": "function",
       "id": "essential_programs_initialization",
