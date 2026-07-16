@@ -1,2 +1,2 @@
-Latest release=3.02.3
+Latest release=3.02.4
 Pre-release=4.05.3
