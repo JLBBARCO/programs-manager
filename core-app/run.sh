@@ -17,6 +17,7 @@ mkdir -p "$INSTALL_ROOT"
 if [ "$OS_TYPE" == "Linux" ]; then
     ASSET_PATTERN="programs-manager-linux.tar.gz"
     BINARY_NAME="Programs Manager/Programs Manager"
+    VERSION_FILE_NAME="Programs Manager/version.txt"
 fi
 
 shell_quote() {
@@ -89,21 +90,14 @@ resolve_local_build() {
     return 1
 }
 
-LOCAL_BUILD_PATH="$(resolve_local_build 2>/dev/null || true)"
-if [ -n "$LOCAL_BUILD_PATH" ]; then
-    echo "[programs-manager] Local build found: $LOCAL_BUILD_PATH"
-    ensure_unix_shortcut "$LOCAL_BUILD_PATH"
-    exec "$LOCAL_BUILD_PATH"
-fi
-
-# Busca e baixa apenas se não existir
-if [ ! -x "$INSTALL_ROOT/$BINARY_NAME" ]; then
-    echo "[programs-manager] Downloading native binary for $OS_TYPE..."
+# Prints "download_url<TAB>tag_name" for the release that should be used
+# (latest prerelease on develop, latest stable release otherwise).
+fetch_release_info() {
+    local asset_pattern="$1"
 
     if [ "$SCRIPT_BRANCH" = "develop" ]; then
-        # Find most recent prerelease using Python when available.
         if command -v python3 >/dev/null 2>&1; then
-            URL=$(python3 - "$owner" "$repo" "$ASSET_PATTERN" <<'PY'
+            python3 - "$owner" "$repo" "$asset_pattern" <<'PY'
 import json
 import sys
 import urllib.request
@@ -114,38 +108,122 @@ api_url = f"https://api.github.com/repos/{owner}/{repo}/releases"
 with urllib.request.urlopen(api_url) as response:
     releases = json.load(response)
 
-prereleases = [release for release in releases if release.get("prerelease")]
-prereleases.sort(key=lambda release: release.get("published_at") or "", reverse=True)
+prereleases = [r for r in releases if r.get("prerelease")]
+prereleases.sort(key=lambda r: r.get("published_at") or "", reverse=True)
 
 for release in prereleases:
     for asset in release.get("assets", []):
         if asset.get("name") == asset_pattern:
-            print(asset.get("browser_download_url", ""))
+            print(f"{asset.get('browser_download_url', '')}\t{release.get('tag_name', '')}")
             raise SystemExit(0)
 
 raise SystemExit(1)
 PY
-)
-        else
-            URL=$(curl -fsSL "https://api.github.com/repos/$owner/$repo/releases" | grep -A20 "\"prerelease\": true" | grep "browser_download_url" | grep "$ASSET_PATTERN" | head -n1 | cut -d '"' -f 4)
+            return $?
         fi
-
-        if [ -z "$URL" ]; then
-            echo "[programs-manager] No prerelease found; using the latest stable release."
-            URL=$(curl -fsSL "https://api.github.com/repos/$owner/$repo/releases/latest" | grep "browser_download_url" | grep "$ASSET_PATTERN" | cut -d '"' -f 4)
-        fi
-    else
-        URL=$(curl -fsSL "https://api.github.com/repos/$owner/$repo/releases/latest" | grep "browser_download_url" | grep "$ASSET_PATTERN" | cut -d '"' -f 4)
+        return 1
     fi
 
-    if [ -z "$URL" ]; then
+    if command -v python3 >/dev/null 2>&1; then
+        python3 - "$owner" "$repo" "$asset_pattern" <<'PY'
+import json
+import sys
+import urllib.request
+
+owner, repo, asset_pattern = sys.argv[1:4]
+api_url = f"https://api.github.com/repos/{owner}/{repo}/releases/latest"
+
+with urllib.request.urlopen(api_url) as response:
+    release = json.load(response)
+
+for asset in release.get("assets", []):
+    if asset.get("name") == asset_pattern:
+        print(f"{asset.get('browser_download_url', '')}\t{release.get('tag_name', '')}")
+        raise SystemExit(0)
+
+raise SystemExit(1)
+PY
+        return $?
+    fi
+
+    local json_data url tag
+    json_data="$(curl -fsSL "https://api.github.com/repos/$owner/$repo/releases/latest")"
+    url="$(printf '%s' "$json_data" | grep "browser_download_url" | grep "$asset_pattern" | head -n1 | cut -d '"' -f4)"
+    tag="$(printf '%s' "$json_data" | grep '"tag_name"' | head -n1 | cut -d '"' -f4)"
+    if [ -z "$url" ]; then
+        return 1
+    fi
+    printf '%s\t%s\n' "$url" "$tag"
+    return 0
+}
+
+get_local_version() {
+    local version_file="$1"
+    if [ ! -f "$version_file" ]; then
+        return 1
+    fi
+    local value
+    value="$(grep -m1 '^system_version=' "$version_file" | cut -d '=' -f2- | tr -d '\r' | xargs)"
+    if [ -z "$value" ]; then
+        return 1
+    fi
+    printf '%s\n' "$value"
+}
+
+# Strips the leading 'v' from a tag, e.g. v3.02.4 -> 3.02.4
+normalize_version() {
+    printf '%s' "$1" | sed 's/^[vV]//'
+}
+
+download_and_install() {
+    local url="$1"
+    echo "[programs-manager] Downloading native binary for $OS_TYPE..."
+    rm -rf "$INSTALL_ROOT"
+    mkdir -p "$INSTALL_ROOT"
+    curl -L "$url" -o "$INSTALL_ROOT/temp.tar.gz"
+    tar -xzf "$INSTALL_ROOT/temp.tar.gz" -C "$INSTALL_ROOT"
+    rm -f "$INSTALL_ROOT/temp.tar.gz"
+}
+
+LOCAL_BUILD_PATH="$(resolve_local_build 2>/dev/null || true)"
+if [ -n "$LOCAL_BUILD_PATH" ]; then
+    echo "[programs-manager] Local build found: $LOCAL_BUILD_PATH"
+    ensure_unix_shortcut "$LOCAL_BUILD_PATH"
+    exec "$LOCAL_BUILD_PATH"
+fi
+
+# Busca e baixa apenas se o programa ainda não existir
+if [ ! -x "$INSTALL_ROOT/$BINARY_NAME" ]; then
+    echo "[programs-manager] Program not found. Downloading the latest version..."
+    RELEASE_INFO="$(fetch_release_info "$ASSET_PATTERN" || true)"
+    if [ -z "$RELEASE_INFO" ]; then
         echo "[programs-manager] Error: could not locate the asset for $ASSET_PATTERN"
         exit 1
     fi
+    URL="$(printf '%s' "$RELEASE_INFO" | cut -f1)"
+    download_and_install "$URL"
+else
+    echo "[programs-manager] Installed program found. Checking version..."
+    LOCAL_VERSION="$(get_local_version "$INSTALL_ROOT/$VERSION_FILE_NAME" || true)"
+    RELEASE_INFO="$(fetch_release_info "$ASSET_PATTERN" || true)"
 
-    curl -L "$URL" -o "$INSTALL_ROOT/temp.tar.gz"
-    tar -xzf "$INSTALL_ROOT/temp.tar.gz" -C "$INSTALL_ROOT"
-    rm -f "$INSTALL_ROOT/temp.tar.gz"
+    if [ -n "$RELEASE_INFO" ]; then
+        URL="$(printf '%s' "$RELEASE_INFO" | cut -f1)"
+        TAG="$(printf '%s' "$RELEASE_INFO" | cut -f2)"
+        LATEST_VERSION="$(normalize_version "$TAG")"
+
+        if [ -z "$LOCAL_VERSION" ]; then
+            echo "[programs-manager] version.txt not found in the installed copy. Updating to the latest version..."
+            download_and_install "$URL"
+        elif [ -n "$LATEST_VERSION" ] && [ "$LOCAL_VERSION" != "$LATEST_VERSION" ]; then
+            echo "[programs-manager] New version available ($LATEST_VERSION). Updating from $LOCAL_VERSION..."
+            download_and_install "$URL"
+        else
+            echo "[programs-manager] Program is up to date (version $LOCAL_VERSION)."
+        fi
+    else
+        echo "[programs-manager] Could not check for updates. Using the installed version."
+    fi
 fi
 
 # Executa

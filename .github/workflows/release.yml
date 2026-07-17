@@ -93,7 +93,7 @@ jobs:
         shell: bash
         run: |
           git fetch --tags --force
-          VERSION_FILE=".github/version.txt"
+          VERSION_FILE=".github/version-compiler.txt"
           KEY="${{ steps.branch.outputs.version_key }}"
           CURRENT="$(awk -F= -v key="$KEY" '$1 == key { gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2 }' "$VERSION_FILE")"
           if [[ ! "$CURRENT" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
@@ -132,7 +132,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/version.txt
+          git add .github/version-compiler.txt
           git commit -m "ci: bump release version to ${{ steps.version.outputs.value }}"
           git push origin "HEAD:${{ steps.branch.outputs.name }}"
 
