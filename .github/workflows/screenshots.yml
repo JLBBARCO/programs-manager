@@ -190,7 +190,23 @@ jobs:
           git add src/assets/img/windows.webp src/assets/img/linux.webp src/assets/img/site.webp src/assets/img/thumbnail.webp
           if git diff --cached --quiet; then
             echo "No screenshot changes to commit"
-          else
-            git commit -m "ci: update screenshots"
-            git push
+            exit 0
           fi
+          git commit -m "ci: update screenshots"
+
+          for attempt in 1 2 3 4 5; do
+            if git push; then
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt), rebasing onto latest ${{ github.ref_name }}..."
+            git fetch origin "${{ github.ref_name }}"
+            if ! git rebase "origin/${{ github.ref_name }}"; then
+              git rebase --abort
+              sleep $((attempt * 3))
+              continue
+            fi
+            sleep $((attempt * 2))
+          done
+
+          echo "Failed to push screenshot updates after multiple attempts." >&2
+          exit 1

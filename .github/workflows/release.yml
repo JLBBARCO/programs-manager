@@ -134,7 +134,23 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add .github/version-compiler.txt
           git commit -m "ci: bump release version to ${{ steps.version.outputs.value }}"
-          git push origin "HEAD:${{ steps.branch.outputs.name }}"
+
+          for attempt in 1 2 3 4 5; do
+            if git push origin "HEAD:${{ steps.branch.outputs.name }}"; then
+              exit 0
+            fi
+            echo "Push rejected (attempt $attempt), rebasing onto latest ${{ steps.branch.outputs.name }}..."
+            git fetch origin "${{ steps.branch.outputs.name }}"
+            if ! git rebase "origin/${{ steps.branch.outputs.name }}"; then
+              git rebase --abort
+              sleep $((attempt * 3))
+              continue
+            fi
+            sleep $((attempt * 2))
+          done
+
+          echo "Failed to push the release version bump after multiple attempts." >&2
+          exit 1
 
       - name: Create or update release
         env:

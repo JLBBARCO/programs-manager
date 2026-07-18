@@ -91,8 +91,22 @@ jobs:
             exit 0
           fi
           git commit -m "ci: bump version.txt to ${{ steps.bump_version.outputs.version }} [skip ci]"
-          git pull --rebase --autostash origin "${{ github.ref_name }}" || true
-          git push origin "HEAD:${{ github.ref_name }}" || echo "[programs-manager] Warning: could not push version bump, a later run will pick it up."
+
+          for attempt in 1 2 3 4 5; do
+            if git push origin "HEAD:${{ github.ref_name }}"; then
+              exit 0
+            fi
+            echo "[programs-manager] Push rejected (attempt $attempt), rebasing onto latest ${{ github.ref_name }}..."
+            git fetch origin "${{ github.ref_name }}"
+            if ! git rebase "origin/${{ github.ref_name }}"; then
+              git rebase --abort
+              sleep $((attempt * 3))
+              continue
+            fi
+            sleep $((attempt * 2))
+          done
+
+          echo "[programs-manager] Warning: could not push version bump after multiple attempts; a later run will pick it up."
 
       - name: Build on Windows
         if: runner.os == 'Windows'
@@ -112,6 +126,17 @@ jobs:
         run: |
           $pfxPath = Join-Path $env:RUNNER_TEMP "codesign.pfx"
           [IO.File]::WriteAllBytes($pfxPath, [Convert]::FromBase64String($env:CODE_SIGN_PFX_BASE64))
+          $securePassword = ConvertTo-SecureString -String $env:CODE_SIGN_PFX_PASSWORD -Force -AsPlainText
+
+          # Trust the certificate on this disposable runner VM only, so that
+          # "signtool verify" below doesn't flag a self-signed root as an
+          # error. This has no effect on end-user machines, which must
+          # import the public .cer themselves (see README.md).
+          try {
+              Import-PfxCertificate -FilePath $pfxPath -CertStoreLocation Cert:\LocalMachine\Root -Password $securePassword | Out-Null
+          } catch {
+              Write-Host "[programs-manager] Could not add certificate to the local trust store on this runner: $_" -ForegroundColor Yellow
+          }
 
           $signtool = Get-ChildItem -Path "C:\Program Files (x86)\Windows Kits\10\bin" -Recurse -Filter "signtool.exe" -ErrorAction SilentlyContinue |
               Where-Object { $_.FullName -like "*x64*" } |
@@ -129,6 +154,9 @@ jobs:
           }
 
           & $signtool.FullName verify /pa "dist/Programs Manager User Generator/Programs Manager User Generator.exe"
+          if ($LASTEXITCODE -ne 0) {
+              Write-Host "[programs-manager] Warning: signtool verify reported an issue (expected for a self-signed certificate whose root isn't trusted here). The signature itself was applied successfully." -ForegroundColor Yellow
+          }
 
           Remove-Item $pfxPath -Force
           Write-Host "[programs-manager] Executable signed successfully."
