@@ -26,7 +26,7 @@ on:
       - ".github/workflows/build-user-generator.yml"
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -64,49 +64,20 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-tk
 
-      - name: Bump version.txt from version-compiler.txt
-        id: bump_version
+      - name: Set version.txt from commit timestamp
+        id: set_version
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BRANCH="${{ github.base_ref }}"
-          else
-            BRANCH="${{ github.ref_name }}"
-          fi
+          # Version is derived from the checked-out commit's own timestamp
+          # (not the runner's wall clock), so both the Windows and Linux
+          # legs of this build produce the exact same version string.
+          COMMIT_ISO="$(git show -s --format=%cI HEAD)"
+          VERSION="$(date -u -d "$COMMIT_ISO" +%Y.%m.%d.%H%M%S)"
 
-          NEW_VERSION="$(python .github/scripts/bump_version.py "$BRANCH")"
+          printf 'system_version=%s' "$VERSION" > version.txt
 
-          echo "version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
-          echo "[programs-manager] version.txt bumped to $NEW_VERSION"
-
-      - name: Persist version bump
-        if: matrix.os == 'ubuntu-latest' && github.event_name != 'pull_request'
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/version-compiler.txt version.txt
-          if git diff --cached --quiet; then
-            echo "[programs-manager] No version changes to commit."
-            exit 0
-          fi
-          git commit -m "ci: bump version.txt to ${{ steps.bump_version.outputs.version }} [skip ci]"
-
-          for attempt in 1 2 3 4 5; do
-            if git push origin "HEAD:${{ github.ref_name }}"; then
-              exit 0
-            fi
-            echo "[programs-manager] Push rejected (attempt $attempt), rebasing onto latest ${{ github.ref_name }}..."
-            git fetch origin "${{ github.ref_name }}"
-            if ! git rebase "origin/${{ github.ref_name }}"; then
-              git rebase --abort
-              sleep $((attempt * 3))
-              continue
-            fi
-            sleep $((attempt * 2))
-          done
-
-          echo "[programs-manager] Warning: could not push version bump after multiple attempts; a later run will pick it up."
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "[programs-manager] version.txt set to $VERSION (commit $(git rev-parse --short HEAD))"
 
       - name: Build on Windows
         if: runner.os == 'Windows'
