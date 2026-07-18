@@ -1,7 +1,2 @@
-<<<<<<< HEAD
 Latest release=3.02.5
-Pre-release=4.05.4
-=======
-Latest release=3.02.3
-Pre-release=4.05.4
->>>>>>> 245383c4f946a80eafa04380f087f6a24933b6e8
+Pre-release=4.05.7

@@ -95,7 +95,13 @@ jobs:
           git fetch --tags --force
           VERSION_FILE=".github/version-compiler.txt"
           KEY="${{ steps.branch.outputs.version_key }}"
-          CURRENT="$(awk -F= -v key="$KEY" '$1 == key { gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2 }' "$VERSION_FILE")"
+
+          if grep -q '^<<<<<<< \|^=======$\|^>>>>>>> ' "$VERSION_FILE"; then
+            echo "$VERSION_FILE has unresolved git merge conflict markers. Resolve the conflict and commit before running this workflow again."
+            exit 1
+          fi
+
+          CURRENT="$(awk -F= -v key="$KEY" '$1 == key { gsub(/\r/, "", $2); gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2 }' "$VERSION_FILE" | tail -n 1)"
           if [[ ! "$CURRENT" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
             echo "Invalid version for $KEY: $CURRENT"
             exit 1

@@ -1,74 +1,60 @@
-# Programs Manager Monorepo
+# Programs Manager Website
 
-This repository combines three related projects:
+The website displays the `log.log` output in real time while the program runs. The UI groups log lines by severity (`INFO`, `DEBUG`, `WARNING`, `ERROR`) and shows recent entries first, with automatic scrolling unless the user scrolls up.
 
-- [core-app](core-app) is the desktop application launcher and packaged runtime.
-- [website](website) is the Vercel-deployed log viewer.
-- [user-generator](user-generator) builds the user list generator utility.
+## Frontend (Site)
 
-## Entry points
+### Language
 
-Windows PowerShell:
+English (En-US)
 
-```powershell
-irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.ps1 | iex
+### Main view
+
+- Four containers display `INFO`, `DEBUG`, `WARNING`, and `ERROR` messages.
+- Each container has a fixed height and horizontal scrollbar. Older messages appear above newer messages.
+- Incoming log lines follow these formats:
+
+  ```log
+  [dd/mm/yyyy hh:mm:ss] [INFO] <message>
+  [dd/mm/yyyy hh:mm:ss] [WARNING] <message>
+  [dd/mm/yyyy hh:mm:ss] [ERROR] <message>
+  ```
+
+- Example input line: `[01/06/2026 12:30:45] [SUCCESS] Visual Studio Code installed` is displayed as `01/06/2026 12:30:45 | Visual Studio installed` with the timestamp colored `#808080`.
+- The site partitions historical runs: entries older than 1 minute compared to the site's load timestamp are shown in a separate history section.
+- The monitor also stores the latest `Start <program>` marker and `Operating System: <system>` marker so the header and history can be grouped by program.
+
+### Footer — Contact container
+
+Contact cards are loaded from a remote JSON and displayed as circular icon buttons. Hovering shows the contact `name`. The JSON `url` becomes the card link and `iconName` indicates the icon to display.
+
+CSS layout example:
+
+```css
+display: flex;
+flex-flow: row wrap;
+justify-content: space-between;
+align-items: center;
 ```
 
-Linux:
+### Error page
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.sh | bash
-```
+If the site cannot access the `log.log` port (the port provided in the page query parameter `?port=NNNN` or any `99xx` port) or the file is not shared, an error page is shown with a refresh button and a link to the GitHub repository: `https://github.com/JLBBARCO/programs-manager`.
 
-User generator:
+## Backend (Site)
 
-```powershell
-irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/user-generator/run.ps1 | iex
-```
+The site temporarily records the page load time and uses it to partition current-run logs from historical logs. Monitoring also tracks the current program name and operating system extracted from the log stream. Monitoring stops when the latest log line contains `[INFO] End system`.
 
-```bash
-curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/user-generator/run.sh | bash
-```
+### Port probe
 
-## Code signing (Windows executables)
+On load the site probes the port specified by the query parameter `?port=NNNN` (if present) or falls back to a sensible default in the `99xx` range for up to 30 seconds. If the log endpoint is not available, monitoring is paused until the user refreshes.
 
-The Windows build steps in `build-core-app.yml` and `build-user-generator.yml`
-can optionally sign the generated `.exe` with an Authenticode certificate.
-Signing only runs if the `CODE_SIGN_PFX_BASE64` repository secret is set; if
-it's empty the step is skipped and the build proceeds unsigned, as before.
+### Contacts source
 
-To set it up with a self-signed certificate:
+Contact data is fetched from:
 
-1. Run `.github/scripts/generate-self-signed-cert.ps1` once, locally, on
-   Windows (see the comments at the top of the script for usage and output
-   files).
-2. Add the repository secrets `CODE_SIGN_PFX_BASE64` and
-   `CODE_SIGN_PFX_PASSWORD` with the values it prints out.
-3. Distribute the generated `.cer` (public certificate) file to anyone who
-   needs to run the signed executables, so they can import it into their
-   local "Trusted Root Certification Authorities" store, e.g.:
-   ```powershell
-   Import-Certificate -FilePath ".\code-signing-cert.cer" -CertStoreLocation Cert:\CurrentUser\Root
-   ```
+`https://raw.githubusercontent.com/JLBBARCO/portfolio/main/src/json/areas/contact.json` and cached by Vercel hourly to minimize GitHub requests.
 
-**Important:** a self-signed certificate has no chain to a publicly trusted
-root CA, so Windows SmartScreen and any Application Control / WDAC policy
-will still treat the executable as untrusted unless the certificate above is
-explicitly imported and trusted on that machine (or an administrator adds an
-allow rule for it). Signing removes the "unknown publisher" warning and lets
-you verify the binary hasn't been tampered with, but it does not, by itself,
-bypass an organization's Application Control policy. For that, a certificate
-issued by a CA that's already trusted by the target machines (or an explicit
-WDAC/AppLocker rule) is required.
+### Deployment
 
-## Deploy flow
-
-- GitHub Actions builds `core-app` and `user-generator` on pushes to `main` and `develop`.
-- The release workflow publishes the generated archives from those builds.
-- The website is deployed through Vercel using the configuration in [website/vercel.json](website/vercel.json).
-
-## Documentation
-
-- [core-app/README.md](core-app/README.md)
-- [user-generator/README.md](user-generator/README.md)
-- [website/README.md](website/README.md)
+The project is deployed on Vercel using the settings in [vercel.json](vercel.json). The current Vercel domain is `programs-manager-website-jlbbarco.vercel.app`.

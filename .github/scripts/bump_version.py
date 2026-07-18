@@ -26,6 +26,16 @@ def main() -> int:
     with open(version_compiler_path, "r", newline="") as f:
         lines = f.readlines()
 
+    for line in lines:
+        stripped = line.rstrip("\r\n")
+        if stripped.startswith("<<<<<<< ") or stripped == "=======" or stripped.startswith(">>>>>>> "):
+            print(
+                f"{version_compiler_path} has unresolved git merge conflict markers. "
+                "Resolve the conflict and commit before running this workflow again.",
+                file=sys.stderr,
+            )
+            return 1
+
     current = None
     for line in lines:
         stripped = line.rstrip("\r\n")
