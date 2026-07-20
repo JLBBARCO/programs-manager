@@ -65,9 +65,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          for workflow in \
-            "Build Multi-Platform Core App" \
-            "Build Multi-Platform User Generator" \
+          for workflow in "Build Multi-Platform Core App" "Build Multi-Platform User Generator"; do
             run_id="$(gh run list --workflow "$workflow" --branch "${{ steps.branch.outputs.name }}" --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
             if [[ -n "$run_id" ]]; then
               gh run download "$run_id" --dir release || true
@@ -93,48 +91,45 @@ jobs:
         shell: bash
         run: |
           git fetch --tags --force
-          VERSION_FILE=".github/version-compiler.txt"
-          KEY="${{ steps.branch.outputs.version_key }}"
-          CURRENT="$(awk -F= -v key="$KEY" '$1 == key { gsub(/^[ \t]+|[ \t]+$/, "", $2); print $2 }' "$VERSION_FILE")"
-          if [[ ! "$CURRENT" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
-            echo "Invalid version for $KEY: $CURRENT"
+
+          # The version is named after the date/time the release was built,
+          # and it's already embedded as version.txt inside every build
+          # artifact (see build-core-app.yml / build-user-generator.yml).
+          # Read it from there instead of tracking a separate file, so there
+          # is nothing to keep in sync (or conflict) across branches.
+          ASSET="$(find release -maxdepth 1 -type f \( -name "*.tar.gz" -o -name "*.zip" \) | sort | head -n 1)"
+          if [[ -z "$ASSET" ]]; then
+            echo "No release artifact found to read the version from."
             exit 1
           fi
 
-          IFS='.' read -r major minor patch extra <<< "$CURRENT"
-          if [[ -n "${extra:-}" || -z "${minor:-}" || -z "${patch:-}" ]]; then
-            echo "Version must use major.minor.patch format: $CURRENT"
+          if [[ "$ASSET" == *.tar.gz ]]; then
+            CURRENT="$(tar -xOzf "$ASSET" --wildcards '*/version.txt' 2>/dev/null | grep -m1 '^system_version=' | cut -d= -f2- | tr -d '\r' | xargs || true)"
+          else
+            CURRENT="$(unzip -p "$ASSET" '*/version.txt' 2>/dev/null | grep -m1 '^system_version=' | cut -d= -f2- | tr -d '\r' | xargs || true)"
+          fi
+
+          if [[ ! "$CURRENT" =~ ^[0-9]{4}\.[0-9]{2}\.[0-9]{2}\.[0-9]{6}$ ]]; then
+            echo "Could not read a valid date/time version from $ASSET's version.txt: '$CURRENT'"
             exit 1
           fi
 
-          VERSION="$CURRENT"
-          while gh release view "v$VERSION" >/dev/null 2>&1 || git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; do
-            EXISTING_SHA="$(git rev-parse -q --verify "refs/tags/v$VERSION^{}" 2>/dev/null || true)"
+          # Extremely unlikely, but guard against two builds sharing the
+          # exact same second: append a suffix rather than silently
+          # overwriting an unrelated release.
+          TAG="v$CURRENT"
+          SUFFIX=0
+          while gh release view "$TAG" >/dev/null 2>&1 || git rev-parse -q --verify "refs/tags/$TAG" >/dev/null; do
+            EXISTING_SHA="$(git rev-parse -q --verify "refs/tags/$TAG^{}" 2>/dev/null || true)"
             if [[ -n "$EXISTING_SHA" && "$EXISTING_SHA" == "$TARGET_SHA" ]]; then
               break
             fi
-            patch="$((10#$patch + 1))"
-            VERSION="${major}.${minor}.${patch}"
+            SUFFIX=$((SUFFIX + 1))
+            TAG="v${CURRENT}-r${SUFFIX}"
           done
 
-          if [[ "$VERSION" != "$CURRENT" ]]; then
-            awk -v key="$KEY" -v version="$VERSION" 'BEGIN { FS=OFS="=" } $1 == key { $2=version } { print }' "$VERSION_FILE" > "$VERSION_FILE.tmp"
-            mv "$VERSION_FILE.tmp" "$VERSION_FILE"
-          fi
-
-          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
-          echo "tag=v$VERSION" >> "$GITHUB_OUTPUT"
-          echo "changed=$([[ "$VERSION" != "$CURRENT" ]] && echo true || echo false)" >> "$GITHUB_OUTPUT"
-
-      - name: Commit bumped version
-        if: steps.version.outputs.changed == 'true'
-        shell: bash
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/version-compiler.txt
-          git commit -m "ci: bump release version to ${{ steps.version.outputs.value }}"
-          git push origin "HEAD:${{ steps.branch.outputs.name }}"
+          echo "value=$CURRENT" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       - name: Create or update release
         env:

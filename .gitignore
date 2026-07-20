@@ -129,3 +129,7 @@ venv/
 *.spec
 *.pyc
 .env*
+
+# Certificates
+code-signing-cert.pfx
+code-signing-cert.pfx.base64.txt
