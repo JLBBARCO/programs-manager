@@ -15,11 +15,6 @@ python -m pip install -r requirements.txt
 python core-app/main.py
 ```
 
-## Build
-
-- Windows: `core-app/build.bat`
-- Linux: `core-app/build.sh`
-
 ## Run
 
 - Windows: `run.ps1`

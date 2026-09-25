@@ -19,19 +19,19 @@ log to the companion website.
 
 ## Main modules (`lib/`)
 
-| Module | Responsibility |
-|---|---|
-| `system` | Detects the operating system (Windows/Linux). |
-| `web` | Internet monitor, shared log server, opens the website. |
-| `functions` | Resolves and runs custom functions (see below). |
-| `install` | Executes install actions. |
-| `uninstall` | Executes uninstall actions. |
-| `updates` | Updates the underlying package manager. |
-| `screen_primary` / `screen_secondary` | The two UI screens. |
-| `screen_other` | Additional/auxiliary screen logic. |
-| `find_folders` | Locates relevant folders on disk. |
-| `json` | Loads runtime JSON. |
-| `log` | Logging utilities feeding the shared log server. |
+| Module                                | Responsibility                                          |
+| ------------------------------------- | ------------------------------------------------------- |
+| `system`                              | Detects the operating system (Windows/Linux).           |
+| `web`                                 | Internet monitor, shared log server, opens the website. |
+| `functions`                           | Resolves and runs custom functions (see below).         |
+| `install`                             | Executes install actions.                               |
+| `uninstall`                           | Executes uninstall actions.                             |
+| `updates`                             | Updates the underlying package manager.                 |
+| `screen_primary` / `screen_secondary` | The two UI screens.                                     |
+| `screen_other`                        | Additional/auxiliary screen logic.                      |
+| `find_folders`                        | Locates relevant folders on disk.                       |
+| `json`                                | Loads runtime JSON.                                     |
+| `log`                                 | Logging utilities feeding the shared log server.        |
 
 `main.py` orchestrates all of the above at startup.
 

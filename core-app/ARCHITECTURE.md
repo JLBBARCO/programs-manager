@@ -29,11 +29,10 @@ Programs Manager is a Python desktop application that lets the user select packa
 - `lib/screen_primary` and `lib/screen_secondary` implement the UI screens.
 - `system/<os>/json` stores runtime JSON files.
 
-## Data and packaging
+## Data and runtime
 
 - JSON data is loaded at runtime from `system/<os>/json`.
-- The build artifacts intentionally exclude `system/` because the JSON files are fetched from GitHub RAW when the app runs.
-- The build scripts create platform-specific PyInstaller outputs.
+- The app runs from source in Python. The run scripts install the interpreter and Python dependencies when needed.
 
 ## Notes
 

@@ -9,8 +9,6 @@ on:
       - "src/lib/shortcuts/**"
       - "src/assets/icon/**"
       - "requirements.txt"
-      - "core-app/build.bat"
-      - "core-app/build.sh"
       - "client/**"
       - "server/**"
       - "shared/**"
@@ -46,8 +44,6 @@ jobs:
               - 'src/lib/shortcuts/**'
               - 'src/assets/icon/**'
               - 'requirements.txt'
-              - 'core-app/build.bat'
-              - 'core-app/build.sh'
               - 'core-app/scripts/ci_screenshot.py'
               - 'core-app/scripts/assemble_thumbnails.py'
               - '.github/workflows/screenshots.yml'
@@ -72,13 +68,11 @@ jobs:
       matrix:
         include:
           - os: windows-latest
-            script: core-app/build.bat
             name: windows
-            launch: dist/Programs Manager/Programs Manager.exe
+            launch: core-app/main.py
           - os: ubuntu-latest
-            script: core-app/build.sh
             name: linux
-            launch: dist/Programs Manager/Programs Manager
+            launch: core-app/main.py
 
     steps:
       - name: Checkout repository
@@ -95,17 +89,8 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3-tk xvfb x11-utils xdotool
 
-      - name: Build app on Windows
-        if: runner.os == 'Windows'
-        shell: cmd
-        run: call ${{ matrix.script }}
-
-      - name: Build app on Unix
-        if: runner.os != 'Windows'
-        shell: bash
-        run: |
-          chmod +x "${{ matrix.script }}"
-          ./"${{ matrix.script }}"
+      - name: Install Python dependencies
+        run: python -m pip install -r requirements.txt
 
       - name: Install screenshot dependencies
         shell: bash
@@ -116,9 +101,9 @@ jobs:
         run: |
           mkdir -p screenshots
           if [ "$RUNNER_OS" = "Linux" ]; then
-            xvfb-run -s "-screen 0 1366x768x24" python core-app/scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch "${{ matrix.launch }}"
+            xvfb-run -s "-screen 0 1366x768x24" python core-app/scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch python "${{ matrix.launch }}"
           else
-            python core-app/scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch "${{ matrix.launch }}"
+            python core-app/scripts/ci_screenshot.py "screenshots/${{ matrix.name }}.webp" --wait-seconds 8 --launch python "${{ matrix.launch }}"
           fi
 
       - name: Upload screenshot

@@ -15,8 +15,7 @@ Programs Manager is a Python desktop application for selecting package-manager a
 - [main.py](main.py) is the entry point.
 - [lib/](lib) contains the runtime modules for screens, logging, package actions, updates, and functions.
 - [system/](system) contains runtime JSON files per operating system.
-- [build.bat](build.bat) and [build.sh](build.sh) build the packaged app.
-- [run.ps1](run.ps1) and [run.sh](run.sh) download or reuse a packaged build.
+- [run.ps1](run.ps1) and [run.sh](run.sh) run the app from Python source.
 
 ## Runtime JSON
 
@@ -26,14 +25,9 @@ The expected path is:
 
 `https://raw.githubusercontent.com/JLBBARCO/programs-manager/<branch>/system/<operating_system>/json/<file_name>.json`
 
-## Build scripts
-
-- Windows: run [build.bat](build.bat).
-- Linux: run [build.sh](build.sh).
-
-The Windows script skips the final pause automatically in CI.
-
 ## Run scripts
+
+The run scripts find Python 3.12 or newer, install it through the available system package manager when missing, install the runtime dependencies, then launch `main.py` in the Python interpreter. When launched from the repository they use the local source; when piped from GitHub they download the selected branch source first.
 
 Windows:
 
@@ -59,4 +53,4 @@ AIP_BRANCH=develop curl -fsSL https://raw.githubusercontent.com/JLBBARCO/program
 
 ## GitHub Actions
 
-- [.github/workflows/build-core-app.yml](../.github/workflows/build-core-app.yml) builds for `main` and `develop`.
+The screenshots workflow runs the application directly through Python. It does not package or compile the desktop app.

@@ -4,7 +4,6 @@ on:
   workflow_dispatch:
   workflow_run:
     workflows:
-      - Build Multi-Platform Core App
       - Build Multi-Platform User Generator
     types: [completed]
     branches: [main, develop]
@@ -65,7 +64,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          for workflow in "Build Multi-Platform Core App" "Build Multi-Platform User Generator"; do
+          for workflow in "Build Multi-Platform User Generator"; do
             run_id="$(gh run list --workflow "$workflow" --branch "${{ steps.branch.outputs.name }}" --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
             if [[ -n "$run_id" ]]; then
               gh run download "$run_id" --dir release || true
@@ -94,7 +93,7 @@ jobs:
 
           # The version is named after the date/time the release was built,
           # and it's already embedded as version.txt inside every build
-          # artifact (see build-core-app.yml / build-user-generator.yml).
+          # artifact (see build-user-generator.yml).
           # Read it from there instead of tracking a separate file, so there
           # is nothing to keep in sync (or conflict) across branches.
           ASSET="$(find release -maxdepth 1 -type f \( -name "*.tar.gz" -o -name "*.zip" \) | sort | head -n 1)"

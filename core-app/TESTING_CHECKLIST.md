@@ -4,7 +4,7 @@
 
 - Python 3.12 or newer
 - Project dependencies installed with `python -m pip install -r requirements.txt`
-- A Windows or Linux machine for the matching build script
+- A Windows or Linux machine
 
 ## Smoke tests
 
@@ -21,16 +21,6 @@
 - Function actions run second.
 - Install actions run last.
 
-## Build verification
-
-- Windows: `core-app/build.bat`
-- Linux: `core-app/build.sh`
-
-Expected results:
-
-- Windows produces `dist/Programs Manager/Programs Manager.exe`.
-- Linux produces `dist/Programs Manager/Programs Manager`.
-
 ## Launcher verification
 
 - Windows: `run.ps1`
@@ -38,9 +28,9 @@ Expected results:
 
 Expected results:
 
-- Local builds are used first when present.
-- The scripts fall back to release downloads when no local build is found.
-- The branch override selects prerelease assets when `AIP_BRANCH` or `SCRIPT_BRANCH` is set to `develop`.
+- The scripts run `core-app/main.py` through Python.
+- If Python 3.12 or newer is missing, the scripts install it through the platform package manager.
+- The branch override selects source from that branch when `AIP_BRANCH` or `SCRIPT_BRANCH` is set.
 
 ## Documentation checks
 
