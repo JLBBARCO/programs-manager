@@ -9,7 +9,7 @@ for import_path in (PROJECT_ROOT, APP_ROOT):
         sys.path.insert(0, str(import_path))
 
 from src.lib.shortcuts import ensure_platform_shortcuts_best_effort
-from lib import system, log, screen_primary, screen_secondary, updates, install, uninstall, web
+from lib import system, log, screen_primary, screen_secondary, install, uninstall, web
 
 from lib.functions import functions, notifications
 
@@ -74,7 +74,6 @@ try:
         web.wait_for_internet_connection()
         web.open_programs_manager_site(web.get_shared_log_server_port())
 
-        updates.update_package_manager(operational_system)
         if uninstall_list:
             try:
                 web.wait_for_internet_connection()

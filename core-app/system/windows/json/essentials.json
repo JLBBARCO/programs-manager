@@ -117,12 +117,6 @@
       "checkbox": true
     },
     {
-      "name": "Update Programs",
-      "type": "function",
-      "id": "update_programs",
-      "checkbox": true
-    },
-    {
       "name": "Windows Optimizer",
       "type": "function",
       "id": "windows_optimizer",

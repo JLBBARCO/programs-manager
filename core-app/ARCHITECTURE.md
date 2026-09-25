@@ -11,7 +11,6 @@ Programs Manager is a Python desktop application that lets the user select packa
 - Show the secondary screen if the user selected entries.
 - Start the shared log server on a free port in the `9900-9999` range.
 - Open the configured website with `?port=NNNN`.
-- Update the package manager.
 - Run uninstall actions.
 - Run function actions.
 - Run install actions.
@@ -25,7 +24,7 @@ Programs Manager is a Python desktop application that lets the user select packa
 - `lib/functions` resolves and runs custom functions.
 - `lib/install` executes installs.
 - `lib/uninstall` executes uninstalls.
-- `lib/updates` updates the package manager.
+- Program catalog JSON files are loaded from `system/<os>/json` in the local source tree; GitHub is used only as a fallback when a local file is missing.
 - `lib/screen_primary` and `lib/screen_secondary` implement the UI screens.
 - `system/<os>/json` stores runtime JSON files.
 

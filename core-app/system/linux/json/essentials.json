@@ -55,12 +55,6 @@
       "type": "function",
       "id": "video_drivers",
       "checkbox": true
-    },
-    {
-      "name": "Update Programs",
-      "type": "function",
-      "id": "update_programs",
-      "checkbox": true
     }
   ]
 }

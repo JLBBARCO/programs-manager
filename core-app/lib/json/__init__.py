@@ -1,4 +1,6 @@
 import json
+from pathlib import Path
+from urllib.request import urlopen
 
 from lib import log, system, find_folders
 
@@ -20,12 +22,21 @@ def read_internal_json(file):
 
 
 def read_external_json(file):
+    local_path = Path(__file__).resolve().parents[2] / 'system' / system.name().lower() / 'json' / f'{file}.json'
+    try:
+        with open(local_path, 'r', encoding='utf-8-sig') as source_file:
+            payload = json.load(source_file)
+        log.info(f'Loaded {file}.json from local system data.')
+        return payload
+    except FileNotFoundError:
+        log.warning(f'Local JSON file not found: {local_path}')
+    except Exception as error:
+        log.error(f'Failed to read local JSON file {local_path}: {error}')
+
     url_path = f'https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/system/{system.name().lower()}/json/{file}.json'
     try:
-        import requests
-        response = requests.get(url_path, timeout=20)
-        response.raise_for_status()
-        return response.json()
+        with urlopen(url_path, timeout=20) as response:
+            return json.loads(response.read().decode('utf-8-sig'))
     except Exception as fallback_error:
         log.error(f"Failed to fetch external JSON: {fallback_error}")
     return None
