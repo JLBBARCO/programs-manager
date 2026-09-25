@@ -27,7 +27,7 @@ The expected path is:
 
 ## Run scripts
 
-The run scripts find Python 3.12 or newer, install it through the available system package manager when missing, install the runtime dependencies, then launch `main.py` in the Python interpreter. When launched from the repository they use the local source; when piped from GitHub they download the selected branch source first.
+The run scripts find Python 3.12 or newer, install it through the available system package manager when missing, install the runtime dependencies from `core-app/runtime-requirements.txt`, then launch `main.py` in the Python interpreter. When launched from the repository they use the local source; when piped from GitHub they download the selected branch source first.
 
 Windows:
 

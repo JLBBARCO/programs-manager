@@ -60,6 +60,6 @@ echo "[$APP_NAME] Installing runtime dependencies..."
 VENV_PATH="${XDG_DATA_HOME:-$HOME/.local/share}/programs-manager/venv"
 if [ ! -x "$VENV_PATH/bin/python" ]; then "$PYTHON" -m venv "$VENV_PATH"; fi
 RUNTIME_PYTHON="$VENV_PATH/bin/python"
-"$RUNTIME_PYTHON" -m pip install -r "$PROJECT_ROOT/requirements.txt"
+"$RUNTIME_PYTHON" -m pip install -r "$PROJECT_ROOT/core-app/runtime-requirements.txt"
 echo "[$APP_NAME] Starting interpreted Python app..."
 "$RUNTIME_PYTHON" "$PROJECT_ROOT/core-app/main.py"

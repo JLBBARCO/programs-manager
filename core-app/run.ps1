@@ -9,8 +9,8 @@ function Find-Python {
     foreach ($candidate in @('python', 'py')) {
         $command = Get-Command $candidate -ErrorAction SilentlyContinue
         if ($command) {
-            if ($candidate -eq 'py') { & $command.Source -3.12 --version *> $null }
-            else { & $command.Source --version *> $null }
+            if ($candidate -eq 'py') { & $command.Source -3 -c "import sys; raise SystemExit(sys.version_info < (3, 12))" *> $null }
+            else { & $command.Source -c "import sys; raise SystemExit(sys.version_info < (3, 12))" *> $null }
             if ($LASTEXITCODE -eq 0) { return @{ Path = $command.Source; Launcher = $candidate } }
         }
     }
@@ -22,9 +22,11 @@ if (-not $python) {
     Write-Host "[$appName] Python 3.12+ not found. Installing Python from the terminal..."
     $winget = Get-Command winget -ErrorAction SilentlyContinue
     if ($winget) {
-        & $winget.Source install --id Python.Python.3.12 --exact --scope user --silent --accept-package-agreements --accept-source-agreements
+        $installArgs = @('install', '--id', 'Python.Python.3.12', '--exact', '--scope', 'user', '--silent', '--accept-package-agreements', '--accept-source-agreements')
+        if (-not [Environment]::Is64BitOperatingSystem) { $installArgs += @('--architecture', 'x86') }
+        & $winget.Source @installArgs
         if ($LASTEXITCODE -ne 0) { throw 'Python installation with winget failed.' }
-        $env:PATH = "$env:LOCALAPPDATA\Programs\Python\Python312;$env:LOCALAPPDATA\Programs\Python\Python312\Scripts;$env:PATH"
+        $env:PATH = "$env:LOCALAPPDATA\Programs\Python\Python312;$env:LOCALAPPDATA\Programs\Python\Python312\Scripts;$env:LOCALAPPDATA\Programs\Python\Python312-32;$env:LOCALAPPDATA\Programs\Python\Python312-32\Scripts;$env:PATH"
         $python = Find-Python
     }
     if (-not $python) { throw 'Could not install Python. Install Python 3.12 or newer and run this script again.' }
@@ -51,7 +53,7 @@ try {
 
     $pythonPath = $python.Path
     $pythonArgs = @()
-    if ($python.Launcher -eq 'py') { $pythonArgs += '-3.12' }
+    if ($python.Launcher -eq 'py') { $pythonArgs += '-3' }
     $venvPath = Join-Path $env:LOCALAPPDATA '.programs-manager\venv'
     if (-not (Test-Path (Join-Path $venvPath 'Scripts\python.exe'))) {
         & $pythonPath @pythonArgs -m venv $venvPath
@@ -59,7 +61,7 @@ try {
     }
     $runtimePython = Join-Path $venvPath 'Scripts\python.exe'
     Write-Host "[$appName] Installing runtime dependencies..."
-    & $runtimePython -m pip install -r (Join-Path $projectRoot 'requirements.txt')
+    & $runtimePython -m pip install -r (Join-Path $projectRoot 'core-app\runtime-requirements.txt')
     if ($LASTEXITCODE -ne 0) { throw 'Failed to install Python dependencies.' }
     Write-Host "[$appName] Starting interpreted Python app..."
     & $runtimePython (Join-Path $projectRoot 'core-app\main.py')

@@ -3,7 +3,7 @@
 ## Prerequisites
 
 - Python 3.12 or newer
-- Project dependencies installed with `python -m pip install -r requirements.txt`
+- Runtime dependencies installed with `python -m pip install -r core-app/runtime-requirements.txt`
 - A Windows or Linux machine
 
 ## Smoke tests
