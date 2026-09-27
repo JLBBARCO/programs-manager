@@ -246,9 +246,13 @@ if [ -n "$LOCAL_BUILD_PATH" ]; then
     exec "$LOCAL_BUILD_PATH"
 fi
 
-# Busca e baixa apenas se o programa ainda não existir
+# Busca e baixa a versão solicitada ou a mais recente antes de executar.
 if [ ! -x "$INSTALL_ROOT/$BINARY_NAME" ]; then
-    echo "[programs-manager] Program not found. Downloading the latest version..."
+    if [ -n "$REQUESTED_VERSION" ]; then
+        echo "[programs-manager] Program not found. Downloading version $REQUESTED_VERSION..."
+    else
+        echo "[programs-manager] Program not found. Downloading the latest version..."
+    fi
     RELEASE_INFO="$(fetch_release_info "$ASSET_PATTERN" || true)"
     if [ -z "$RELEASE_INFO" ]; then
         echo "[programs-manager] Error: could not locate the asset for $ASSET_PATTERN"
@@ -266,16 +270,25 @@ else
         TAG="$(printf '%s' "$RELEASE_INFO" | cut -f2)"
         LATEST_VERSION="$(normalize_version "$TAG")"
 
+        TARGET_VERSION="$LATEST_VERSION"
         if [ -z "$LOCAL_VERSION" ]; then
-            echo "[programs-manager] version.txt not found in the installed copy. Updating to the latest version..."
+            echo "[programs-manager] version.txt not found in the installed copy. Installing version $TARGET_VERSION..."
             download_and_install "$URL"
-        elif [ -n "$LATEST_VERSION" ] && [ "$LOCAL_VERSION" != "$LATEST_VERSION" ]; then
-            echo "[programs-manager] New version available ($LATEST_VERSION). Updating from $LOCAL_VERSION..."
+        elif [ -n "$TARGET_VERSION" ] && [ "$LOCAL_VERSION" != "$TARGET_VERSION" ]; then
+            if [ -n "$REQUESTED_VERSION" ]; then
+                echo "[programs-manager] Requested version $TARGET_VERSION. Updating from $LOCAL_VERSION..."
+            else
+                echo "[programs-manager] New version available ($TARGET_VERSION). Updating from $LOCAL_VERSION..."
+            fi
             download_and_install "$URL"
         else
-            echo "[programs-manager] Program is up to date (version $LOCAL_VERSION)."
+            echo "[programs-manager] Requested version is already installed (version $LOCAL_VERSION)."
         fi
     else
+        if [ -n "$REQUESTED_VERSION" ]; then
+            echo "[programs-manager] Error: could not switch to requested version $REQUESTED_VERSION. The current installation was not started."
+            exit 1
+        fi
         echo "[programs-manager] Could not check for updates. Using the installed version."
     fi
 fi

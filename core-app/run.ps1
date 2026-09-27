@@ -240,8 +240,8 @@ function Resolve-LocalBuildPath {
 
 New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
 
-# 1. Try local build first (development convenience, skips install/update checks)
-$exePath = Resolve-LocalBuildPath
+# 1. Try local build first only when no published version was requested.
+$exePath = if (-not $RequestedVersion) { Resolve-LocalBuildPath } else { $null }
 if ($exePath) {
     Write-Host "[programs-manager] Local build found: $exePath"
 }
@@ -251,14 +251,18 @@ if (-not $exePath) {
     $installedExePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
 
     if (-not $installedExePath) {
-        # 2a. Not installed yet -> download the latest available version
-        Write-Host "[programs-manager] Program not found. Downloading the latest version for Windows..."
+        # 2a. Not installed yet -> download the requested or latest version
+        $versionDescription = if ($RequestedVersion) { "version $RequestedVersion" } else { "latest version" }
+        Write-Host "[programs-manager] Program not found. Downloading $versionDescription for Windows..."
         try {
             $release = Get-LatestRelease -Branch $ScriptBranch
             Install-LatestRelease -Release $release -Root $installRoot
             $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
         } catch {
             Write-Host "[programs-manager] Error downloading: $_" -ForegroundColor Yellow
+            if ($RequestedVersion) {
+                throw "Could not install requested version $RequestedVersion. The current installation was not started."
+            }
             Write-Host "[programs-manager] Trying to compile locally..." -ForegroundColor Yellow
 
             $scriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
@@ -279,20 +283,25 @@ if (-not $exePath) {
         try {
             $localVersion = Get-LocalVersion -VersionPath $expectedVersionPath
             $release = Get-LatestRelease -Branch $ScriptBranch
-            $latestVersion = Get-VersionFromTag -TagName $release.tag_name
+
+            $targetVersion = Get-VersionFromTag -TagName $release.tag_name
 
             if (-not $localVersion) {
-                Write-Host "[programs-manager] version.txt not found in the installed copy. Updating to the latest version..."
+                Write-Host "[programs-manager] version.txt not found in the installed copy. Installing version $targetVersion..."
                 Install-LatestRelease -Release $release -Root $installRoot
                 $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
-            } elseif ($latestVersion -and ($localVersion -ne $latestVersion)) {
-                Write-Host "[programs-manager] New version available ($latestVersion). Updating from $localVersion..."
+            } elseif ($targetVersion -and ($localVersion -ne $targetVersion)) {
+                $versionReason = if ($RequestedVersion) { "Requested version $targetVersion" } else { "New version available ($targetVersion)" }
+                Write-Host "[programs-manager] $versionReason. Updating from $localVersion..."
                 Install-LatestRelease -Release $release -Root $installRoot
                 $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
             } else {
-                Write-Host "[programs-manager] Program is up to date (version $localVersion)."
+                Write-Host "[programs-manager] Requested version is already installed (version $localVersion)."
             }
         } catch {
+            if ($RequestedVersion) {
+                throw "Could not switch to requested version $RequestedVersion. The current installation was not started."
+            }
             Write-Host "[programs-manager] Could not check for updates: $_" -ForegroundColor Yellow
             Write-Host "[programs-manager] Using the installed version." -ForegroundColor Yellow
         }
