@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Gimp",
+    "type": "install",
+    "id": "gimp",
+    "checkbox": false
+  },
+  {
+    "name": "Figma",
+    "type": "install",
+    "id": "figma",
+    "checkbox": false
+  }
+]

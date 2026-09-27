@@ -77,7 +77,9 @@ echo "Starting build with PyInstaller..."
 PYINSTALLER_CMD="python3 -m PyInstaller --noconfirm --onedir --windowed \\
     --name \"Programs Manager\" \\
     --paths \"core-app\" \\
+    --paths \".\" \\
     --add-data \"core-app/lib:lib\" \\
+    --add-data \"core-app/assets:assets\" \\
     --add-data \"core-app/system:system\" \\
     --add-data \"src:src\""
 

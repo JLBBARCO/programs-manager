@@ -1,11 +1,11 @@
-from lib import log
+from src.lib import log
 
 
 def update_package_manager(nameSO):
     import subprocess
     import os  # Importado para verificar o ambiente com segurança
 
-    from lib import web
+    from src.lib import web
 
     name_so = nameSO
 

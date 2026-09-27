@@ -1,0 +1,14 @@
+[
+  {
+    "name": "AnyDesk",
+    "type": "install",
+    "id": "anydesk",
+    "checkbox": false
+  },
+  {
+    "name": "Curl",
+    "type": "install",
+    "id": "curl",
+    "checkbox": false
+  }
+]

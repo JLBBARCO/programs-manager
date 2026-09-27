@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Microsoft Teams",
+    "type": "install",
+    "id": "teams",
+    "checkbox": false
+  },
+  {
+    "name": "WhatsApp (Desktop)",
+    "type": "install",
+    "id": "whatsapp-for-linux",
+    "checkbox": false
+  },
+  {
+    "name": "Telegram",
+    "type": "install",
+    "id": "telegram-desktop",
+    "checkbox": false
+  }
+]

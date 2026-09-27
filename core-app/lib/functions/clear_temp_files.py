@@ -2,7 +2,7 @@ import os
 import shutil
 import stat
 import tempfile
-from lib import log, system
+from src.lib import log, system
 
 
 def clear_temp_files(target_dir: str | None = None) -> bool:

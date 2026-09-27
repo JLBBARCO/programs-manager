@@ -1,0 +1,50 @@
+[
+  {
+    "name": "Spotify",
+    "type": "install",
+    "id": "Spotify.Spotify",
+    "checkbox": false
+  },
+  {
+    "name": "VLC",
+    "type": "install",
+    "id": "VideoLAN.VLC",
+    "checkbox": false
+  },
+  {
+    "name": "iTunes",
+    "type": "install",
+    "id": "Apple.iTunes",
+    "checkbox": false
+  },
+  {
+    "name": "Audacity",
+    "type": "install",
+    "id": "Audacity.Audacity",
+    "checkbox": false
+  },
+  {
+    "name": "foobar2000",
+    "type": "install",
+    "id": "PeterPawlowski.foobar2000",
+    "checkbox": false
+  },
+  {
+    "name": "Winamp",
+    "type": "install",
+    "id": "Winamp.Winamp",
+    "checkbox": false
+  },
+  {
+    "name": "AIMP",
+    "type": "install",
+    "id": "AIMP.AIMP",
+    "checkbox": false
+  },
+  {
+    "name": "HandBrake",
+    "type": "install",
+    "id": "HandBrake.HandBrake",
+    "checkbox": false
+  }
+]

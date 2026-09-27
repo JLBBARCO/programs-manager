@@ -13,9 +13,11 @@ echo Iniciando o Build com PyInstaller...
 echo Adding install directory to bundle...
 python -m PyInstaller --noconfirm --onedir --windowed ^
     --name "Programs Manager" ^
-    --icon "src/assets/icon/icon.ico" ^
+    --icon "assets/icons/icon.ico" ^
     --paths "core-app" ^
+    --paths "." ^
     --add-data "core-app/lib;lib" ^
+    --add-data "core-app/assets;assets" ^
     --add-data "core-app/system;system" ^
     --add-data "src;src" ^
     --collect-all customtkinter ^

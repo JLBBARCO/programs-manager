@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Spacedesk Client",
+    "type": "install",
+    "id": "Datronicsoft.SpacedeskDriver.Client",
+    "checkbox": false
+  },
+  {
+    "name": "Spacedesk Server",
+    "type": "install",
+    "id": "Datronicsoft.SpacedeskDriver.Server",
+    "checkbox": false
+  },
+  {
+    "name": "AnyDesk",
+    "type": "install",
+    "id": "AnyDesk.AnyDesk",
+    "checkbox": false
+  },
+  {
+    "name": "Mouse Without Borders",
+    "type": "install",
+    "id": "Microsoft.MouseWithoutBorders",
+    "checkbox": false
+  },
+  {
+    "name": "Microsoft PowerToys",
+    "type": "install",
+    "id": "Microsoft.PowerToys",
+    "checkbox": false
+  },
+  {
+    "name": "Rufus",
+    "type": "install",
+    "id": "Rufus.Rufus",
+    "checkbox": false
+  },
+  {
+    "name": "Ventoy",
+    "type": "install",
+    "id": "Ventoy.Ventoy",
+    "checkbox": false
+  },
+  {
+    "name": "EaseUS Todo Backup",
+    "type": "install",
+    "id": "EaseUS.TodoBackup",
+    "checkbox": false
+  },
+  {
+    "name": "EaseUS Disk Copy",
+    "type": "install",
+    "id": "XPFPGJ33460ZMS",
+    "checkbox": false
+  },
+  {
+    "name": "AIDA64",
+    "type": "install",
+    "id": "FinalWire.AIDA64.Extreme",
+    "checkbox": false
+  },
+  {
+    "name": "HWMonitor",
+    "type": "install",
+    "id": "CPUID.HWMonitor",
+    "checkbox": false
+  },
+  {
+    "name": "CrystalDiskInfo",
+    "type": "install",
+    "id": "CrystalDewWorld.CrystalDiskInfo",
+    "checkbox": false
+  },
+  {
+    "name": "CPU-Z",
+    "type": "install",
+    "id": "CPUID.CPU-Z",
+    "checkbox": false
+  },
+  {
+    "name": "WizTree",
+    "type": "install",
+    "id": "AntibodySoftware.WizTree",
+    "checkbox": false
+  }
+]

@@ -1,4 +1,4 @@
-from lib import system
+from src.lib import system
 import subprocess
 
 system_name = system.name()

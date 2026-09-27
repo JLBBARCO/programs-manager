@@ -1,7 +1,7 @@
 import os
 import shutil
 import webbrowser
-from lib import log, system
+from src.lib import log, system
 
 rainmeter_install_data = [
     {
@@ -52,7 +52,7 @@ def rainmeter():
         log.warning('Rainmeter setup is supported only on Windows.')
         return
 
-    from lib import install
+    from src.lib import install
     
     # Executa a instalação (pode pedir a janela de Admin do Windows se o winget exigir)
     install.install(rainmeter_install_data, system.name())

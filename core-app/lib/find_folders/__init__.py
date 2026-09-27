@@ -1,10 +1,10 @@
 import os
 from pathlib import Path
-from lib import system
+from lib.system import name
 
 
 def get_user_documents_folder():
-    if system.name() == "Windows":
+    if name() == "Windows":
         try:
             import winreg
         except ImportError:
@@ -29,7 +29,7 @@ def get_ProgramsManager_folder():
 
 
 def get_StartMenu_Programs_folder():
-    if system.name() == "Windows":
+    if name() == "Windows":
         start_menu_programs = Path(os.environ.get('APPDATA', '')) / 'Microsoft' / 'Windows' / 'Start Menu' / 'Programs'
         start_menu_programs.mkdir(parents=True, exist_ok=True)
         return start_menu_programs

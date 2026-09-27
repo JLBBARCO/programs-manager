@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Free Download Manager",
+    "type": "install",
+    "id": "SoftDeluxe.FreeDownloadManager",
+    "checkbox": false
+  },
+  {
+    "name": "qBittorrent",
+    "type": "install",
+    "id": "qBittorrent.qBittorrent",
+    "checkbox": false
+  }
+]

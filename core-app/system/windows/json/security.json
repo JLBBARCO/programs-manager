@@ -1,0 +1,26 @@
+[
+  {
+    "name": "AVG",
+    "type": "install",
+    "id": "XP8BX2DWV7TF50",
+    "checkbox": false
+  },
+  {
+    "name": "Avast",
+    "type": "install",
+    "id": "XPDNZJFNCR1B07",
+    "checkbox": false
+  },
+  {
+    "name": "Bitdefender",
+    "type": "install",
+    "id": "Bitdefender.Bitdefender",
+    "checkbox": false
+  },
+  {
+    "name": "Malwarebytes",
+    "type": "install",
+    "id": "Malwarebytes.Malwarebytes",
+    "checkbox": false
+  }
+]

@@ -4,7 +4,7 @@ import sys
 from ctypes import wintypes
 from pathlib import Path
 
-from lib import system
+from src.lib import system
 
 
 def _resolve_notification_icon_path() -> Path | None:

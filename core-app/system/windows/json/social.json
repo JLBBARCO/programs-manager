@@ -1,0 +1,27 @@
+[
+  {
+    "name": "Whatsapp",
+    "type": "install",
+    "id": "WhatsApp.WhatsApp",
+    "checkbox": false
+  },
+  {
+    "name": "Telegram",
+    "type": "install",
+    "id": "Telegram.TelegramDesktop",
+    "checkbox": false
+  },
+  {
+    "name": "Microsoft Teams",
+    "type": "install",
+    "id": "Microsoft.Teams",
+    "checkbox": false
+  },
+  {
+    "name": "Discord",
+    "type": "install",
+    "id": "Discord.Discord",
+    "checkbox": false
+  },
+  { "name": "Zoom", "type": "install", "id": "Zoom.Zoom", "checkbox": false }
+]

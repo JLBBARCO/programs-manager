@@ -1,0 +1,26 @@
+[
+  {
+    "name": "Antropic Claude",
+    "type": "install",
+    "id": "Anthropic.Claude",
+    "checkbox": false
+  },
+  {
+    "name": "Antropic Claude Code",
+    "type": "install",
+    "id": "Anthropic.ClaudeCode",
+    "checkbox": false
+  },
+  {
+    "name": "Ollama",
+    "type": "install",
+    "id": "Ollama.Ollama",
+    "checkbox": false
+  },
+  {
+    "name": "Github Copilot",
+    "type": "install",
+    "id": "GitHub.CopilotApp",
+    "checkbox": false
+  }
+]

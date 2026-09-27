@@ -1,66 +1,44 @@
-{
-  "name": "Games",
-  "description": "A collection of games and gaming platforms for Windows.",
-  "data": [
-    {
-      "name": "Xbox App",
-      "type": "install",
-      "id": "Microsoft.XboxApp",
-      "checkbox": true
-    },
-    {
-      "name": "Steam",
-      "type": "install",
-      "id": "Valve.Steam",
-      "checkbox": true
-    },
-    {
-      "name": "Epic Games Launcher",
-      "type": "install",
-      "id": "EpicGames.EpicGamesLauncher",
-      "checkbox": true
-    },
-    {
-      "name": "Google Play Games",
-      "type": "install",
-      "id": "Google.PlayGames",
-      "checkbox": true
-    },
-    {
-      "name": "Discord",
-      "type": "install",
-      "id": "Discord.Discord",
-      "checkbox": true
-    },
-    {
-      "name": "Radmin VPN",
-      "type": "install",
-      "id": "Famatech.RadminVPN",
-      "checkbox": true
-    },
-    {
-      "name": "CurseForge",
-      "type": "install",
-      "id": "Overwolf.CurseForge",
-      "checkbox": true
-    },
-    {
-      "name": "GOG Galaxy",
-      "type": "install",
-      "id": "GOG.Galaxy",
-      "checkbox": true
-    },
-    {
-      "name": "Ubisoft Connect",
-      "type": "install",
-      "id": "Ubisoft.Connect",
-      "checkbox": true
-    },
-    {
-      "name": "Battle.net",
-      "type": "install",
-      "id": "Blizzard.BattleNet",
-      "checkbox": true
-    }
-  ]
-}
+[
+  {
+    "name": "Steam",
+    "type": "install",
+    "id": "Valve.Steam",
+    "checkbox": false
+  },
+  {
+    "name": "Epic Games Launcher",
+    "type": "install",
+    "id": "EpicGames.EpicGamesLauncher",
+    "checkbox": false
+  },
+  {
+    "name": "Google Play Games",
+    "type": "install",
+    "id": "Google.PlayGames",
+    "checkbox": false
+  },
+  {
+    "name": "CurseForge",
+    "type": "install",
+    "id": "Overwolf.CurseForge",
+    "checkbox": false
+  },
+  {
+    "name": "GOG Galaxy",
+    "type": "install",
+    "id": "GOG.Galaxy",
+    "checkbox": false
+  },
+  {
+    "name": "Ubisoft Connect",
+    "type": "install",
+    "id": "Ubisoft.Connect",
+    "checkbox": false
+  },
+  {
+    "name": "Battle.net",
+    "type": "install",
+    "id": "Blizzard.BattleNet",
+    "checkbox": false
+  }
+]

@@ -34,7 +34,7 @@ permissions:
 
 jobs:
   build:
-    name: Build core app (${{ matrix.name }})
+    name: Build core app (${{ matrix.name }} ${{ matrix.architecture }})
     runs-on: ${{ matrix.os }}
     env:
       CODE_SIGN_PFX_BASE64: ${{ secrets.CODE_SIGN_PFX_BASE64 }}
@@ -46,10 +46,17 @@ jobs:
         include:
           - name: Windows
             os: windows-latest
+            architecture: x64
             script: core-app/build.bat
-            asset: programs-manager-windows.zip
+            asset: programs-manager-windows-x64.zip
+          - name: Windows
+            os: windows-latest
+            architecture: x86
+            script: core-app/build.bat
+            asset: programs-manager-windows-x86.zip
           - name: Linux
             os: ubuntu-latest
+            architecture: x64
             script: core-app/build.sh
             asset: programs-manager-linux.tar.gz
 
@@ -61,6 +68,7 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+          architecture: ${{ matrix.architecture }}
 
       - name: Install Linux system dependencies
         if: runner.os == 'Linux'
