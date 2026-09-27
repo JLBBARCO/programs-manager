@@ -106,24 +106,37 @@ function Get-LatestRelease {
         return Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/tags/v$RequestedVersion" -UseBasicParsing
     }
 
-    if ($Branch -eq 'develop') {
-        $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases" -UseBasicParsing
-        $release = $releases | Where-Object { $_.prerelease } | Sort-Object -Property published_at -Descending | Select-Object -First 1
-        if (-not $release) {
-            Write-Host "[programs-manager] No prerelease found; using the latest stable release." -ForegroundColor Yellow
-            $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/latest" -UseBasicParsing
-        }
+    $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases?per_page=100" -UseBasicParsing
+    $candidateReleases = if ($Branch -eq 'develop') {
+        $releases | Where-Object { $_.prerelease -and -not $_.draft }
     } else {
-        $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/latest" -UseBasicParsing
+        $releases | Where-Object { -not $_.prerelease -and -not $_.draft }
+    }
+
+    $release = $candidateReleases |
+        Sort-Object -Property published_at -Descending |
+        Where-Object { Get-WindowsAsset -Release $_ } |
+        Select-Object -First 1
+
+    if (-not $release -and $Branch -eq 'develop') {
+        Write-Host "[programs-manager] No prerelease with a Windows application asset found; using the latest stable release." -ForegroundColor Yellow
+        $release = ($releases |
+            Where-Object { -not $_.prerelease -and -not $_.draft } |
+            Sort-Object -Property published_at -Descending |
+            Where-Object { Get-WindowsAsset -Release $_ } |
+            Select-Object -First 1)
+    }
+
+    if (-not $release) {
+        throw "No release with a compatible Windows application asset was found."
     }
 
     return $release
 }
 
-function Install-LatestRelease {
+function Get-WindowsAsset {
     param(
-        $Release,
-        [string]$Root
+        $Release
     )
 
     $asset = $Release.assets |
@@ -135,8 +148,19 @@ function Install-LatestRelease {
             Where-Object { $_.name -eq 'programs-manager-windows.zip' } |
             Select-Object -First 1
     }
+
+    return $asset
+}
+
+function Install-LatestRelease {
+    param(
+        $Release,
+        [string]$Root
+    )
+
+    $asset = Get-WindowsAsset -Release $Release
     if (-not $asset) {
-        throw "Asset '$assetName' not found in the chosen release."
+        throw "No compatible Windows application asset found in release '$($Release.tag_name)'. Expected '$assetName' or 'programs-manager-windows.zip'."
     }
 
     $zipTemp = Join-Path $env:TEMP "aip_win.zip"
