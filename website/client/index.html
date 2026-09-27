@@ -23,13 +23,13 @@
             <h5>Stable</h5>
             <pre><code>irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.ps1 | iex</code></pre>
             <h5>Beta</h5>
-            <pre><code>irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/core-app/run.ps1 | iex</code></pre>
+            <pre><code>$env:AIP_BRANCH = 'beta'; irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/core-app/run.ps1 | iex</code></pre>
 
             <h4>Linux</h4>
             <h5>Stable</h5>
             <pre><code>curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.sh | bash</code></pre>
             <h5>Beta</h5>
-            <pre><code>curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/core-app/run.sh | bash</code></pre>
+            <pre><code>AIP_BRANCH=beta curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/core-app/run.sh | AIP_BRANCH=beta bash</code></pre>
 
             <h3>Run any version of the program</h3>
             <p>In the command, if you add the version name in front of the link of the repository, you can run any

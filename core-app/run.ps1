@@ -12,9 +12,9 @@ if (-not (Get-Command python3.12 -ErrorAction SilentlyContinue)) {
 
 # Set this script's branch. When this file is fetched from:
 #  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1  -> set to 'main'
-#  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/develop/run.ps1 -> set to 'develop'
+#  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/run.ps1 -> set to 'beta'
 # The branch controls whether the script downloads the latest stable release (main)
-# or the most-recent prerelease (develop). Allow an environment override for testing.
+# or the most-recent prerelease (beta). Allow an environment override for testing.
 $ScriptBranch = if ($env:AIP_BRANCH) {
     $env:AIP_BRANCH
 } elseif ($env:SCRIPT_BRANCH) {
@@ -107,7 +107,7 @@ function Get-LatestRelease {
     }
 
     $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases?per_page=100" -UseBasicParsing
-    $candidateReleases = if ($Branch -eq 'develop') {
+    $candidateReleases = if ($Branch -in @('beta', 'develop')) {
         $releases | Where-Object { $_.prerelease -and -not $_.draft }
     } else {
         $releases | Where-Object { -not $_.prerelease -and -not $_.draft }
@@ -118,7 +118,7 @@ function Get-LatestRelease {
         Where-Object { Get-WindowsAsset -Release $_ } |
         Select-Object -First 1
 
-    if (-not $release -and $Branch -eq 'develop') {
+    if (-not $release -and $Branch -in @('beta', 'develop')) {
         Write-Host "[programs-manager] No prerelease with a Windows application asset found; using the latest stable release." -ForegroundColor Yellow
         $release = ($releases |
             Where-Object { -not $_.prerelease -and -not $_.draft } |

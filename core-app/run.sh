@@ -22,7 +22,7 @@ if ! command -v python3.12 >/dev/null 2>&1; then
 fi
 
 
-# When this script is fetched from the 'develop' branch it should use the
+# When this script is fetched from the 'beta' branch it should use the
 # latest prerelease artifact; when fetched from 'main' it should use the
 # latest stable release. Set here according to file branch.
 SCRIPT_BRANCH="${AIP_BRANCH:-${SCRIPT_BRANCH:-main}}"
@@ -149,7 +149,7 @@ PY
         return 0
     fi
 
-    if [ "$SCRIPT_BRANCH" = "develop" ]; then
+    if [ "$SCRIPT_BRANCH" = "beta" ] || [ "$SCRIPT_BRANCH" = "develop" ]; then
         if command -v python3 >/dev/null 2>&1; then
             python3 - "$owner" "$repo" "$asset_pattern" <<'PY'
 import json

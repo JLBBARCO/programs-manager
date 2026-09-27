@@ -34,12 +34,12 @@ jobs:
         shell: bash
         run: |
           BRANCH="${{ github.event.workflow_run.head_branch || github.ref_name }}"
-          if [[ "$BRANCH" != "main" && "$BRANCH" != "develop" ]]; then
+          if [[ "$BRANCH" != "main" && "$BRANCH" != "beta" && "$BRANCH" != "develop" ]]; then
             echo "Unsupported branch: $BRANCH"
             exit 1
           fi
           echo "name=$BRANCH" >> "$GITHUB_OUTPUT"
-          if [[ "$BRANCH" == "develop" ]]; then
+          if [[ "$BRANCH" == "beta" || "$BRANCH" == "develop" ]]; then
             echo "version_key=Pre-release" >> "$GITHUB_OUTPUT"
             echo "prerelease=true" >> "$GITHUB_OUTPUT"
             echo "latest=false" >> "$GITHUB_OUTPUT"

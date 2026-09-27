@@ -20,13 +20,25 @@ On Windows, in PowerShell:
 irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.ps1 | iex
 ```
 
+To run the prerelease channel:
+
+```powershell
+$env:AIP_BRANCH = 'beta'; irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/core-app/run.ps1 | iex
+```
+
 On Linux:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.sh | bash
 ```
 
-The launcher installs or updates the application in `~/.programs-manager` (Linux) or `%USERPROFILE%\.programs-manager` (Windows), then starts the executable. To select a version, set `AIP_VERSION` before running the launcher, with or without the leading `v`. To fetch prereleases, use the `develop` branch through `AIP_BRANCH=develop` (Linux) or `$env:AIP_BRANCH = 'develop'` (PowerShell). The website also lists commands for the `beta` channel, while the current build and release workflows use `main` and `beta` differently; make sure a release exists for the selected channel.
+To run the prerelease channel:
+
+```bash
+AIP_BRANCH=beta curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/core-app/run.sh | AIP_BRANCH=beta bash
+```
+
+The launcher installs or updates the application in `~/.programs-manager` (Linux) or `%USERPROFILE%\.programs-manager` (Windows), then starts the executable. To select a version, set `AIP_VERSION` before running the launcher, with or without the leading `v`. To fetch prereleases, use the `beta` branch through `AIP_BRANCH=beta` (Linux) or `$env:AIP_BRANCH = 'beta'` (PowerShell). The legacy `develop` value remains accepted as an alias for compatibility.
 
 ### Run from source
 
