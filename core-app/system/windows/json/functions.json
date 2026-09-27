@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Video Drivers",
+    "type": "function",
+    "id": "video_drivers",
+    "checkbox": false
+  },
+  {
+    "name": "Update Programs",
+    "type": "function",
+    "id": "update_programs",
+    "checkbox": false
+  },
+  {
+    "name": "Dark Mode ",
+    "type": "function",
+    "id": "dark_mode",
+    "checkbox": false
+  },
+  {
+    "name": "Essential Programs Initialization",
+    "type": "function",
+    "id": "essential_programs_initialization",
+    "checkbox": false
+  },
+  {
+    "name": "BIOS Shortcut",
+    "type": "function",
+    "id": "bios_shortcut",
+    "checkbox": false
+  },
+  {
+    "name": "Windows Optimizer",
+    "type": "function",
+    "id": "windows_optimizer",
+    "checkbox": false
+  },
+  {
+    "name": "Motherboard Drivers",
+    "type": "function",
+    "id": "motherboard_drivers",
+    "checkbox": false
+  }
+]

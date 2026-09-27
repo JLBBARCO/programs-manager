@@ -1,0 +1,72 @@
+name: Run Raw Launchers
+
+on:
+    workflow_dispatch:
+        inputs:
+            branch:
+                description: Branch used to fetch the launcher scripts
+                required: true
+                default: main
+                type: string
+            version:
+                description: Optional release version, without the leading v
+                required: false
+                default: ""
+                type: string
+
+permissions:
+    contents: read
+
+jobs:
+    run-launcher:
+        name: Run Raw launcher (${{ matrix.os }})
+        runs-on: ${{ matrix.os }}
+        strategy:
+            fail-fast: false
+            matrix:
+                include:
+                    - os: windows-latest
+                      launcher: run.ps1
+                    - os: ubuntu-latest
+                      launcher: run.sh
+        env:
+            AIP_BRANCH: ${{ inputs.branch }}
+            AIP_VERSION: ${{ inputs.version }}
+
+        steps:
+            - name: Download launcher through Python
+              shell: bash
+              run: |
+                  python - <<'PY'
+                  import os
+                  from urllib.request import urlopen
+
+                  branch = os.environ['AIP_BRANCH']
+                  launcher = os.environ['LAUNCHER']
+                  url = f'https://raw.githubusercontent.com/JLBBARCO/programs-manager/{branch}/core-app/{launcher}'
+                  with urlopen(url, timeout=30) as response:
+                      content = response.read()
+                  with open(os.environ['RUNNER_TEMP'] + '/' + launcher, 'wb') as output:
+                      output.write(content)
+                  print(f'Downloaded {url}')
+                  PY
+              env:
+                  LAUNCHER: ${{ matrix.launcher }}
+
+            - name: Run PowerShell launcher
+              if: runner.os == 'Windows'
+              shell: pwsh
+              run: |
+                  $launcherPath = Join-Path $env:RUNNER_TEMP 'run.ps1'
+                  & powershell.exe -NoProfile -ExecutionPolicy Bypass -File $launcherPath
+
+            - name: Run Bash launcher
+              if: runner.os == 'Linux'
+              shell: bash
+              run: |
+                  launcher_path="$RUNNER_TEMP/run.sh"
+                  chmod +x "$launcher_path"
+                  timeout --signal=TERM 90s "$launcher_path" || status=$?
+                  if [ "${status:-0}" -ne 0 ] && [ "${status:-0}" -ne 124 ]; then
+                    exit "$status"
+                  fi

@@ -1,94 +1,321 @@
-$ErrorActionPreference = 'Stop'
-$owner = 'JLBBARCO'
-$repo = 'programs-manager'
-$branch = if ($env:AIP_BRANCH) { $env:AIP_BRANCH } elseif ($env:SCRIPT_BRANCH) { $env:SCRIPT_BRANCH } else { 'main' }
-$branch = $branch.Trim().ToLowerInvariant()
-$appName = 'Programs Manager'
+# Repository info
+$owner = "JLBBARCO"
+$repo = "programs-manager"
 
-function Find-Python {
-    foreach ($candidate in @('python', 'py')) {
-        $command = Get-Command $candidate -ErrorAction SilentlyContinue
-        if ($command) {
-            if ($candidate -eq 'py') { & $command.Source -3 -c "import sys; raise SystemExit(sys.version_info < (3, 12))" *> $null }
-            else { & $command.Source -c "import sys; raise SystemExit(sys.version_info < (3, 12))" *> $null }
-            if ($LASTEXITCODE -eq 0) { return @{ Path = $command.Source; Launcher = $candidate } }
-        }
+
+# Install Python 3.12 if not present
+if (-not (Get-Command python3.12 -ErrorAction SilentlyContinue)) {
+    Write-Host "[programs-manager] Python 3.12 not found. Installing..."
+    winget install --id=Python.Python.3.12 -e --source winget
+}
+
+
+# Set this script's branch. When this file is fetched from:
+#  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1  -> set to 'main'
+#  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/run.ps1 -> set to 'beta'
+# The branch controls whether the script downloads the latest stable release (main)
+# or the most-recent prerelease (beta). Allow an environment override for testing.
+$ScriptBranch = if ($env:AIP_BRANCH) {
+    $env:AIP_BRANCH
+} elseif ($env:SCRIPT_BRANCH) {
+    $env:SCRIPT_BRANCH
+} else {
+    'main'
+}
+$ScriptBranch = $ScriptBranch.Trim().ToLowerInvariant()
+$RequestedVersion = if ($env:AIP_VERSION) { $env:AIP_VERSION.Trim().TrimStart('v', 'V') } else { $null }
+
+$architecture = if ($env:AIP_ARCHITECTURE) {
+    $env:AIP_ARCHITECTURE.Trim().ToLowerInvariant()
+} elseif ($env:PROCESSOR_ARCHITEW6432) {
+    $env:PROCESSOR_ARCHITEW6432.Trim().ToLowerInvariant()
+} else {
+    $env:PROCESSOR_ARCHITECTURE.Trim().ToLowerInvariant()
+}
+
+if ($architecture -in @('x86', 'i386', 'i686')) {
+    $assetName = "programs-manager-windows-x86.zip"
+} else {
+    $assetName = "programs-manager-windows-x64.zip"
+}
+
+# Use the current user's profile directory (works on Windows reliably).
+$installRoot = Join-Path $env:USERPROFILE ".programs-manager"
+$expectedExePath = Join-Path $installRoot "Programs Manager\Programs Manager.exe"
+$expectedVersionPath = Join-Path $installRoot "Programs Manager\version.txt"
+$appName = "Programs Manager"
+
+Write-Host "[programs-manager] Script em execução: $PSCommandPath"
+
+function Resolve-ExePath {
+    param(
+        [string]$Root,
+        [string]$ExpectedPath
+    )
+
+    if (Test-Path $ExpectedPath) {
+        return $ExpectedPath
     }
+
+    $foundExe = Get-ChildItem -Path $Root -Filter "Programs Manager.exe" -Recurse -File -ErrorAction SilentlyContinue |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+
+    if ($foundExe) {
+        return $foundExe.FullName
+    }
+
     return $null
 }
 
-$python = Find-Python
-if (-not $python) {
-    $pythonVersion = '3.13.15'
-    $pythonInstallDir = Join-Path $env:LOCALAPPDATA 'Programs\Python\Python313'
-    $pythonInstallerName = if ([Environment]::Is64BitOperatingSystem) { "python-$pythonVersion-amd64.exe" } else { "python-$pythonVersion.exe" }
-    $pythonInstaller = Join-Path $env:TEMP $pythonInstallerName
-    $pythonInstallerUrl = "https://www.python.org/ftp/python/$pythonVersion/$pythonInstallerName"
-
-    Write-Host "[$appName] Python 3.12+ not found. Installing Python $pythonVersion..."
-    Invoke-WebRequest -Uri $pythonInstallerUrl -OutFile $pythonInstaller
-    $installerArgs = @(
-        '/quiet',
-        'InstallAllUsers=0',
-        'Include_launcher=1',
-        'Include_pip=1',
-        'Include_tcltk=1',
-        'PrependPath=0',
-        "TargetDir=`"$pythonInstallDir`""
+function Get-LocalVersion {
+    param(
+        [string]$VersionPath
     )
-    $install = Start-Process -FilePath $pythonInstaller -ArgumentList $installerArgs -Wait -PassThru
-    Remove-Item $pythonInstaller -Force -ErrorAction SilentlyContinue
-    if ($install.ExitCode -ne 0) { throw "Python installation failed with exit code $($install.ExitCode)." }
 
-    $env:PATH = "$pythonInstallDir;$pythonInstallDir\Scripts;$env:PATH"
-    $python = Find-Python
-    if (-not $python) {
-        $installedPython = Join-Path $pythonInstallDir 'python.exe'
-        if (Test-Path $installedPython) { $python = @{ Path = $installedPython; Launcher = 'python' } }
+    if (-not (Test-Path $VersionPath)) {
+        return $null
     }
-    if (-not $python) { throw "Python $pythonVersion installed, but the launcher could not find it." }
+
+    $content = Get-Content -Path $VersionPath -Raw -ErrorAction SilentlyContinue
+    if ($content -match 'system_version\s*=\s*([^\r\n]+)') {
+        return $matches[1].Trim()
+    }
+
+    return $null
 }
 
-$workRoot = Join-Path $env:TEMP ("programs-manager-" + [guid]::NewGuid().ToString('N'))
-$scriptPath = $PSCommandPath
-$projectRoot = $null
-if ($scriptPath) {
-    $candidateRoot = Split-Path -Parent (Split-Path -Parent $scriptPath)
-    if (Test-Path (Join-Path $candidateRoot 'core-app\main.py')) { $projectRoot = $candidateRoot }
-}
+function Get-VersionFromTag {
+    param(
+        [string]$TagName
+    )
 
-try {
-    if (-not $projectRoot) {
-        New-Item -ItemType Directory -Path $workRoot -Force | Out-Null
-        $archive = Join-Path $workRoot 'source.zip'
-        $uri = "https://github.com/$owner/$repo/archive/refs/heads/$branch.zip"
-        Write-Host "[$appName] Downloading Python source ($branch)..."
-        Invoke-WebRequest -Uri $uri -OutFile $archive
-        Expand-Archive -Path $archive -DestinationPath $workRoot -Force
-        $projectRoot = Get-ChildItem $workRoot -Directory | Select-Object -First 1 -ExpandProperty FullName
+    if ([string]::IsNullOrWhiteSpace($TagName)) {
+        return $null
     }
 
-    $pythonPath = $python.Path
-    $pythonArgs = @()
-    if ($python.Launcher -eq 'py') { $pythonArgs += '-3' }
-    $venvPath = Join-Path $env:LOCALAPPDATA '.programs-manager\venv'
-    $runtimePython = Join-Path $venvPath 'Scripts\python.exe'
-    $venvUsable = $false
-    if (Test-Path $runtimePython) {
-        & $runtimePython -c "import sys; raise SystemExit(sys.version_info < (3, 12))" *> $null
-        $venvUsable = $LASTEXITCODE -eq 0
-    }
-    if (-not $venvUsable) {
-        if (Test-Path $venvPath) { Remove-Item $venvPath -Recurse -Force }
-        & $pythonPath @pythonArgs -m venv $venvPath
-        if ($LASTEXITCODE -ne 0) { throw 'Could not create the Python virtual environment.' }
-    }
-    Write-Host "[$appName] Installing runtime dependencies..."
-    & $runtimePython -m pip install -r (Join-Path $projectRoot 'core-app\runtime-requirements.txt')
-    if ($LASTEXITCODE -ne 0) { throw 'Failed to install Python dependencies.' }
-    Write-Host "[$appName] Starting interpreted Python app..."
-    & $runtimePython (Join-Path $projectRoot 'core-app\main.py')
-    if ($LASTEXITCODE -ne 0) { throw "Application exited with code $LASTEXITCODE." }
-} finally {
-    if (Test-Path $workRoot) { Remove-Item $workRoot -Recurse -Force -ErrorAction SilentlyContinue }
+    return $TagName.TrimStart('v', 'V')
 }
+
+function Get-LatestRelease {
+    param(
+        [string]$Branch
+    )
+
+    if ($RequestedVersion) {
+        return Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/tags/v$RequestedVersion" -UseBasicParsing
+    }
+
+    $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases?per_page=100" -UseBasicParsing
+    $candidateReleases = if ($Branch -in @('beta', 'develop')) {
+        $releases | Where-Object { $_.prerelease -and -not $_.draft }
+    } else {
+        $releases | Where-Object { -not $_.prerelease -and -not $_.draft }
+    }
+
+    $release = $candidateReleases |
+        Sort-Object -Property published_at -Descending |
+        Where-Object { Get-WindowsAsset -Release $_ } |
+        Select-Object -First 1
+
+    if (-not $release -and $Branch -in @('beta', 'develop')) {
+        Write-Host "[programs-manager] No prerelease with a Windows application asset found; using the latest stable release." -ForegroundColor Yellow
+        $release = ($releases |
+            Where-Object { -not $_.prerelease -and -not $_.draft } |
+            Sort-Object -Property published_at -Descending |
+            Where-Object { Get-WindowsAsset -Release $_ } |
+            Select-Object -First 1)
+    }
+
+    if (-not $release) {
+        throw "No release with a compatible Windows application asset was found."
+    }
+
+    return $release
+}
+
+function Get-WindowsAsset {
+    param(
+        $Release
+    )
+
+    $asset = $Release.assets |
+        Where-Object { $_.name -eq $assetName } |
+        Select-Object -First 1
+
+    if (-not $asset) {
+        $asset = $Release.assets |
+            Where-Object { $_.name -eq 'programs-manager-windows.zip' } |
+            Select-Object -First 1
+    }
+
+    return $asset
+}
+
+function Install-LatestRelease {
+    param(
+        $Release,
+        [string]$Root
+    )
+
+    $asset = Get-WindowsAsset -Release $Release
+    if (-not $asset) {
+        throw "No compatible Windows application asset found in release '$($Release.tag_name)'. Expected '$assetName' or 'programs-manager-windows.zip'."
+    }
+
+    $zipTemp = Join-Path $env:TEMP "aip_win.zip"
+    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $zipTemp -UseBasicParsing
+
+    if (Test-Path $Root) {
+        Remove-Item -Path $Root -Recurse -Force
+    }
+    New-Item -ItemType Directory -Path $Root -Force | Out-Null
+
+    Expand-Archive -Path $zipTemp -DestinationPath $Root -Force
+    Remove-Item $zipTemp -Force
+}
+
+function Set-WindowsShortcuts {
+    param(
+        [string]$ExePath
+    )
+
+    if (-not $ExePath -or -not (Test-Path $ExePath)) {
+        return
+    }
+
+    $shortcutDirectories = @()
+    if ($env:APPDATA) {
+        $shortcutDirectories += Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs"
+    }
+    if ($env:USERPROFILE) {
+        $shortcutDirectories += Join-Path $env:USERPROFILE "Desktop"
+    }
+
+    foreach ($shortcutDirectory in $shortcutDirectories) {
+        try {
+            New-Item -ItemType Directory -Path $shortcutDirectory -Force | Out-Null
+            $shortcutPath = Join-Path $shortcutDirectory "$appName.lnk"
+            $shell = New-Object -ComObject WScript.Shell
+            $shortcut = $shell.CreateShortcut($shortcutPath)
+            $shortcut.TargetPath = $ExePath
+            $shortcut.Arguments = ""
+            $shortcut.WorkingDirectory = Split-Path -Parent $ExePath
+            $shortcut.IconLocation = $ExePath
+            $shortcut.Save()
+            Write-Host "[programs-manager] Shortcut created: $shortcutPath"
+        } catch {
+            Write-Host "[programs-manager] Failed to create shortcut in '$shortcutDirectory': $_" -ForegroundColor Yellow
+        }
+    }
+}
+
+function Resolve-LocalBuildPath {
+    # Try to find the local build from the project directory
+    # When script is executed via iex, $PSCommandPath may be null; use $MyInvocation as fallback
+    $scriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
+
+    if (-not $scriptPath) {
+        # Script location unknown (likely executed via iex from web), skip local build check
+        return $null
+    }
+
+    $scriptDir = Split-Path -Parent $scriptPath
+    foreach ($candidateDir in @("dist", "build")) {
+        $searchRoot = Join-Path $scriptDir $candidateDir
+
+        if (Test-Path $searchRoot) {
+            $foundExe = Get-ChildItem -Path $searchRoot -Filter "Programs Manager.exe" -Recurse -File -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending |
+                Select-Object -First 1
+
+            if ($foundExe) {
+                return $foundExe.FullName
+            }
+        }
+    }
+
+    return $null
+}
+
+New-Item -ItemType Directory -Path $installRoot -Force | Out-Null
+
+# 1. Try local build first only when no published version was requested.
+$exePath = if (-not $RequestedVersion) { Resolve-LocalBuildPath } else { $null }
+if ($exePath) {
+    Write-Host "[programs-manager] Local build found: $exePath"
+}
+
+# 2. If no local build, check whether the program is already installed
+if (-not $exePath) {
+    $installedExePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
+
+    if (-not $installedExePath) {
+        # 2a. Not installed yet -> download the requested or latest version
+        $versionDescription = if ($RequestedVersion) { "version $RequestedVersion" } else { "latest version" }
+        Write-Host "[programs-manager] Program not found. Downloading $versionDescription for Windows..."
+        try {
+            $release = Get-LatestRelease -Branch $ScriptBranch
+            Install-LatestRelease -Release $release -Root $installRoot
+            $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
+        } catch {
+            Write-Host "[programs-manager] Error downloading: $_" -ForegroundColor Yellow
+            if ($RequestedVersion) {
+                throw "Could not install requested version $RequestedVersion. The current installation was not started."
+            }
+            Write-Host "[programs-manager] Trying to compile locally..." -ForegroundColor Yellow
+
+            $scriptPath = if ($PSCommandPath) { $PSCommandPath } else { $MyInvocation.MyCommand.Path }
+            if ($scriptPath) {
+                $scriptDir = Split-Path -Parent $scriptPath
+                $buildScript = Join-Path $scriptDir "build.bat"
+                if (Test-Path $buildScript) {
+                    Write-Host "[programs-manager] Run build.bat..."
+                    & $buildScript
+                    $exePath = Resolve-LocalBuildPath
+                }
+            }
+        }
+    } else {
+        # 2b. Already installed -> verify version.txt and update if necessary
+        Write-Host "[programs-manager] Installed program found. Checking version..."
+        $exePath = $installedExePath
+        try {
+            $localVersion = Get-LocalVersion -VersionPath $expectedVersionPath
+            $release = Get-LatestRelease -Branch $ScriptBranch
+
+            $targetVersion = Get-VersionFromTag -TagName $release.tag_name
+
+            if (-not $localVersion) {
+                Write-Host "[programs-manager] version.txt not found in the installed copy. Installing version $targetVersion..."
+                Install-LatestRelease -Release $release -Root $installRoot
+                $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
+            } elseif ($targetVersion -and ($localVersion -ne $targetVersion)) {
+                $versionReason = if ($RequestedVersion) { "Requested version $targetVersion" } else { "New version available ($targetVersion)" }
+                Write-Host "[programs-manager] $versionReason. Updating from $localVersion..."
+                Install-LatestRelease -Release $release -Root $installRoot
+                $exePath = Resolve-ExePath -Root $installRoot -ExpectedPath $expectedExePath
+            } else {
+                Write-Host "[programs-manager] Requested version is already installed (version $localVersion)."
+            }
+        } catch {
+            if ($RequestedVersion) {
+                throw "Could not switch to requested version $RequestedVersion. The current installation was not started."
+            }
+            Write-Host "[programs-manager] Could not check for updates: $_" -ForegroundColor Yellow
+            Write-Host "[programs-manager] Using the installed version." -ForegroundColor Yellow
+        }
+    }
+}
+
+# Final check
+if (-not $exePath -or -not (Test-Path $exePath)) {
+    throw "Executable not found. Try run: python core-app/main.py ou .\core-app\build.bat"
+}
+
+# 3. Executa o binário diretamente (Sem Python, sem VENV)
+Write-Host "[programs-manager] Running..."
+Write-Host "[programs-manager] Executable: $exePath"
+Set-WindowsShortcuts -ExePath $exePath
+$exeWorkingDirectory = Split-Path -Parent $exePath
+Start-Process -FilePath $exePath -WorkingDirectory $exeWorkingDirectory

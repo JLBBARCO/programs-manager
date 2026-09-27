@@ -1,8 +1,8 @@
 import json
-from pathlib import Path
-from urllib.request import urlopen
-
-from lib import log, system, find_folders
+from lib.log import info, warning, error
+from lib.system import name
+from lib.config import get_github_branch
+from lib.find_folders import get_ProgramsManager_folder
 
 
 def read_json(file_path):
@@ -13,32 +13,24 @@ def read_json(file_path):
 
 
 def read_internal_json(file):
-    folder = find_folders.get_ProgramsManager_folder()
+    folder = get_ProgramsManager_folder()
     file_path = folder / f'{file}.json'
     if not file_path.exists():
-        log.warning(f'File {file}.json not found, creating default file.')
+        warning(f'File {file}.json not found, creating default file.')
         write_json()
     return read_json(file_path)
 
 
 def read_external_json(file):
-    local_path = Path(__file__).resolve().parents[2] / 'system' / system.name().lower() / 'json' / f'{file}.json'
+    branch = get_github_branch()
+    url_path = f'https://raw.githubusercontent.com/JLBBARCO/programs-manager/{branch}/core-app/system/{name().lower()}/json/{file}.json'
     try:
-        with open(local_path, 'r', encoding='utf-8-sig') as source_file:
-            payload = json.load(source_file)
-        log.info(f'Loaded {file}.json from local system data.')
-        return payload
-    except FileNotFoundError:
-        log.warning(f'Local JSON file not found: {local_path}')
-    except Exception as error:
-        log.error(f'Failed to read local JSON file {local_path}: {error}')
-
-    url_path = f'https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/system/{system.name().lower()}/json/{file}.json'
-    try:
-        with urlopen(url_path, timeout=20) as response:
-            return json.loads(response.read().decode('utf-8-sig'))
+        import requests
+        response = requests.get(url_path, timeout=20)
+        response.raise_for_status()
+        return response.json()
     except Exception as fallback_error:
-        log.error(f"Failed to fetch external JSON: {fallback_error}")
+        error(f"Failed to fetch external JSON: {fallback_error}")
     return None
 
 
@@ -58,7 +50,7 @@ def write_json(data=None):
         }
 
 
-    folder = find_folders.get_ProgramsManager_folder()
+    folder = get_ProgramsManager_folder()
     with open(f'{folder}/user.json', 'w', encoding='utf-8') as f:
         json.dump(payload, f, indent=2, ensure_ascii=False)
 

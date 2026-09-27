@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Google Chrome",
+    "type": "install",
+    "id": "google-chrome-stable",
+    "checkbox": false
+  },
+  {
+    "name": "Mozilla Firefox",
+    "type": "install",
+    "id": "firefox",
+    "checkbox": false
+  },
+  {
+    "name": "Microsoft Edge",
+    "type": "install",
+    "id": "microsoft-edge-stable",
+    "checkbox": false
+  },
+  {
+    "name": "Opera",
+    "type": "install",
+    "id": "opera-stable",
+    "checkbox": false
+  },
+  {
+    "name": "Brave",
+    "type": "install",
+    "id": "brave-browser",
+    "checkbox": false
+  },
+  {
+    "name": "Vivaldi",
+    "type": "install",
+    "id": "vivaldi-stable",
+    "checkbox": false
+  },
+  {
+    "name": "Tor Browser",
+    "type": "install",
+    "id": "torbrowser-launcher",
+    "checkbox": false
+  }
+]

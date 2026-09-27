@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Server Package",
+    "type": "function",
+    "id": "server-package",
+    "checkbox": false
+  },
+  {
+    "name": "Video Drivers",
+    "type": "function",
+    "id": "video_drivers",
+    "checkbox": false
+  },
+  {
+    "name": "Update Programs",
+    "type": "function",
+    "id": "update_programs",
+    "checkbox": false
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "name": "VLC",
+    "type": "install",
+    "id": "vlc",
+    "checkbox": false
+  },
+  {
+    "name": "Spotify",
+    "type": "install",
+    "id": "spotify-client",
+    "checkbox": false
+  }
+]

@@ -1,6 +1,6 @@
 import subprocess
 
-from lib import log, system
+from src.lib import log, system
 
 
 def _run_command(command: str) -> str:

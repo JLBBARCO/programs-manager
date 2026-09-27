@@ -4,8 +4,9 @@ import subprocess
 from pathlib import Path
 from time import sleep
 
-from lib import log, system
-from . import bios_shortcut, clear_temp_files, correctly_internal_drive, dark_mode, essential_programs_initialization, notifications, video_drivers, rainmeter, windows_optimizer
+from lib.log import info as log_info, warning as log_warning, error as log_error
+from lib.system import name as system_name
+from . import bios_shortcut, clear_temp_files, correctly_internal_drive, dark_mode, essential_programs_initialization, notifications, video_drivers, update_programs, rainmeter, motherboard_drivers
 from .essential_programs_initialization import (
     disable_startup_programs,
     enable_startup_whitelist,
@@ -45,7 +46,7 @@ def _filter_install_output(output: str) -> str:
 
 
 def _restart_windows_explorer() -> None:
-    if system.name() != 'Windows':
+    if system_name() != 'Windows':
         return
 
     try:
@@ -65,9 +66,9 @@ def _restart_windows_explorer() -> None:
             stderr=subprocess.DEVNULL,
             shell=False,
         )
-        log.info('Windows Explorer restarted to apply system changes.')
+        log_info('Windows Explorer restarted to apply system changes.')
     except Exception as error:
-        log.error(f'Failed to restart Windows Explorer: {error}')
+        log_error(f'Failed to restart Windows Explorer: {error}')
 
 
 def _resolve_function(func_name: str):
@@ -86,29 +87,26 @@ def _resolve_function(func_name: str):
 
         return None
     except ImportError as error:
-        log.warning(f"Não foi possível importar o módulo {module_name}: {error}")
+        log_error(f"Error importing module {module_name}: {error}")
         return None
 
 
-def functions(functions_list):
+def functions(item):
     try:
-        for item in functions_list:
-            func_name = item.get('id') if isinstance(item, dict) else item
-            if not func_name:
-                continue
+        func_name = item.get('id') if isinstance(item, dict) else item
+        func = _resolve_function(func_name) if func_name else None
 
-            display_name = item.get('name', func_name) if isinstance(item, dict) else func_name
-            func = _resolve_function(func_name)
+        display_name = item.get('name', func_name) if isinstance(item, dict) else func_name
 
-            if callable(func):
-                log.info(f"Executando: {display_name}")
-                func()
-            else:
-                log.warning(f"Function not found or not callable: {display_name} ({func_name})")
+        if callable(func):
+            log_info(f"Executando: {display_name}")
+            func()
+        else:
+            log_warning(f"Function not found or not callable: {display_name} ({func_name})")
 
-            sleep(1)
+        sleep(1)
 
         _restart_windows_explorer()
     except Exception as error:
-        log.error(f"Error executing functions: {error}")
+        log_error(f"Error executing functions: {error}")
 

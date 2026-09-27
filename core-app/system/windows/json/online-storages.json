@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Google Drive",
+    "type": "install",
+    "id": "Google.GoogleDrive",
+    "checkbox": false
+  },
+  {
+    "name": "Dropbox",
+    "type": "install",
+    "id": "Dropbox.Dropbox",
+    "checkbox": false
+  },
+  {
+    "name": "OneDrive",
+    "type": "install",
+    "id": "Microsoft.OneDrive",
+    "checkbox": false
+  },
+  {
+    "name": "MEGA",
+    "type": "install",
+    "id": "Mega.MEGASync",
+    "checkbox": false
+  },
+  {
+    "name": "pCloud",
+    "type": "install",
+    "id": "pCloudAG.pCloudDrive",
+    "checkbox": false
+  }
+]

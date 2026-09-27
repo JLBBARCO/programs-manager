@@ -1,0 +1,86 @@
+[
+  {
+    "name": "Lively Wallpaper",
+    "type": "install",
+    "id": "9NTM2QC6QWS7",
+    "checkbox": false
+  },
+  {
+    "name": "Rainmeter",
+    "type": "function",
+    "id": "rainmeter",
+    "checkbox": false
+  },
+  {
+    "name": "TranslucentTB",
+    "type": "install",
+    "id": "CharlesMilette.TranslucentTB",
+    "checkbox": false
+  },
+  {
+    "name": "Seelen UI",
+    "type": "install",
+    "id": "Seelen.SeelenUI",
+    "checkbox": false
+  },
+  {
+    "name": "Camo Studio",
+    "type": "install",
+    "id": "ReincubateLtd.CamoStudio",
+    "checkbox": false
+  },
+  {
+    "name": "OBS Studio",
+    "type": "install",
+    "id": "OBSProject.OBSStudio",
+    "checkbox": false
+  },
+  {
+    "name": "HP Smart",
+    "type": "install",
+    "id": "9WZDNCRFHWLH",
+    "checkbox": false
+  },
+  {
+    "name": "BlueStacks",
+    "type": "install",
+    "id": "BlueStack.BlueStacks",
+    "checkbox": false
+  },
+  {
+    "name": "WinRAR",
+    "type": "install",
+    "id": "RARLab.WinRAR",
+    "checkbox": false
+  },
+  {
+    "name": "7-Zip",
+    "type": "install",
+    "id": "7zip.7zip",
+    "checkbox": false
+  },
+  {
+    "name": "Google QuickShare",
+    "type": "install",
+    "id": "Google.QuickShare",
+    "checkbox": false
+  },
+  {
+    "name": "Proton VPN",
+    "type": "install",
+    "id": "Proton.ProtonVPN",
+    "checkbox": false
+  },
+  {
+    "name": "Cloudflare WARP",
+    "type": "install",
+    "id": "Cloudflare.Warp",
+    "checkbox": false
+  },
+  {
+    "name": "Radmin VPN",
+    "type": "install",
+    "id": "Famatech.RadminVPN",
+    "checkbox": false
+  }
+]

@@ -2,7 +2,7 @@ import os
 import platform
 import subprocess
 import glob
-from lib import log
+from src.lib import log
 
 
 def correctly_internal_drive():

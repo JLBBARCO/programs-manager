@@ -2,7 +2,7 @@ import re
 import shutil
 import subprocess
 
-from lib import log, system
+from src.lib import log, system
 
 
 WINDOWS_DRIVER_INSTALLERS = {

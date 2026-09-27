@@ -1,60 +1,20 @@
-# Programs Manager Website
+# Website do Programs Manager
 
-The website displays the `log.log` output in real time while the program runs. The UI groups log lines by severity (`INFO`, `DEBUG`, `WARNING`, `ERROR`) and shows recent entries first, with automatic scrolling unless the user scrolls up.
+Site estático servido pela Vercel com funções serverless em `website/api/`.
 
-## Frontend (Site)
+## Releases diárias
 
-### Language
+- `GET /api/releases` é chamado pelo navegador a cada carregamento e retorna releases públicas do GitHub.
+- `GET /api/cron/releases` atualiza o cache diariamente (`0 6 * * *`, UTC), conforme `website/vercel.json`.
+- O cache fica na variável de módulo `releasesCache`, reaproveitada enquanto a instância serverless está aquecida. Uma instância fria repopula o cache automaticamente pelo endpoint público.
+- Não há gravação em disco, pois o filesystem de funções Vercel é efêmero.
 
-English (En-US)
+## Variáveis na Vercel
 
-### Main view
+| Variável            | Obrigatória     | Padrão             | Uso                                                                 |
+| ------------------- | --------------- | ------------------ | ------------------------------------------------------------------- |
+| `CRON_SECRET`       | Sim em produção | —                  | Autoriza o endpoint diário; a Vercel envia o header correspondente. |
+| `GITHUB_OWNER`      | Não             | `JLBBARCO`         | Owner do repositório.                                               |
+| `GITHUB_REPOSITORY` | Não             | `programs-manager` | Nome do repositório.                                                |
 
-- Four containers display `INFO`, `DEBUG`, `WARNING`, and `ERROR` messages.
-- Each container has a fixed height and horizontal scrollbar. Older messages appear above newer messages.
-- Incoming log lines follow these formats:
-
-  ```log
-  [dd/mm/yyyy hh:mm:ss] [INFO] <message>
-  [dd/mm/yyyy hh:mm:ss] [WARNING] <message>
-  [dd/mm/yyyy hh:mm:ss] [ERROR] <message>
-  ```
-
-- Example input line: `[01/06/2026 12:30:45] [SUCCESS] Visual Studio Code installed` is displayed as `01/06/2026 12:30:45 | Visual Studio installed` with the timestamp colored `#808080`.
-- The site partitions historical runs: entries older than 1 minute compared to the site's load timestamp are shown in a separate history section.
-- The monitor also stores the latest `Start <program>` marker and `Operating System: <system>` marker so the header and history can be grouped by program.
-
-### Footer — Contact container
-
-Contact cards are loaded from a remote JSON and displayed as circular icon buttons. Hovering shows the contact `name`. The JSON `url` becomes the card link and `iconName` indicates the icon to display.
-
-CSS layout example:
-
-```css
-display: flex;
-flex-flow: row wrap;
-justify-content: space-between;
-align-items: center;
-```
-
-### Error page
-
-If the site cannot access the `log.log` port (the port provided in the page query parameter `?port=NNNN` or any `99xx` port) or the file is not shared, an error page is shown with a refresh button and a link to the GitHub repository: `https://github.com/JLBBARCO/programs-manager`.
-
-## Backend (Site)
-
-The site temporarily records the page load time and uses it to partition current-run logs from historical logs. Monitoring also tracks the current program name and operating system extracted from the log stream. Monitoring stops when the latest log line contains `[INFO] End system`.
-
-### Port probe
-
-On load the site probes the port specified by the query parameter `?port=NNNN` (if present) or falls back to a sensible default in the `99xx` range for up to 30 seconds. If the log endpoint is not available, monitoring is paused until the user refreshes.
-
-### Contacts source
-
-Contact data is fetched from:
-
-`https://raw.githubusercontent.com/JLBBARCO/portfolio/main/src/json/areas/contact.json` and cached by Vercel hourly to minimize GitHub requests.
-
-### Deployment
-
-The project is deployed on Vercel using the settings in [vercel.json](vercel.json). The current Vercel domain is `programs-manager-website-jlbbarco.vercel.app`.
+Defina o Root Directory do projeto Vercel como `website` se ele estiver conectado diretamente ao repositório. Limpe o Build Command antigo (`vite build`) nas configurações do projeto; `website/vercel.json` desativa instalação e build porque o site é estático. O workflow `.github/workflows/deploy-website.yml` já faz deploy de `website`.

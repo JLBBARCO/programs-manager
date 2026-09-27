@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Adobe Acrobat",
+    "type": "install",
+    "id": "Adobe.Acrobat.Reader.64-bit",
+    "checkbox": false
+  },
+  {
+    "name": "Microsoft Office",
+    "type": "install",
+    "id": "Microsoft.Office",
+    "checkbox": false
+  },
+  {
+    "name": "LibreOffice",
+    "type": "install",
+    "id": "TheDocumentFoundation.LibreOffice",
+    "checkbox": false
+  },
+  {
+    "name": "Foxit Reader",
+    "type": "install",
+    "id": "Foxit.FoxitReader",
+    "checkbox": false
+  },
+  {
+    "name": "Postman",
+    "type": "install",
+    "id": "Postman.Postman",
+    "checkbox": false
+  },
+  {
+    "name": "Notion",
+    "type": "install",
+    "id": "Notion.Notion",
+    "checkbox": false
+  },
+  {
+    "name": "Obsidian",
+    "type": "install",
+    "id": "Obsidian.Obsidian",
+    "checkbox": false
+  }
+]

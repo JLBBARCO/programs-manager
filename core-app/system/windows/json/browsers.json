@@ -1,0 +1,44 @@
+[
+  {
+    "name": "Google Chrome",
+    "type": "install",
+    "id": "Google.Chrome",
+    "checkbox": false
+  },
+  {
+    "name": "Mozilla Firefox",
+    "type": "install",
+    "id": "Mozilla.Firefox",
+    "checkbox": false
+  },
+  {
+    "name": "Opera",
+    "type": "install",
+    "id": "Opera.Opera",
+    "checkbox": false
+  },
+  {
+    "name": "Opera GX",
+    "type": "install",
+    "id": "Opera.OperaGX",
+    "checkbox": false
+  },
+  {
+    "name": "Microsoft Edge",
+    "type": "install",
+    "id": "Microsoft.Edge",
+    "checkbox": false
+  },
+  {
+    "name": "Vivaldi Browser",
+    "type": "install",
+    "id": "Vivaldi.Vivaldi",
+    "checkbox": false
+  },
+  {
+    "name": "Tor Browser",
+    "type": "install",
+    "id": "TorProject.TorBrowser",
+    "checkbox": false
+  }
+]
