@@ -4,6 +4,7 @@ charset-normalizer==3.5.1
 customtkinter==6.0.0
 darkdetect==0.8.0
 idna==3.19
+notify-py==0.3.43
 packaging==26.3
 pefile==2024.8.26
 pyinstaller==6.22.2
