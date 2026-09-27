@@ -9,24 +9,24 @@
     "name": "Rainmeter",
     "type": "function",
     "id": "rainmeter",
-    "checkbox": true
+    "checkbox": false
   },
   {
     "name": "TranslucentTB",
     "type": "install",
     "id": "CharlesMilette.TranslucentTB",
-    "checkbox": true
+    "checkbox": false
   },
   {
     "name": "Seelen UI",
     "type": "install",
-    "id": "SeelenUI.SeelenUI",
+    "id": "Seelen.SeelenUI",
     "checkbox": false
   },
   {
     "name": "Camo Studio",
     "type": "install",
-    "id": "Reincubate.CamoStudio",
+    "id": "ReincubateLtd.CamoStudio",
     "checkbox": false
   },
   {

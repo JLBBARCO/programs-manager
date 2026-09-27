@@ -71,5 +71,17 @@
     "type": "install",
     "id": "Microsoft.PowerShell",
     "checkbox": false
+  },
+  {
+    "name": "Google Android Studio",
+    "type": "install",
+    "id": "Google.AndroidStudio",
+    "checkbox": false
+  },
+  {
+    "name": "Google Antigravity",
+    "type": "install",
+    "id": "Google.Antigravity",
+    "checkbox": false
   }
 ]

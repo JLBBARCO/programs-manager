@@ -3,6 +3,7 @@ import subprocess
 from time import sleep
 import urllib.request
 import json as std_json
+from lib.config import get_github_branch
 
 from src.lib import json, log, system
 
@@ -51,7 +52,7 @@ def _load_whitelist_terms(whitelist_content=None):
     """Parse whitelist content and return a set of normalized terms."""
     # If no whitelist content provided, attempt to fetch from the canonical GitHub raw URL
     remote_url = (
-        "https://raw.githubusercontent.com/JLBBARCO/programs-manager/refs/heads/main/core-app/system/windows/json/initialization_whitelist.json"
+        f"https://raw.githubusercontent.com/JLBBARCO/programs-manager/{get_github_branch()}/core-app/system/windows/json/initialization_whitelist.json"
     )
     if whitelist_content is None:
         try:

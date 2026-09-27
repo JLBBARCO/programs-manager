@@ -1,11 +1,5 @@
 [
   {
-    "name": "Xbox App",
-    "type": "install",
-    "id": "Microsoft.XboxApp",
-    "checkbox": false
-  },
-  {
     "name": "Steam",
     "type": "install",
     "id": "Valve.Steam",
@@ -27,7 +21,7 @@
     "name": "CurseForge",
     "type": "install",
     "id": "Overwolf.CurseForge",
-    "checkbox": true
+    "checkbox": false
   },
   {
     "name": "GOG Galaxy",

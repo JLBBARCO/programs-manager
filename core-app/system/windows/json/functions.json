@@ -3,13 +3,13 @@
     "name": "Video Drivers",
     "type": "function",
     "id": "video_drivers",
-    "checkbox": true
+    "checkbox": false
   },
   {
     "name": "Update Programs",
     "type": "function",
     "id": "update_programs",
-    "checkbox": true
+    "checkbox": false
   },
   {
     "name": "Dark Mode ",
@@ -21,7 +21,7 @@
     "name": "Essential Programs Initialization",
     "type": "function",
     "id": "essential_programs_initialization",
-    "checkbox": true
+    "checkbox": false
   },
   {
     "name": "BIOS Shortcut",
@@ -33,12 +33,12 @@
     "name": "Windows Optimizer",
     "type": "function",
     "id": "windows_optimizer",
-    "checkbox": true
+    "checkbox": false
   },
   {
     "name": "Motherboard Drivers",
     "type": "function",
     "id": "motherboard_drivers",
-    "checkbox": true
+    "checkbox": false
   }
 ]

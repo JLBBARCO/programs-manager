@@ -7,6 +7,8 @@ repo="programs-manager"
 # latest stable release. Set here according to file branch.
 SCRIPT_BRANCH="${AIP_BRANCH:-${SCRIPT_BRANCH:-main}}"
 SCRIPT_BRANCH="$(printf '%s' "$SCRIPT_BRANCH" | tr '[:upper:]' '[:lower:]' | xargs)"
+REQUESTED_VERSION="${AIP_VERSION:-}"
+REQUESTED_VERSION="$(printf '%s' "$REQUESTED_VERSION" | sed 's/^[vV]//' | xargs)"
 
 OS_TYPE=$(uname -s)
 INSTALL_ROOT="${HOME}/.programs-manager"
@@ -94,6 +96,38 @@ resolve_local_build() {
 # (latest prerelease on develop, latest stable release otherwise).
 fetch_release_info() {
     local asset_pattern="$1"
+
+    if [ -n "$REQUESTED_VERSION" ]; then
+        if command -v python3 >/dev/null 2>&1; then
+            python3 - "$owner" "$repo" "$asset_pattern" "$REQUESTED_VERSION" <<'PY'
+import json
+import sys
+import urllib.request
+
+owner, repo, asset_pattern, version = sys.argv[1:5]
+api_url = f"https://api.github.com/repos/{owner}/{repo}/releases/tags/v{version}"
+
+with urllib.request.urlopen(api_url) as response:
+    release = json.load(response)
+
+for asset in release.get("assets", []):
+    if asset.get("name") == asset_pattern:
+        print(f"{asset.get('browser_download_url', '')}\t{release.get('tag_name', '')}")
+        raise SystemExit(0)
+
+raise SystemExit(1)
+PY
+            return $?
+        fi
+
+        local version_json version_url version_tag
+        version_json="$(curl -fsSL "https://api.github.com/repos/$owner/$repo/releases/tags/v$REQUESTED_VERSION")" || return 1
+        version_url="$(printf '%s' "$version_json" | grep "browser_download_url" | grep "$asset_pattern" | head -n1 | cut -d '"' -f4)"
+        version_tag="$(printf '%s' "$version_json" | grep '"tag_name"' | head -n1 | cut -d '"' -f4)"
+        [ -n "$version_url" ] || return 1
+        printf '%s\t%s\n' "$version_url" "$version_tag"
+        return 0
+    fi
 
     if [ "$SCRIPT_BRANCH" = "develop" ]; then
         if command -v python3 >/dev/null 2>&1; then

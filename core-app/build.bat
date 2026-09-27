@@ -15,6 +15,7 @@ python -m PyInstaller --noconfirm --onedir --windowed ^
     --name "Programs Manager" ^
     --icon "assets/icons/icon.ico" ^
     --paths "core-app" ^
+    --paths "." ^
     --add-data "core-app/lib;lib" ^
     --add-data "core-app/assets;assets" ^
     --add-data "core-app/system;system" ^

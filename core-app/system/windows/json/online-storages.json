@@ -2,7 +2,7 @@
   {
     "name": "Google Drive",
     "type": "install",
-    "id": "Google.Drive",
+    "id": "Google.GoogleDrive",
     "checkbox": false
   },
   {
@@ -20,13 +20,13 @@
   {
     "name": "MEGA",
     "type": "install",
-    "id": "MegaLimited.MEGAsync",
+    "id": "Mega.MEGASync",
     "checkbox": false
   },
   {
     "name": "pCloud",
     "type": "install",
-    "id": "pCloud.pCloudDrive",
+    "id": "pCloudAG.pCloudDrive",
     "checkbox": false
   }
 ]

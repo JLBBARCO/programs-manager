@@ -30,12 +30,6 @@
     "checkbox": false
   },
   {
-    "name": "Brave Browser",
-    "type": "install",
-    "id": "BraveSoftware.BraveBrowser",
-    "checkbox": false
-  },
-  {
     "name": "Vivaldi Browser",
     "type": "install",
     "id": "Vivaldi.Vivaldi",

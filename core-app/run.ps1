@@ -15,12 +15,27 @@ $ScriptBranch = if ($env:AIP_BRANCH) {
     'main'
 }
 $ScriptBranch = $ScriptBranch.Trim().ToLowerInvariant()
+$RequestedVersion = if ($env:AIP_VERSION) { $env:AIP_VERSION.Trim().TrimStart('v', 'V') } else { $null }
+
+$architecture = if ($env:AIP_ARCHITECTURE) {
+    $env:AIP_ARCHITECTURE.Trim().ToLowerInvariant()
+} elseif ($env:PROCESSOR_ARCHITEW6432) {
+    $env:PROCESSOR_ARCHITEW6432.Trim().ToLowerInvariant()
+} else {
+    $env:PROCESSOR_ARCHITECTURE.Trim().ToLowerInvariant()
+}
+
+if ($architecture -in @('x86', 'i386', 'i686')) {
+    $assetName = "programs-manager-windows-x86.zip"
+} else {
+    $assetName = "programs-manager-windows-x64.zip"
+}
+
 # Use the current user's profile directory (works on Windows reliably).
 $installRoot = Join-Path $env:USERPROFILE ".programs-manager"
 $expectedExePath = Join-Path $installRoot "Programs Manager\Programs Manager.exe"
 $expectedVersionPath = Join-Path $installRoot "Programs Manager\version.txt"
 $appName = "Programs Manager"
-$assetName = "programs-manager-windows.zip"
 
 Write-Host "[programs-manager] Script em execução: $PSCommandPath"
 
@@ -79,6 +94,10 @@ function Get-LatestRelease {
         [string]$Branch
     )
 
+    if ($RequestedVersion) {
+        return Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases/tags/v$RequestedVersion" -UseBasicParsing
+    }
+
     if ($Branch -eq 'develop') {
         $releases = Invoke-RestMethod -Uri "https://api.github.com/repos/$owner/$repo/releases" -UseBasicParsing
         $release = $releases | Where-Object { $_.prerelease } | Sort-Object -Property published_at -Descending | Select-Object -First 1
@@ -99,7 +118,15 @@ function Install-LatestRelease {
         [string]$Root
     )
 
-    $asset = $Release.assets | Where-Object { $_.name -eq $assetName } | Select-Object -First 1
+    $asset = $Release.assets |
+        Where-Object { $_.name -eq $assetName } |
+        Select-Object -First 1
+
+    if (-not $asset) {
+        $asset = $Release.assets |
+            Where-Object { $_.name -eq 'programs-manager-windows.zip' } |
+            Select-Object -First 1
+    }
     if (-not $asset) {
         throw "Asset '$assetName' not found in the chosen release."
     }

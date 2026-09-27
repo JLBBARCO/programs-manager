@@ -1,21 +1,20 @@
 [
-  { "name": "AVG", "type": "install", "id": "AVG.AVG", "checkbox": false },
+  {
+    "name": "AVG",
+    "type": "install",
+    "id": "XP8BX2DWV7TF50",
+    "checkbox": false
+  },
   {
     "name": "Avast",
     "type": "install",
-    "id": "AvastSoftware.AvastFreeAntivirus",
+    "id": "XPDNZJFNCR1B07",
     "checkbox": false
   },
   {
     "name": "Bitdefender",
     "type": "install",
-    "id": "Bitdefender.BitdefenderFreeEdition",
-    "checkbox": false
-  },
-  {
-    "name": "Kaspersky",
-    "type": "install",
-    "id": "Kaspersky.KasperskyFree",
+    "id": "Bitdefender.Bitdefender",
     "checkbox": false
   },
   {

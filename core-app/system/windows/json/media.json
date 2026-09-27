@@ -26,13 +26,13 @@
   {
     "name": "foobar2000",
     "type": "install",
-    "id": "foobar2000.foobar2000",
+    "id": "PeterPawlowski.foobar2000",
     "checkbox": false
   },
   {
     "name": "Winamp",
     "type": "install",
-    "id": "Nullsoft.Winamp",
+    "id": "Winamp.Winamp",
     "checkbox": false
   },
   {

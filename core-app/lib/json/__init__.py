@@ -1,6 +1,7 @@
 import json
 from lib.log import info, warning, error
 from lib.system import name
+from lib.config import get_github_branch
 from lib.find_folders import get_ProgramsManager_folder
 
 
@@ -21,7 +22,8 @@ def read_internal_json(file):
 
 
 def read_external_json(file):
-    url_path = f'https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/system/{name().lower()}/json/{file}.json'
+    branch = get_github_branch()
+    url_path = f'https://raw.githubusercontent.com/JLBBARCO/programs-manager/{branch}/core-app/system/{name().lower()}/json/{file}.json'
     try:
         import requests
         response = requests.get(url_path, timeout=20)
