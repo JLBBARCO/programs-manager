@@ -11,10 +11,10 @@ Site estático servido pela Vercel com funções serverless em `website/api/`.
 
 ## Variáveis na Vercel
 
-| Variável | Obrigatória | Padrão | Uso |
-| --- | --- | --- | --- |
-| `CRON_SECRET` | Sim em produção | — | Autoriza o endpoint diário; a Vercel envia o header correspondente. |
-| `GITHUB_OWNER` | Não | `JLBBARCO` | Owner do repositório. |
-| `GITHUB_REPOSITORY` | Não | `programs-manager` | Nome do repositório. |
+| Variável            | Obrigatória     | Padrão             | Uso                                                                 |
+| ------------------- | --------------- | ------------------ | ------------------------------------------------------------------- |
+| `CRON_SECRET`       | Sim em produção | —                  | Autoriza o endpoint diário; a Vercel envia o header correspondente. |
+| `GITHUB_OWNER`      | Não             | `JLBBARCO`         | Owner do repositório.                                               |
+| `GITHUB_REPOSITORY` | Não             | `programs-manager` | Nome do repositório.                                                |
 
-Defina o Root Directory do projeto Vercel como `website` se ele estiver conectado diretamente ao repositório. O workflow `.github/workflows/deploy-website.yml` já faz deploy de `website`.
+Defina o Root Directory do projeto Vercel como `website` se ele estiver conectado diretamente ao repositório. Limpe o Build Command antigo (`vite build`) nas configurações do projeto; `website/vercel.json` desativa instalação e build porque o site é estático. O workflow `.github/workflows/deploy-website.yml` já faz deploy de `website`.

@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "installCommand": null,
+  "buildCommand": null,
   "cleanUrls": true,
   "trailingSlash": false,
   "crons": [{ "path": "/api/cron/releases", "schedule": "0 6 * * *" }],
