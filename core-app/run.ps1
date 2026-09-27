@@ -2,6 +2,14 @@
 $owner = "JLBBARCO"
 $repo = "programs-manager"
 
+
+# Install Python 3.12 if not present
+if (-not (Get-Command python3.12 -ErrorAction SilentlyContinue)) {
+    Write-Host "[programs-manager] Python 3.12 not found. Installing..."
+    winget install --id=Python.Python.3.12 -e --source winget
+}
+
+
 # Set this script's branch. When this file is fetched from:
 #  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1  -> set to 'main'
 #  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/develop/run.ps1 -> set to 'develop'
@@ -278,10 +286,3 @@ Write-Host "[programs-manager] Executable: $exePath"
 Set-WindowsShortcuts -ExePath $exePath
 $exeWorkingDirectory = Split-Path -Parent $exePath
 Start-Process -FilePath $exePath -WorkingDirectory $exeWorkingDirectory
-
-# 4. Fecha o terminal do PowerShell (Se estiver rodando via terminal)
-if ($host.Name -eq 'ConsoleHost') {
-    Write-Host "[programs-manager] Closing PowerShell terminal..."
-    Start-Sleep -Seconds 1
-    Stop-Process -Id $PID
-}
