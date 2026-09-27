@@ -15,6 +15,7 @@ on:
       - "core-app/run.ps1"
       - "core-app/run.sh"
       - ".github/workflows/build-core-app.yml"
+      - ".github/workflows/release.yml"
   pull_request:
     branches: [main, beta]
     paths:
@@ -28,6 +29,7 @@ on:
       - "core-app/run.ps1"
       - "core-app/run.sh"
       - ".github/workflows/build-core-app.yml"
+      - ".github/workflows/release.yml"
 
 permissions:
   contents: read
