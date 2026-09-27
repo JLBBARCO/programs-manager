@@ -5,7 +5,6 @@ on:
   workflow_run:
     workflows:
       - Build Multi-Platform Core App
-      - Build Multi-Platform User Generator
     types: [completed]
     branches: [main, beta]
 
@@ -65,7 +64,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          for workflow in "Build Multi-Platform Core App" "Build Multi-Platform User Generator"; do
+          for workflow in "Build Multi-Platform Core App"; do
             run_id="$(gh run list --workflow "$workflow" --branch "${{ steps.branch.outputs.name }}" --status success --limit 1 --json databaseId --jq '.[0].databaseId // empty')"
             if [[ -n "$run_id" ]]; then
               gh run download "$run_id" --dir release || true
@@ -78,8 +77,8 @@ jobs:
         shell: bash
         run: |
           find release -maxdepth 1 -type f
-          if ! find release -maxdepth 1 -type f \( -name "*.zip" -o -name "*.tar.gz" -o -name "*.pkg" \) | grep -q .; then
-            echo "No release artifacts found."
+          if ! find release -maxdepth 1 -type f \( -name "programs-manager-windows-*.zip" -o -name "programs-manager-windows.zip" -o -name "programs-manager-linux.tar.gz" \) | grep -q .; then
+            echo "No Programs Manager application artifacts found."
             exit 1
           fi
 
@@ -97,7 +96,7 @@ jobs:
           # artifact (see build-core-app.yml / build-user-generator.yml).
           # Read it from there instead of tracking a separate file, so there
           # is nothing to keep in sync (or conflict) across branches.
-          ASSET="$(find release -maxdepth 1 -type f \( -name "*.tar.gz" -o -name "*.zip" \) | sort | head -n 1)"
+          ASSET="$(find release -maxdepth 1 -type f \( -name "programs-manager-windows-*.zip" -o -name "programs-manager-windows.zip" -o -name "programs-manager-linux.tar.gz" \) | sort | head -n 1)"
           if [[ -z "$ASSET" ]]; then
             echo "No release artifact found to read the version from."
             exit 1
@@ -150,7 +149,39 @@ jobs:
             gh release edit "$TAG" --title "$TITLE" --notes "$NOTES" "${RELEASE_FLAGS[@]}"
           else
             gh release create "$TAG" release/* --target "${{ github.event.workflow_run.head_sha || github.sha }}" --title "$TITLE" --notes "$NOTES" "${RELEASE_FLAGS[@]}"
-            exit 0
           fi
 
           gh release upload "$TAG" release/* --clobber
+
+      - name: Update version.json
+        env:
+          RELEASE_VERSION: ${{ steps.version.outputs.value }}
+          RELEASE_BRANCH: ${{ steps.branch.outputs.name }}
+        shell: bash
+        run: |
+          python3 - "$RELEASE_BRANCH" "$RELEASE_VERSION" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+
+          branch, version = sys.argv[1:]
+          version_path = Path('.github/version.json')
+          data = json.loads(version_path.read_text(encoding='utf-8'))
+          key = 'latest' if branch == 'main' else 'beta'
+          data[key] = version
+          version_path.write_text(
+              json.dumps(data, ensure_ascii=True, separators=(', ', ': ')) + '\n',
+              encoding='utf-8',
+          )
+          PY
+
+          if git diff --quiet -- .github/version.json; then
+            echo "version.json already contains $RELEASE_VERSION for $RELEASE_BRANCH."
+            exit 0
+          fi
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/version.json
+          git commit -m "chore: update $RELEASE_BRANCH version"
+          git push origin "HEAD:$RELEASE_BRANCH"
