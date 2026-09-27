@@ -80,10 +80,20 @@ jobs:
         shell: bash
         run: |
           find release -maxdepth 1 -type f
-          if ! find release -maxdepth 1 -type f \( -name "programs-manager-windows-*.zip" -o -name "programs-manager-windows.zip" -o -name "programs-manager-linux.tar.gz" \) | grep -q .; then
-            echo "No Programs Manager application artifacts found."
-            exit 1
-          fi
+          required_artifacts=(
+            "programs-manager-windows-x64.zip"
+            "programs-manager-windows-x86.zip"
+            "programs-manager-linux.tar.gz"
+          )
+
+          for artifact in "${required_artifacts[@]}"; do
+            if [[ ! -f "release/$artifact" ]]; then
+              echo "Required build artifact not found: $artifact"
+              exit 1
+            fi
+          done
+
+          echo "All Windows x64, Windows x86, and Linux x64 artifacts are available."
 
       - name: Resolve version
         id: version
