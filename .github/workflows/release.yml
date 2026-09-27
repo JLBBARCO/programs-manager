@@ -6,7 +6,6 @@ on:
     workflows:
       - Build Multi-Platform Core App
     types: [completed]
-    branches: [main, beta]
 
 permissions:
   actions: read
@@ -18,7 +17,11 @@ concurrency:
 
 jobs:
   publish:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' &&
+      (github.event.workflow_run.head_branch == 'main' ||
+      github.event.workflow_run.head_branch == 'beta'))
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
