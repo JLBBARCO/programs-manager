@@ -9,7 +9,45 @@
 </head>
 
 <body>
+    <main>
+        <section id="home">
+            <h1>Programs Manager</h1>
+            <p>Programs Manager is a program developed in Python from easy manager of programs in your computer</p>
+        </section>
+        <section id="commands">
+            <h2>Commands</h2>
 
+            <h3>Default Command</h3>
+
+            <h4>Windows PowerShell</h4>
+            <h5>Stable</h5>
+            <pre><code>irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.ps1 | iex</code></pre>
+            <h5>Beta</h5>
+            <pre><code>irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/core-app/run.ps1 | iex</code></pre>
+
+            <h4>Linux</h4>
+            <h5>Stable</h5>
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.sh | bash</code></pre>
+            <h5>Beta</h5>
+            <pre><code>curl -fsSL https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/core-app/run.sh | bash</code></pre>
+
+            <h3>Run any version of the program</h3>
+            <p>In the command, if you add the version name in front of the link of the repository, you can run any
+                version of the program. <br>For example:
+                <code>irm https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/core-app/run.ps1 3.02.4 | iex</code>
+            </p>
+        </section>
+        <section id="other_versions">
+            <h2>Other Versions</h2>
+            <table>
+                <thead>
+                    <td>Release</td>
+                    <td>Version</td>
+                    <td>Date</td>
+                </thead>
+            </table>
+        </section>
+    </main>
 </body>
 
 </html>
