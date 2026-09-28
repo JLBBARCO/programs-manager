@@ -18,10 +18,10 @@ Programs Manager is a Python desktop application for installing and removing sof
 
 ## Platforms and requirements
 
-| Platform | Requirements | Package operations |
-| --- | --- | --- |
-| Windows | Python 3.12 to run from source; Tk support; `winget` for package operations | `winget install`, `winget uninstall`, and `winget upgrade` |
-| Linux | Python 3.12, Tkinter, and `apt`; `sudo` for package operations | `apt install` and `apt remove` |
+| Platform | Requirements                                                                | Package operations                                         |
+| -------- | --------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| Windows  | Python 3.12 to run from source; Tk support; `winget` for package operations | `winget install`, `winget uninstall`, and `winget upgrade` |
+| Linux    | Python 3.12, Tkinter, and `apt`; `sudo` for package operations              | `apt install` and `apt remove`                             |
 
 The interface fetches catalogs from GitHub, and the launchers use the GitHub Releases API to find builds. An internet connection is needed for catalog loading, release downloads, and update checks. Some maintenance functions also download packages or drivers.
 
@@ -30,6 +30,14 @@ The core application detects Windows and Linux. Shortcut helper code includes ma
 ## Run a published release
 
 The launchers install or update the app in `%USERPROFILE%\.programs-manager` on Windows or `~/.programs-manager` on Linux, then start the executable. They also try to create a desktop or application-menu shortcut.
+
+On Windows, the published executable may be blocked by App Control, Windows Defender Application Control (WDAC), or an organizational AppLocker policy. The launcher cannot override those policies. An administrator must allow the executable's publisher or hash, or the application can be run from source instead:
+
+```powershell
+python core-app/main.py
+```
+
+The Windows release is Authenticode-signed when signing is configured for the build, but a self-signed certificate is not automatically trusted by every App Control policy.
 
 **Windows PowerShell:**
 

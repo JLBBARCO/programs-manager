@@ -318,4 +318,16 @@ Write-Host "[programs-manager] Running..."
 Write-Host "[programs-manager] Executable: $exePath"
 Set-WindowsShortcuts -ExePath $exePath
 $exeWorkingDirectory = Split-Path -Parent $exePath
-Start-Process -FilePath $exePath -WorkingDirectory $exeWorkingDirectory
+try {
+    Start-Process -FilePath $exePath -WorkingDirectory $exeWorkingDirectory -ErrorAction Stop
+} catch {
+    $signature = Get-AuthenticodeSignature -LiteralPath $exePath -ErrorAction SilentlyContinue
+    $signer = if ($signature.SignerCertificate) { $signature.SignerCertificate.Subject } else { 'sem certificado' }
+
+    Write-Host "[programs-manager] O Windows bloqueou a execução do aplicativo." -ForegroundColor Red
+    Write-Host "[programs-manager] Política de Controle de Aplicativo detectada ao iniciar: $exePath" -ForegroundColor Yellow
+    Write-Host "[programs-manager] Assinatura: $($signature.Status); publicador: $signer" -ForegroundColor Yellow
+    Write-Host "[programs-manager] Peça ao administrador para permitir o publicador/hash deste executável na política do Windows." -ForegroundColor Yellow
+    Write-Host "[programs-manager] Alternativa para desenvolvimento: python core-app/main.py" -ForegroundColor Yellow
+    throw "O Windows bloqueou o executável por uma política de Controle de Aplicativo."
+}
