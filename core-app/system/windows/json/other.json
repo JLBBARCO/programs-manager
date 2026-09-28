@@ -82,5 +82,11 @@
     "type": "install",
     "id": "Famatech.RadminVPN",
     "checkbox": false
+  },
+  {
+    "name": "Backiee",
+    "type": "install",
+    "id": "9WZDNCRFHZCD",
+    "checkbox": false
   }
 ]
