@@ -1,1 +1,14 @@
-[]
+[
+  {
+    "name": "Gimp",
+    "type": "install",
+    "id": "GIMP.GIMP",
+    "checkbox": false
+  },
+  {
+    "name": "Figma",
+    "type": "install",
+    "id": "Figma.Figma",
+    "checkbox": false
+  }
+]
