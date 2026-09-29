@@ -24,7 +24,8 @@ install_json_files = (
     {'file': 'other', 'system': ['Windows'], 'name': 'Other', 'area': 'other_area'},
     {'file': 'security', 'system': ['Windows'], 'name': 'Security', 'area': 'security_area'},
     {'file': 'social', 'system': ['Windows', 'Linux'], 'name': 'Social', 'area': 'social_medias_area'},
-    {'file': 'utilities', 'system': ['Windows', 'Linux'], 'name': 'Utilities', 'area': 'utilities_area'}
+    {'file': 'utilities', 'system': ['Windows', 'Linux'], 'name': 'Utilities', 'area': 'utilities_area'},
+    {'file': 'smartphone_recovery', 'system': ['Windows'], 'name': 'Smartphone Recovery', 'area': 'utilities_area'}
     )
 functions_json_files = (
     {'file': 'functions', 'system': ['Windows', 'Linux'], 'name': 'Functions'},

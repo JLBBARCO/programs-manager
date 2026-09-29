@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Motorola Mobile Drivers",
+    "type": "install",
+    "id": "Motorola.MobileDrivers",
+    "checkbox": false
+  },
+  {
+    "name": "Ready For Assistant / Smart Connect",
+    "type": "install",
+    "id": "Motorola.ReadyForAssistant",
+    "checkbox": false
+  }
+]
