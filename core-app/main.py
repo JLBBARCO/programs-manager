@@ -6,6 +6,7 @@ import sys
 from lib.screens import options
 from lib.log import info
 from lib.functions import notifications
+from lib.execution import cancel_all
 
 
 if getattr(sys, "frozen", False):
@@ -27,6 +28,8 @@ class App(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.resizable(False, False)
         self.title("Programs Manager")
+        self.closed_by_user = False
+        self.protocol("WM_DELETE_WINDOW", self.close_program)
 
         ensure_platform_shortcuts_best_effort()
 
@@ -38,12 +41,21 @@ class App(ctk.CTk):
             self
         )
 
+    def close_program(self):
+        if self.closed_by_user:
+            return
+        self.closed_by_user = True
+        cancel_all()
+        notifications.closed_notification()
+        self.destroy()
+
 
 if __name__ == "__main__":
     try:
         app = App()
         app.mainloop()
-        notifications.finalize_notification()
+        if not app.closed_by_user:
+            notifications.finalize_notification()
     except Exception as e:
             info(f"Error during initialization: {e}")
             raise

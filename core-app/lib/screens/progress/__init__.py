@@ -3,6 +3,7 @@ from typing import Any
 
 import customtkinter as ctk
 from lib.log import info
+from lib.execution import ExecutionCancelled, is_cancelled
 
 class ProgressScreen(ctk.CTkFrame):
     def __init__(self, master: Any, options_array):
@@ -39,6 +40,8 @@ class ProgressScreen(ctk.CTkFrame):
     def _run_pipeline(self, options_array):
         total = len(options_array)
         for index, option in enumerate(options_array, start=1):
+            if is_cancelled():
+                return
             option_type = option.get('type', '')
             option_name = option.get('name', option.get('id', 'Unknown option'))
             self._update_progress((index - 1) / total, f'Executing: {option_name}')
@@ -55,16 +58,22 @@ class ProgressScreen(ctk.CTkFrame):
                     functions(option)
                 else:
                     raise ValueError(f'Unsupported option type: {option_type}')
+            except ExecutionCancelled:
+                return
             except Exception as exception:
                 self._update_progress((index - 1) / total, f'Error: {option_name} - {exception}')
                 continue
 
             self._update_progress(index / total, f'Completed: {option_name}')
 
-        self._update_progress(1, 'Pipeline completed.')
+        if not is_cancelled():
+            self._update_progress(1, 'Pipeline completed.')
 
     def _update_progress(self, value, message):
-        self.after(0, self._apply_progress, value, message)
+        try:
+            self.after(0, self._apply_progress, value, message)
+        except ctk.TclError:
+            return
 
     def _apply_progress(self, value, message):
         percentage = int(value * 100)

@@ -109,3 +109,7 @@ def finalize_notification():
 		return True
 	except Exception:
 		return False
+
+
+def closed_notification():
+	return error_notification('Programs Manager', 'Programa fechado. Todas as execuções foram canceladas.')

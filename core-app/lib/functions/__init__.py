@@ -13,6 +13,7 @@ from .essential_programs_initialization import (
     essentials_programs_whitelist,
     save_startup_keys,
 )
+from lib.execution import ExecutionCancelled, is_cancelled, run
 
 STARTUP_MODULE_FOR_FUNCTION = {
     'disable_startup_programs': 'essential_programs_initialization',
@@ -50,7 +51,7 @@ def _restart_windows_explorer() -> None:
         return
 
     try:
-        subprocess.run(
+        run(
             ["taskkill", "/f", "/im", "explorer.exe"],
             capture_output=True,
             text=True,
@@ -103,6 +104,9 @@ def functions(item):
             func()
         else:
             log_warning(f"Function not found or not callable: {display_name} ({func_name})")
+
+        if is_cancelled():
+            return
 
         sleep(1)
 

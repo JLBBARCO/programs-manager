@@ -3,25 +3,6 @@ owner="JLBBARCO"
 repo="programs-manager"
 
 
-# Install Python 3.12 if not present
-if ! command -v python3.12 >/dev/null 2>&1; then
-    echo "[programs-manager] Python 3.12 not found. Installing..."
-    if command -v apt-get >/dev/null 2>&1; then
-        sudo apt-get update
-        sudo apt-get install -y python3.12
-    elif command -v yum >/dev/null 2>&1; then
-        sudo yum install -y python3.12
-    elif command -v dnf >/dev/null 2>&1; then
-        sudo dnf install -y python3.12
-    elif command -v pacman >/dev/null 2>&1; then
-        sudo pacman -S --noconfirm python3.12
-    else
-        echo "[programs-manager] Error: Could not find a package manager to install Python 3.12. Please install it manually."
-        exit 1
-    fi
-fi
-
-
 # When this script is fetched from the 'beta' branch it should use the
 # latest prerelease artifact; when fetched from 'main' it should use the
 # latest stable release. Set here according to file branch.

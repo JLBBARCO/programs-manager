@@ -5,6 +5,7 @@ import logging
 # Módulos do seu projeto
 from lib.system import name as CURRENT_OS
 from lib.install import install
+from lib.execution import run
 
 class MotherboardInstallerModule:
     """
@@ -65,7 +66,7 @@ class MotherboardInstallerModule:
         if os_type == "Windows":
             try:
                 cmd = 'Get-CimInstance -ClassName Win32_BaseBoard | Select-Object Manufacturer, Product | ConvertTo-Json'
-                result = subprocess.run(["powershell", "-Command", cmd], capture_output=True, text=True, check=True)
+                result = run(["powershell", "-Command", cmd], capture_output=True, text=True, check=True)
                 data = json.loads(result.stdout)
                 return {
                     "manufacturer": data.get("Manufacturer", "Desconhecido").strip(),
@@ -87,7 +88,7 @@ class MotherboardInstallerModule:
                     pass
 
                 # Método 2: Fallback usando o comando hostnamectl
-                res = subprocess.run(["hostnamectl"], capture_output=True, text=True)
+                res = run(["hostnamectl"], capture_output=True, text=True)
                 vendor, model = "Desconhecido", "Desconhecido"
                 for line in res.stdout.splitlines():
                     if "Hardware Vendor:" in line:

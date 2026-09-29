@@ -2,6 +2,7 @@ import shutil
 import subprocess
 
 from lib import log, system
+from lib.execution import run
 
 
 WINDOWS_OPTIMIZER_SCRIPT = (
@@ -22,7 +23,7 @@ def run() -> bool:
 
     log.info('Starting Windows Optimizer through PowerShell...')
     try:
-        process = subprocess.run(
+        process = run(
             [powershell, '-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', WINDOWS_OPTIMIZER_SCRIPT],
             capture_output=True,
             text=True,

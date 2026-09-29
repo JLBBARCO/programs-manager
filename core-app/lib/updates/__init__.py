@@ -1,4 +1,5 @@
 from lib.log import log
+from lib.execution import run
 
 
 def update_package_manager(nameSO):
@@ -20,10 +21,10 @@ def update_package_manager(nameSO):
                 startupinfo.wShowWindow = subprocess.SW_HIDE
 
             # Agora com o 'startupinfo' configurado localmente
-            subprocess.run(["winget", "upgrade", "--id", 'Microsoft.AppInstaller', "-e", "--accept-source-agreements", "--accept-package-agreements",], shell=True, startupinfo=startupinfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            run(["winget", "upgrade", "--id", 'Microsoft.AppInstaller', "-e", "--accept-source-agreements", "--accept-package-agreements",], shell=True, startupinfo=startupinfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             log.info("Package manager updated successfully.")
         elif name_so == "Linux":
-            subprocess.run(["sudo", "apt", "update"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            run(["sudo", "apt", "update"], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             log.info("Package manager updated successfully.")
         else:
             log.error(f"Unsupported operating system: {name_so}")

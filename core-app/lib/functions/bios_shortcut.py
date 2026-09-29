@@ -3,6 +3,7 @@ import subprocess
 from pathlib import Path
 
 from lib.log import error, info
+from lib.execution import run
 
 
 def bios_shortcut():
@@ -26,7 +27,7 @@ def bios_shortcut():
 				"$shortcut.IconLocation = \"$env:SystemRoot\\System32\\shell32.dll,27\"; "
 				"$shortcut.Save();"
 			)
-			process = subprocess.run(
+			process = run(
 				["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", ps_script],
 				capture_output=True,
 				text=True,

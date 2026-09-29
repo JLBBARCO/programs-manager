@@ -8,6 +8,7 @@ import customtkinter as ctk
 from lib.system import name
 from lib.log import info, warning, error
 from lib.json import read_external_json
+from lib.execution import run
 from lib.screens import progress
 
 
@@ -290,7 +291,7 @@ class OptionsScreen(ctk.CTkFrame):
 
     @staticmethod
     def _run_package_command(command):
-        process = subprocess.run(command, capture_output=True, text=True, encoding='utf-8', errors='ignore')
+        process = run(command, capture_output=True, text=True, encoding='utf-8', errors='ignore')
         return process.stdout or ''
 
     @staticmethod

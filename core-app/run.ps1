@@ -3,13 +3,6 @@ $owner = "JLBBARCO"
 $repo = "programs-manager"
 
 
-# Install Python 3.12 if not present
-if (-not (Get-Command python3.12 -ErrorAction SilentlyContinue)) {
-    Write-Host "[programs-manager] Python 3.12 not found. Installing..."
-    winget install --id=Python.Python.3.12 -e --source winget
-}
-
-
 # Set this script's branch. When this file is fetched from:
 #  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/main/run.ps1  -> set to 'main'
 #  - https://raw.githubusercontent.com/JLBBARCO/programs-manager/beta/run.ps1 -> set to 'beta'

@@ -157,7 +157,7 @@ jobs:
           Automatic release from $BRANCH.
 
           Run in Windows:
-          \\$env:AIP_VERSION = '$VERSION'; irm $RAW_BASE/run.ps1 | iex
+          \$env:AIP_VERSION = '$VERSION'; irm $RAW_BASE/run.ps1 | iex
 
           Run in Linux:
           AIP_VERSION=$VERSION curl -fsSL $RAW_BASE/run.sh | AIP_VERSION=$VERSION bash

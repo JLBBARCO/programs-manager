@@ -2,10 +2,11 @@ import subprocess
 
 from lib.log import info, warning, error as log_error
 from lib.system import name as system_name
+from lib.execution import run
 
 
 def _run_command(command: str) -> str:
-	process = subprocess.run(command, capture_output=True, text=True, shell=True)
+	process = run(command, capture_output=True, text=True, shell=True)
 	raw_output = (process.stdout or "") + ("\n" + process.stderr if process.stderr else "")
 	return raw_output.strip()
 

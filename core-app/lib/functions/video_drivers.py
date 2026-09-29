@@ -3,6 +3,7 @@ import shutil
 import subprocess
 from lib.log import info, warning, error as log_error
 from lib.system import name as system_name
+from lib.execution import run
 
 
 WINDOWS_DRIVER_INSTALLERS = {
@@ -65,7 +66,7 @@ def _normalize_gpu_vendor(value: str) -> str:
 
 
 def _run_command(command: list[str]) -> tuple[int, str]:
-    process = subprocess.run(
+    process = run(
         command,
         capture_output=True,
         text=True,
