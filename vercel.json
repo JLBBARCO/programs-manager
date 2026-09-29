@@ -1,7 +1,7 @@
 {
   "version": 2,
   "installCommand": null,
-  "buildCommand": null,
+  "buildCommand": "echo Static site: no build required",
   "cleanUrls": true,
   "trailingSlash": false,
   "crons": [{ "path": "/api/cron/releases", "schedule": "0 6 * * *" }],
