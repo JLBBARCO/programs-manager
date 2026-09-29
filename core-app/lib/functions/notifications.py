@@ -12,6 +12,7 @@ def _resolve_notification_icon_path() -> Path | None:
 	try:
 		source_root = Path(__file__).resolve().parents[3]
 		candidate_paths.extend([
+			source_root / 'core-app' / 'assets' / 'icons' / 'icon.ico',
 			source_root / 'src' / 'assets' / 'icon' / 'icon.ico',
 			source_root / 'program' / 'src' / 'assets' / 'icon' / 'icon.ico',
 		])
@@ -81,10 +82,24 @@ def _get_completion_message() -> tuple[str, str]:
 	return messages.get(_get_device_language(), messages['en'])
 
 
+def error_notification(title: str, message: str) -> bool:
+	try:
+		notification = Notify()
+		notification.title = title
+		notification.message = message
+		icon_path = _resolve_notification_icon_path()
+		if icon_path is not None:
+			notification.icon = str(icon_path)
+		notification.send()
+		return True
+	except Exception:
+		return False
+
 def finalize_notification():
 	try:
 		title, message = _get_completion_message()
 		notification = Notify()
+		notification.application_name = 'Programs Manager'
 		notification.title = title
 		notification.message = message
 		icon_path = _resolve_notification_icon_path()

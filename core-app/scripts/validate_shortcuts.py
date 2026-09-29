@@ -15,8 +15,8 @@ if str(PROJECT_ROOT) not in sys.path:
 
 def validate_windows_shortcuts():
     """Validate Windows Start Menu and Desktop shortcuts."""
-    from src.lib.shortcuts import APP_NAME
-    from src.lib.windows_shortcuts import (
+    from lib.shortcuts import APP_NAME
+    from lib.shortcuts.windows_shortcuts import (
         windows_start_menu_directories,
         windows_desktop_directories,
     )
@@ -49,7 +49,7 @@ def validate_windows_shortcuts():
 
 def validate_linux_shortcuts():
     """Validate Linux .desktop files."""
-    from src.lib.shortcuts import APP_SLUG
+    from lib.shortcuts import APP_SLUG
 
     app_dir = Path.home() / ".local" / "share" / "applications"
     app_entry = app_dir / f"{APP_SLUG}.desktop"
@@ -80,7 +80,7 @@ def validate_linux_shortcuts():
 
 def validate_macos_shortcuts():
     """Validate macOS .command launcher files."""
-    from src.lib.shortcuts import APP_NAME, APP_SLUG
+    from lib.shortcuts import APP_NAME, APP_SLUG
 
     app_dir = Path.home() / "Applications"
     app_launcher = app_dir / f"{APP_NAME}.command"

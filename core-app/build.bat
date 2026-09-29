@@ -19,7 +19,6 @@ python -m PyInstaller --noconfirm --clean --onedir --windowed ^
     --add-data "core-app\lib;lib" ^
     --add-data "core-app\assets;assets" ^
     --add-data "core-app\system;system" ^
-    --add-data "src;src" ^
     --collect-all customtkinter ^
     --collect-all psutil ^
     --noupx ^

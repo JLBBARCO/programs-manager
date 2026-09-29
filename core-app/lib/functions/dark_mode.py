@@ -1,6 +1,7 @@
 import subprocess
 
-from src.lib import log, system
+from lib.log import info, warning, error as log_error
+from lib.system import name as system_name
 
 
 def _run_command(command: str) -> str:
@@ -10,7 +11,7 @@ def _run_command(command: str) -> str:
 
 
 def dark_mode():
-	if system.name() == 'Windows':
+	if system_name() == 'Windows':
 		try:
 			_run_command(
 				'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" '
@@ -20,6 +21,6 @@ def dark_mode():
 				'reg add "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize" '
 				'/v SystemUsesLightTheme /t REG_DWORD /d 0 /f >nul 2>&1'
 			)
-			log.info('Dark mode applied successfully.')
+			info('Dark mode applied successfully.')
 		except Exception as error:
-			log.error(f'Failed to apply dark mode: {error}')
+			log_error(f'Failed to apply dark mode: {error}')

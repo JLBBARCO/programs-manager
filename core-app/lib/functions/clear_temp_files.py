@@ -2,7 +2,8 @@ import os
 import shutil
 import stat
 import tempfile
-from src.lib import log, system
+from lib.log import debug, info, warning, error
+from lib.system import name as system_name
 
 
 def clear_temp_files(target_dir: str | None = None) -> bool:
@@ -19,9 +20,10 @@ def clear_temp_files(target_dir: str | None = None) -> bool:
         removed_files = 0
         removed_dirs = 0
         skipped = 0
+        info(f"Clearing temp dir: {base}")
 
         if not os.path.exists(base):
-            log.warning(f"Target temp dir does not exist: {base}")
+            warning(f"Target temp dir does not exist: {base}")
             return (0, 0, 0)
 
         for name in os.listdir(base):
@@ -29,7 +31,7 @@ def clear_temp_files(target_dir: str | None = None) -> bool:
             # Skip known protected or installer-related temp folders to avoid noisy errors
             if any(substr in name for substr in SKIP_SUBSTRINGS):
                 # Keep skipped count but only warn at debug level
-                log.info(f"Skipping protected temp entry: {path}")
+                info(f"Skipping protected temp entry: {path}")
                 skipped += 1
                 continue
             try:
@@ -45,9 +47,9 @@ def clear_temp_files(target_dir: str | None = None) -> bool:
                         except Exception as e:
                             # File locked or access denied — expected on Windows for some temp files
                             if getattr(e, 'winerror', None) in (5, 32) or getattr(pe, 'winerror', None) in (5, 32):
-                                log.debug(f"Skipping in-use/protected file: {path}: {e}")
+                                debug(f"Skipping in-use/protected file: {path}: {e}")
                             else:
-                                log.error(f"Failed to remove {path}: {e}")
+                                error(f"Failed to remove {path}: {e}")
                             skipped += 1
                 elif os.path.isdir(path):
                     try:
@@ -66,16 +68,16 @@ def clear_temp_files(target_dir: str | None = None) -> bool:
                             removed_dirs += 1
                         except Exception as e:
                             if getattr(e, 'winerror', None) in (5, 32) or getattr(pe, 'winerror', None) in (5, 32):
-                                log.debug(f"Skipping in-use/protected directory: {path}: {e}")
+                                debug(f"Skipping in-use/protected directory: {path}: {e}")
                             else:
-                                log.error(f"Failed to remove {path}: {e}")
+                                error(f"Failed to remove {path}: {e}")
                             skipped += 1
             except Exception as e:
                 # Could be file-in-use (Windows) or other OS error — skip and continue
                 if getattr(e, 'winerror', None) in (5, 32) or getattr(e, 'errno', None) in (13, 32):
-                    log.debug(f"Skipping in-use/protected path: {path}: {e}")
+                    debug(f"Skipping in-use/protected path: {path}: {e}")
                 else:
-                    log.error(f"Failed to remove {path}: {e}")
+                    error(f"Failed to remove {path}: {e}")
                 skipped += 1
 
         return (removed_files, removed_dirs, skipped)
@@ -84,20 +86,20 @@ def clear_temp_files(target_dir: str | None = None) -> bool:
     if target_dir:
         base_dir = os.path.abspath(target_dir)
     else:
-        if system.name() == 'Windows':
+        if system_name() == 'Windows':
             base_dir = os.environ.get('TEMP') or tempfile.gettempdir()
-        elif system.name() in ['Linux', 'Darwin']:
+        elif system_name() in ['Linux', 'Darwin']:
             base_dir = '/tmp'
         else:
-            log.warning(f"Unsupported system: {system.name()}")
+            warning(f"Unsupported system: {system_name()}")
             return False
 
-    log.info(f'Clearing temporary files: {base_dir}')
+    info(f'Clearing temporary files: {base_dir}')
     try:
         removed_files, removed_dirs, skipped = _clear_dir(base_dir)
-        log.info(f"Temporary files cleared. Removed files: {removed_files}, removed dirs: {removed_dirs}, skipped: {skipped}")
+        info(f"Temporary files cleared. Removed files: {removed_files}, removed dirs: {removed_dirs}, skipped: {skipped}")
         return True
     except Exception as e:
-        log.error(f"An error occurred while clearing temporary files: {e}")
+        error(f"An error occurred while clearing temporary files: {e}")
         return False
 

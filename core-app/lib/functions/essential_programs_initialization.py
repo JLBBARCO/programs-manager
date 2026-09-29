@@ -4,8 +4,9 @@ from time import sleep
 import urllib.request
 import json as std_json
 from lib.config import get_github_branch
-
-from src.lib import json, log, system
+from lib.json import read_external_json
+from lib.log import info, warning, error as log_error
+from lib.system import name as system_name
 
 try:
     import winreg
@@ -61,14 +62,14 @@ def _load_whitelist_terms(whitelist_content=None):
                     body = resp.read().decode('utf-8')
                     try:
                         whitelist_content = std_json.loads(body)
-                        log.info("Loaded initialization whitelist from remote URL.")
+                        info("Loaded initialization whitelist from remote URL.")
                     except Exception:
                         whitelist_content = None
         except Exception:
             whitelist_content = None
 
     if whitelist_content is None:
-        whitelist_content = json.read_external_json('initialization_whitelist')
+        whitelist_content = read_external_json('initialization_whitelist')
 
     if not whitelist_content:
         return set()
@@ -107,7 +108,7 @@ def _is_whitelisted(entry_name: str, whitelist_terms) -> bool:
 
 def disable_startup_programs():
     """Disable startup entries that are not present in the GitHub whitelist."""
-    if system.name() != "Windows" or winreg is None:
+    if system_name() != "Windows" or winreg is None:
         return "Startup program management is supported only on Windows."
 
     try:
@@ -142,14 +143,14 @@ def disable_startup_programs():
                     for name in entry_names:
                         if _is_whitelisted(name, whitelist_terms):
                             preserved_count += 1
-                            log.info(f'Preserved startup entry [{label}]: {name}')
+                            info(f'Preserved startup entry [{label}]: {name}')
                             continue
 
                         winreg.SetValueEx(approved_key, name, 0, winreg.REG_BINARY, disabled_value)
-                        log.info(f'Disabled startup entry [{label}]: {name}')
+                        info(f'Disabled startup entry [{label}]: {name}')
                         disabled_count += 1
         except Exception as error:
-            log.error(f"Skipping {label}, key not found or inaccessible: {error}")
+            log_error(f"Skipping {label}, key not found or inaccessible: {error}")
 
     return (
         f"Scan complete. {disabled_count} startup entries were disabled and "
@@ -159,12 +160,12 @@ def disable_startup_programs():
 
 def save_startup_keys():
     """Save the current startup registry state for audit/debugging."""
-    if system.name() != "Windows" or winreg is None:
-        log.warning("Startup registry export is supported only on Windows.")
+    if system_name() != "Windows" or winreg is None:
+        warning("Startup registry export is supported only on Windows.")
         return
 
-    from src.lib import find_folders
-    output_path = find_folders.get_ProgramsManager_folder() / 'programs.log'
+    from lib.find_folders import get_ProgramsManager_folder
+    output_path = get_ProgramsManager_folder() / 'programs.log'
 
     try:
         lines = []
@@ -180,20 +181,20 @@ def save_startup_keys():
 
         with open(output_path, 'w', encoding='utf-8') as output_file:
             output_file.write("\n".join(lines))
-        log.info(f"Startup keys saved to {output_path}.")
+        info(f"Startup keys saved to {output_path}.")
     except Exception as error:
-        log.error(f"Error saving keys: {error}")
+        log_error(f"Error saving keys: {error}")
 
 
 def enable_startup_whitelist():
     """Re-enable whitelisted startup entries from GitHub."""
-    if system.name() != "Windows" or winreg is None:
+    if system_name() != "Windows" or winreg is None:
         return "Startup whitelist management is supported only on Windows."
 
     try:
         whitelist_terms = _load_whitelist_terms()
     except Exception as error:
-        log.error(f"Whitelist re-enable failed. Error: {error}")
+        log_error(f"Whitelist re-enable failed. Error: {error}")
 
     if not whitelist_terms:
         return "Whitelist is empty; nothing to re-enable."
@@ -214,7 +215,7 @@ def enable_startup_whitelist():
                             name, _, _ = winreg.EnumValue(run_key, index)
                             if _is_whitelisted(name, whitelist_terms):
                                 winreg.SetValueEx(approved_key, name, 0, winreg.REG_BINARY, enabled_value)
-                                log.info(f'Re-enabled from whitelist: {name}')
+                                info(f'Re-enabled from whitelist: {name}')
                                 activated_count += 1
                             index += 1
                         except OSError:
@@ -239,22 +240,22 @@ def essentials_programs_initialization(functions_list):
             display_name = item.get('name', func_name) if isinstance(item, dict) else func_name
 
             if func_name == 'disable_startup_programs':
-                log.info(f"Executing: {display_name}")
+                info(f"Executing: {display_name}")
                 disable_startup_programs()
             elif func_name == 'enable_startup_whitelist':
-                log.info(f"Executing: {display_name}")
+                info(f"Executing: {display_name}")
                 enable_startup_whitelist()
             elif func_name == 'save_startup_keys':
-                log.info(f"Executing: {display_name}")
+                info(f"Executing: {display_name}")
                 save_startup_keys()
             elif func_name == 'essentials_programs_whitelist':
-                log.info(f"Executing: {display_name}")
+                info(f"Executing: {display_name}")
                 essentials_programs_whitelist()
             else:
-                log.warning(f"Function not found or not callable: {display_name} ({func_name})")
+                warning(f"Function not found or not callable: {display_name} ({func_name})")
 
             sleep(1)
 
     except Exception as error:
-        log.error(f"Error executing functions: {error}")
+        log_error(f"Error executing functions: {error}")
 

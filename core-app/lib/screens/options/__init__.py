@@ -1,6 +1,7 @@
 import re
 import shutil
 import subprocess
+import tkinter as tk
 from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 import customtkinter as ctk
@@ -141,17 +142,29 @@ class OptionsScreen(ctk.CTkFrame):
         self.after(100, self.load_json_function_files)  # Load JSON files after a short delay to ensure the GUI is initialized
         self.after(100, self.load_installed_programs)
 
+    def _is_alive(self):
+        try:
+            return bool(self.winfo_exists())
+        except tk.TclError:
+            return False
+
 
     def load_json_install_files(self):
         self.json_numb_read = 0
         self.json_data_read = {}
 
         for json_file in install_json_files:
+            if not self._is_alive():
+                return
             if name() in json_file['system']:
                 try:
+                    if not self._is_alive():
+                        return
                     self.message_label.configure(text=f"Loading {json_file['name']} JSON file...")
                     self.update()
                     data = read_external_json(json_file['file'])
+                    if not self._is_alive():
+                        return
                     if data is None:
                         raise ValueError('Remote JSON data is unavailable')
                     self.json_data_read[json_file['name']] = data
@@ -163,6 +176,8 @@ class OptionsScreen(ctk.CTkFrame):
                     continue
 
                 try:
+                    if not self._is_alive():
+                        return
                     area_frame = getattr(self, json_file['area'])
                     row = self.json_numb_read // 3
                     col = self.json_numb_read % 3
@@ -176,8 +191,8 @@ class OptionsScreen(ctk.CTkFrame):
                 self.json_data[json_file['name']] = data
                 self.generate_checkboxes(data, area_frame, json_file['name'])
 
-
-        self.message_label.configure(text=f"Loaded {self.json_numb_read} JSON files successfully.")
+        if self._is_alive():
+            self.message_label.configure(text=f"Loaded {self.json_numb_read} JSON files successfully.")
 
 
     def generate_checkboxes(self, data: Any, area_frame: ctk.CTkFrame, category_name: str):
@@ -208,12 +223,18 @@ class OptionsScreen(ctk.CTkFrame):
         self.json_numb_read = 0
 
         for json_file in functions_json_files:
+            if not self._is_alive():
+                return
             if name() in json_file['system']:
                 try:
+                    if not self._is_alive():
+                        return
                     self.message_label.configure(text=f"Loading {json_file['name']} JSON file...")
                     print(f"Loading {json_file['name']} JSON file...")
                     self.update()
                     data = read_external_json(json_file['file'])
+                    if not self._is_alive():
+                        return
                     if data is None:
                         raise ValueError('Remote JSON data is unavailable')
                     
@@ -226,21 +247,32 @@ class OptionsScreen(ctk.CTkFrame):
                     continue
 
     def load_installed_programs(self):
+        if not self._is_alive():
+            return
         self.message_label.configure(text=f"Loading installed programs for {name()}...")
         future = self._package_executor.submit(self._list_installed_programs)
-        future.add_done_callback(
-            lambda result: self.after(0, self._finish_installed_programs_load, result)
-        )
+        future.add_done_callback(self._schedule_installed_programs_finish)
+
+    def _schedule_installed_programs_finish(self, future):
+        try:
+            self.after(0, self._finish_installed_programs_load, future)
+        except tk.TclError:
+            return
 
     def _finish_installed_programs_load(self, future):
+        if not self._is_alive():
+            return
         try:
             self.installed_programs = future.result()
+            if not self._is_alive():
+                return
             self.message_label.configure(text=f"Loaded {len(self.installed_programs)} installed programs.")
             if self._display_mode == 'uninstall':
                 self.show_uninstall_options()
         except Exception as exception:
             error(f"Failed to load installed programs: {exception}")
-            self.message_label.configure(text='Could not load installed programs.')
+            if self._is_alive():
+                self.message_label.configure(text='Could not load installed programs.')
 
     def _list_installed_programs(self):
         if name() == 'Windows' and shutil.which('winget'):
@@ -339,6 +371,8 @@ class OptionsScreen(ctk.CTkFrame):
 
 
     def run(self):
+        if not self._is_alive():
+            return
         self.activate_checkboxes = self.get_selected_options()
         master = self.master
         self.destroy()

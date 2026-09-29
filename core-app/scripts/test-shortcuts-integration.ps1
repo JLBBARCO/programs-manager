@@ -13,7 +13,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ProjectRoot = Split-Path -Parent $ScriptDir
 Push-Location $ProjectRoot
 try {
-    $ShortcutMetadata = python -c "from src.lib.shortcuts import APP_NAME; print(APP_NAME)"
+    $ShortcutMetadata = python -c "from lib.shortcuts import APP_NAME; print(APP_NAME)"
 }
 finally {
     Pop-Location
@@ -58,7 +58,7 @@ Write-Host "Running app (will timeout after 8 seconds)..." -ForegroundColor Yell
 Push-Location $ProjectRoot
 
 Write-Host "Priming shortcut creation via application helper..."
-python -c "from src.lib.shortcuts import ensure_platform_shortcuts_best_effort; created = ensure_platform_shortcuts_best_effort(); print('Created shortcuts:'); [print(shortcut) for shortcut in created]"
+python -c "from lib.shortcuts import ensure_platform_shortcuts_best_effort; created = ensure_platform_shortcuts_best_effort(); print('Created shortcuts:'); [print(shortcut) for shortcut in created]"
 Write-Host ""
 
 # Start app with 8-second timeout (give app time to create shortcuts before closing)

@@ -1,16 +1,16 @@
-from src.lib import log
+from lib.log import log
 
 
 def update_package_manager(nameSO):
     import subprocess
     import os  # Importado para verificar o ambiente com segurança
 
-    from src.lib import web
+    from lib.web import wait_for_internet_connection
 
     name_so = nameSO
 
     try:
-        web.wait_for_internet_connection()
+        wait_for_internet_connection()
         if name_so == "Windows":
             # Criando o objeto para ocultar a janela também na atualização do winget
             startupinfo = None

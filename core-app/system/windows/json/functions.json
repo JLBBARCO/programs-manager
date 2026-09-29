@@ -6,12 +6,6 @@
     "checkbox": false
   },
   {
-    "name": "Update Programs",
-    "type": "function",
-    "id": "update_programs",
-    "checkbox": false
-  },
-  {
     "name": "Dark Mode ",
     "type": "function",
     "id": "dark_mode",

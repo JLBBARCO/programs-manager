@@ -2,7 +2,7 @@ import os
 import platform
 import subprocess
 import glob
-from src.lib import log
+from lib.log import info, warning, error
 
 
 def correctly_internal_drive():
@@ -17,7 +17,7 @@ def correctly_internal_drive():
             # Prefer SystemDrive env (e.g. 'C:')
             system_drive = os.environ.get("SystemDrive") or os.path.splitdrive(os.path.abspath(os.sep))[0]
             if not system_drive:
-                log.warning("Could not determine system drive on Windows.")
+                warning("Could not determine system drive on Windows.")
                 return False
             # Ensure root path like 'C:\\' for GetDriveTypeW
             root = system_drive.rstrip('\\/') + "\\\\"
@@ -26,13 +26,13 @@ def correctly_internal_drive():
                 drive_type = GetDriveTypeW(root)
                 DRIVE_FIXED = 3
                 if drive_type == DRIVE_FIXED:
-                    log.info("Internal drive is correctly detected (fixed drive).")
+                    info("Internal drive is correctly detected (fixed drive).")
                     return True
                 else:
-                    log.warning(f"Internal drive is not correctly detected (drive type {drive_type}).")
+                    warning(f"Internal drive is not correctly detected (drive type {drive_type}).")
                     return False
             except Exception as e:
-                log.error(f"Windows drive-type detection failed: {e}")
+                error(f"Windows drive-type detection failed: {e}")
                 return False
 
         elif system == "Linux":
@@ -43,21 +43,21 @@ def correctly_internal_drive():
                         with open(os.path.join(block, 'removable'), 'r') as f:
                             val = f.read().strip()
                         if val == '0':
-                            log.info("Internal drive is correctly detected (Linux, non-removable block found).")
+                            info("Internal drive is correctly detected (Linux, non-removable block found).")
                             return True
                     except Exception:
                         continue
-                log.warning("Internal drive is not correctly detected (Linux heuristics).")
+                warning("Internal drive is not correctly detected (Linux heuristics).")
                 return False
             except Exception as e:
-                log.error(f"Linux drive detection failed: {e}")
+                error(f"Linux drive detection failed: {e}")
                 return False
 
         else:
-            log.warning(f"Unsupported platform for internal drive detection: {system}")
+            warning(f"Unsupported platform for internal drive detection: {system}")
             return False
 
     except Exception as e:
-        log.error(f"An error occurred while detecting internal drive: {e}")
+        error(f"An error occurred while detecting internal drive: {e}")
         return False
 

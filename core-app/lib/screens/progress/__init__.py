@@ -21,6 +21,10 @@ class ProgressScreen(ctk.CTkFrame):
         self.progress_info_label = ctk.CTkLabel(self.main_frame, text="Info: Waiting for progress...")
         self.progress_info_label.pack(padx=10, pady=10, side='top')
 
+        self.message_label = ctk.CTkLabel(self.main_frame)
+        self._close_countdown = None
+        self._close_scheduled = False
+
         self.progress_bar.set(0)
         self.after(0, lambda: self.pipeline_executions(options_array))
 
@@ -67,3 +71,32 @@ class ProgressScreen(ctk.CTkFrame):
         self.progress_bar.set(value)
         self.progress_label.configure(text=f'Progress: {percentage}%')
         self.progress_info_label.configure(text=f'Info: {message}')
+
+        if value >= 1 and not self._close_scheduled:
+            self._close_scheduled = True
+            info("Pipeline completed successfully.")
+            self.after(0, self.close_program)
+
+
+    def close_program(self):
+        if self._close_countdown is not None:
+            return
+
+        self.message_label.pack(padx=10, pady=10, side='top')
+        self._close_countdown = 10
+        self._update_close_message()
+
+    def _update_close_message(self):
+        if self._close_countdown is None:
+            return
+
+        if self._close_countdown == 0:
+            self.message_label.configure(text="Program is closing now.")
+            self.after(250, self.winfo_toplevel().destroy)
+            return
+
+        self.message_label.configure(
+            text=f"Program will close in {self._close_countdown} seconds..."
+        )
+        self._close_countdown -= 1
+        self.after(1000, self._update_close_message)

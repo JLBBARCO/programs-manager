@@ -7,7 +7,7 @@ import stat
 import subprocess
 import sys
 
-from src.lib.windows_shortcuts import (
+from lib.shortcuts.windows_shortcuts import (
     windows_desktop_directories,
     windows_start_menu_directories,
 )
@@ -29,10 +29,6 @@ def _launcher_command() -> list[str]:
     return [sys.executable, str(_project_root() / "core-app" / "main.py")]
 
 
-def _launcher_text() -> str:
-    return " ".join(shlex.quote(part) for part in _launcher_command())
-
-
 def _windows_powershell_literal(value: str) -> str:
     return "'" + value.replace("'", "''") + "'"
 
@@ -41,9 +37,9 @@ def _create_windows_shortcut(shortcut_path: Path) -> None:
     shortcut_path.parent.mkdir(parents=True, exist_ok=True)
     command = _launcher_command()
     target = command[0]
-    arguments = " ".join(command[1:])
-    icon_path = _project_root() / "src" / "assets" / "icon" / "icon.ico"
-    bundled_icon_path = Path(getattr(sys, "_MEIPASS", "")) / "src" / "assets" / "icon" / "icon.ico"
+    arguments = subprocess.list2cmdline(command[1:])
+    icon_path = _project_root() / "core-app" / "assets" / "icons" / "icon.ico"
+    bundled_icon_path = Path(getattr(sys, "_MEIPASS", "")) / "assets" / "icons" / "icon.ico"
     icon = str(icon_path) if icon_path.exists() else str(bundled_icon_path) if bundled_icon_path.exists() else target
 
     ps_script = (
@@ -75,19 +71,24 @@ def _ensure_windows_shortcuts() -> list[Path]:
 def _ensure_linux_shortcut() -> list[Path]:
     app_dir = Path.home() / ".local" / "share" / "applications"
     app_dir.mkdir(parents=True, exist_ok=True)
-    shortcut_path = app_dir / f"{APP_SLUG}.desktop"
+    shortcut_paths = [app_dir / f"{APP_SLUG}.desktop"]
+    desktop_dir = Path.home() / "Desktop"
+    if desktop_dir.exists() or os.environ.get("XDG_CURRENT_DESKTOP"):
+        desktop_dir.mkdir(parents=True, exist_ok=True)
+        shortcut_paths.append(desktop_dir / f"{APP_NAME}.desktop")
     content = f"""[Desktop Entry]
 Type=Application
 Version=1.0
 Name={APP_NAME}
-Exec={_launcher_text()}
-Terminal=false
+Exec={shlex.join(_launcher_command())}
+Terminal=true
 Categories=Utility;Security;
 StartupWMClass={APP_SLUG}
 """
-    shortcut_path.write_text(content, encoding="utf-8")
-    shortcut_path.chmod(shortcut_path.stat().st_mode | stat.S_IXUSR)
-    return [shortcut_path]
+    for shortcut_path in shortcut_paths:
+        shortcut_path.write_text(content, encoding="utf-8")
+        shortcut_path.chmod(shortcut_path.stat().st_mode | stat.S_IXUSR)
+    return shortcut_paths
 
 
 def _ensure_macos_shortcut() -> list[Path]:
@@ -96,8 +97,7 @@ def _ensure_macos_shortcut() -> list[Path]:
     shortcut_path = app_dir / f"{APP_NAME}.command"
     content = f"""#!/bin/bash
 # {APP_SLUG}
-cd {shlex.quote(str(_project_root()))}
-exec {_launcher_text()}
+exec {shlex.join(_launcher_command())}
 """
     shortcut_path.write_text(content, encoding="utf-8")
     shortcut_path.chmod(shortcut_path.stat().st_mode | stat.S_IXUSR)

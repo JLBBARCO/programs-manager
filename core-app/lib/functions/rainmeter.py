@@ -1,7 +1,8 @@
 import os
 import shutil
 import webbrowser
-from src.lib import log, system
+from lib.log import info, warning, error as log_error
+from lib.system import name as system_name
 
 rainmeter_install_data = [
     {
@@ -20,7 +21,7 @@ def _create_rainmeter_shortcut():
     """Busca o atalho global e copia para a inicialização do usuário atual."""
     user_appdata = os.environ.get('APPDATA')
     if not user_appdata:
-        log.error('APPDATA environment variable is not available.')
+        log_error('APPDATA environment variable is not available.')
         return
 
     startup_folder = os.path.join(user_appdata, r'Microsoft\Windows\Start Menu\Programs\Startup')
@@ -35,12 +36,12 @@ def _create_rainmeter_shortcut():
 
         # Copia o arquivo (Lê do global -> Escreve no usuário)
         shutil.copy(rainmeter_shortcut_start_menu, destination)
-        log.info("Atalho do Rainmeter copiado para a Inicialização do Usuário com sucesso.")
+        info("Atalho do Rainmeter copiado para a Inicialização do Usuário com sucesso.")
         
     except FileNotFoundError:
-        log.error(f"Erro: O atalho original não foi encontrado em: {rainmeter_shortcut_start_menu}. O Rainmeter foi instalado corretamente?")
+        log_error(f"Erro: O atalho original não foi encontrado em: {rainmeter_shortcut_start_menu}. O Rainmeter foi instalado corretamente?")
     except Exception as e:
-        log.error(f"Erro inesperado ao copiar atalho: {e}")
+        log_error(f"Erro inesperado ao copiar atalho: {e}")
 
 
 def _open_rainmeter_skins_site():
@@ -48,14 +49,14 @@ def _open_rainmeter_skins_site():
 
 
 def rainmeter():
-    if system.name() != 'Windows':
-        log.warning('Rainmeter setup is supported only on Windows.')
+    if system_name() != 'Windows':
+        log_error('Rainmeter setup is supported only on Windows.')
         return
 
-    from src.lib import install
+    from lib.install import install
     
     # Executa a instalação (pode pedir a janela de Admin do Windows se o winget exigir)
-    install.install(rainmeter_install_data, system.name())
+    install(rainmeter_install_data)
     
     # Executa a cópia para a inicialização e abre o site
     _create_rainmeter_shortcut()

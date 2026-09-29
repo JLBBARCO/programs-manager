@@ -6,7 +6,7 @@ from time import sleep
 
 from lib.log import info as log_info, warning as log_warning, error as log_error
 from lib.system import name as system_name
-from . import bios_shortcut, clear_temp_files, correctly_internal_drive, dark_mode, essential_programs_initialization, notifications, video_drivers, update_programs, rainmeter, motherboard_drivers
+from . import bios_shortcut, clear_temp_files, correctly_internal_drive, dark_mode, essential_programs_initialization, notifications, video_drivers, rainmeter, motherboard_drivers
 from .essential_programs_initialization import (
     disable_startup_programs,
     enable_startup_whitelist,

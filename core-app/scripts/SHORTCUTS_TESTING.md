@@ -75,8 +75,8 @@ A dedicated GitHub Actions workflow already exists at [`.github/workflows/test-s
 
 The workflow is triggered when changes are made to:
 
-- `src/lib/shortcuts/`
-- `src/lib/app/`
+- `core-app/lib/shortcuts/`
+- `core-app/main.py`
 - `main.py`
 - Any shortcut test script or the workflow itself
 
@@ -130,7 +130,7 @@ Or use just the validator:
 
 1. Verify app is running as compiled binary (`sys.frozen == True`)
 2. Check permissions: Python process must have write access to target directories
-3. Inspect `ensure_platform_shortcuts_best_effort()` in `src/lib/shortcuts/__init__.py`
+3. Inspect `ensure_platform_shortcuts_best_effort()` in `core-app/lib/shortcuts/__init__.py`
 
 ### Permission errors on Linux
 
@@ -148,7 +148,7 @@ Or use just the validator:
 
 The shortcut creation logic:
 
-1. **Runtime detection**: `src/lib/shortcuts/__init__.py` checks if running as frozen binary
+1. **Runtime detection**: `core-app/lib/shortcuts/__init__.py` checks if running as frozen binary
 2. **Platform detection**: Uses `os.name`, `sys.platform` to determine OS
 3. **Safe execution**: `ensure_platform_shortcuts_best_effort()` catches all exceptions
 4. **Called at app startup**: In `main.py` before app GUI launches
@@ -157,7 +157,7 @@ The shortcut creation logic:
 ## API Reference
 
 ```python
-from src.lib.shortcuts import ensure_platform_shortcuts_best_effort
+from lib.shortcuts import ensure_platform_shortcuts_best_effort
 
 # This is called automatically at app startup
 # Returns [] if running as script or on error
@@ -167,7 +167,7 @@ created_shortcuts = ensure_platform_shortcuts_best_effort()
 For manual invocation or testing:
 
 ```python
-from src.lib.shortcuts import ensure_platform_shortcuts
+from lib.shortcuts import ensure_platform_shortcuts
 # Raises exception on error
 shortcuts = ensure_platform_shortcuts()
 ```

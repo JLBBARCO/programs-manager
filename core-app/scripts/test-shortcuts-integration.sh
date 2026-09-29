@@ -16,8 +16,8 @@ echo "Project root: $PROJECT_ROOT"
 echo "Platform: $(uname -s)"
 echo ""
 
-APP_NAME="$(cd "$PROJECT_ROOT" && python -c 'from src.lib.shortcuts import APP_NAME; print(APP_NAME)')"
-APP_SLUG="$(cd "$PROJECT_ROOT" && python -c 'from src.lib.shortcuts import APP_SLUG; print(APP_SLUG)')"
+APP_NAME="$(cd "$PROJECT_ROOT" && python -c 'from lib.shortcuts import APP_NAME; print(APP_NAME)')"
+APP_SLUG="$(cd "$PROJECT_ROOT" && python -c 'from lib.shortcuts import APP_SLUG; print(APP_SLUG)')"
 
 if [ "$(uname -s)" = "Darwin" ]; then
     APP_DIR="$HOME/Applications"
@@ -55,7 +55,7 @@ cd "$PROJECT_ROOT"
 
 echo "Priming shortcut creation via application helper..."
 python - <<'PY'
-from src.lib.shortcuts import ensure_platform_shortcuts_best_effort
+from lib.shortcuts import ensure_platform_shortcuts_best_effort
 
 created = ensure_platform_shortcuts_best_effort()
 print("Created shortcuts:")

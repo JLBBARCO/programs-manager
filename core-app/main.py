@@ -1,8 +1,11 @@
+# External libs
 from pathlib import Path
 import customtkinter as ctk
-from lib.log import info
-from lib.screens import options
 import sys
+# Internal Libs
+from lib.screens import options
+from lib.log import info
+from lib.functions import notifications
 
 
 if getattr(sys, "frozen", False):
@@ -12,7 +15,7 @@ else:
 if str(runtime_root) not in sys.path:
     sys.path.insert(0, str(runtime_root))
 
-from src.lib.shortcuts import ensure_platform_shortcuts_best_effort
+from lib.shortcuts import ensure_platform_shortcuts_best_effort
 
 
 class App(ctk.CTk):
@@ -35,8 +38,14 @@ class App(ctk.CTk):
             self
         )
 
-        info("End system")
 
 if __name__ == "__main__":
-    app = App()
-    app.mainloop()
+    try:
+        app = App()
+        app.mainloop()
+        notifications.finalize_notification()
+    except Exception as e:
+            info(f"Error during initialization: {e}")
+            raise
+    finally:
+        info(f"End system!")
