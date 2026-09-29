@@ -17,14 +17,21 @@ def uninstall(data):
                 startupInfo = subprocess.STARTUPINFO()
                 startupInfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 startupInfo.wShowWindow = subprocess.SW_HIDE
-                run(["winget", "uninstall", "--id", item['id'], "-e", "--accept-source-agreements", "--accept-package-agreements",], shell=True, startupinfo=startupInfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+                try:
+                    run(["winget", "uninstall", "--id", item['id'], "-e", "--accept-source-agreements", "--accept-package-agreements",], shell=True, startupinfo=startupInfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                except subprocess.CalledProcessError as e:
+                    error(f"Failed to uninstall {item['name']}: {e}")
             elif system() == 'Linux':
-                run(["sudo", "apt", "remove", "-y", item['id']], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                try:
+                    run(["sudo", "apt", "remove", "-y", item['id']], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                except subprocess.CalledProcessError as e:
+                    error(f"Failed to uninstall {item['name']}: {e}")
             info(f"Uninstalled {item['name']} successfully.")
         except ExecutionCancelled:
             return
         except subprocess.CalledProcessError as e:
-            error(f"Failed to install {item['name']}: {e}")
+            error(f"Failed to uninstall {item['name']}: {e}")
 
         for _ in range(10):
             wait_for_internet_connection()

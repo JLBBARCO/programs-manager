@@ -26,7 +26,10 @@ def install(data):
                 else:
                     log_info(f"Installing {item['name']} (latest version)...")
 
-                run(command, shell=True, startupinfo=startupInfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                try:
+                    run(command, shell=True, startupinfo=startupInfo, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                except subprocess.CalledProcessError as e:
+                    log_error(f"Failed to install {item['name']}: {e}")
 
             elif system() == 'Linux':
                 package_target = f"{item['id']}={version}" if version else item['id']
@@ -35,7 +38,10 @@ def install(data):
                 else:
                     log_info(f"Installing {item['name']} (latest version)...")
 
-                run(["sudo", "apt", "install", "-y", package_target], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                try:
+                    run(["sudo", "apt", "install", "-y", package_target], check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                except subprocess.CalledProcessError as e:
+                    log_error(f"Failed to install {item['name']}: {e}")
 
             log_info(f"Installed {item['name']} successfully.")
         except ExecutionCancelled:
