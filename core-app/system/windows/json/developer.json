@@ -23,7 +23,12 @@
     "id": "Oracle.JavaRuntimeEnvironment",
     "checkbox": false
   },
-
+  {
+    "name": "C/C++ Compiler",
+    "type": "install",
+    "id": "BrechtSanders.WinLibs.MCF.UCRT",
+    "checkbox": false
+  },
   {
     "name": "MySQL Workbench",
     "type": "install",
