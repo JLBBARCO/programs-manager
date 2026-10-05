@@ -16,8 +16,6 @@ else:
 if str(runtime_root) not in sys.path:
     sys.path.insert(0, str(runtime_root))
 
-from lib.shortcuts import ensure_platform_shortcuts_best_effort
-
 
 class App(ctk.CTk):
     info('Start system')
@@ -30,8 +28,6 @@ class App(ctk.CTk):
         self.title("Programs Manager")
         self.closed_by_user = False
         self.protocol("WM_DELETE_WINDOW", self.close_program)
-
-        ensure_platform_shortcuts_best_effort()
 
         icon_path = Path(__file__).resolve().parent / "assets" / "icons" / "icon.ico"
         if icon_path.is_file():
