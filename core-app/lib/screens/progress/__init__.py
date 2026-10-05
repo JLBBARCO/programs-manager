@@ -1,8 +1,11 @@
+# External Libraries
 from threading import Thread
 from typing import Any
+from time import sleep
 
+# Internal Libraries
 import customtkinter as ctk
-from lib.log import info
+from lib.log import info, error as log_error
 from lib.execution import ExecutionCancelled, is_cancelled
 
 class ProgressScreen(ctk.CTkFrame):
@@ -66,13 +69,16 @@ class ProgressScreen(ctk.CTkFrame):
 
             self._update_progress(index / total, f'Completed: {option_name}')
 
+            sleep(0.1)  # Simulate some processing time
+
         if not is_cancelled():
             self._update_progress(1, 'Pipeline completed.')
 
     def _update_progress(self, value, message):
         try:
             self.after(0, self._apply_progress, value, message)
-        except ctk.TclError:
+        except Exception as e:
+            log_error(e)
             return
 
     def _apply_progress(self, value, message):

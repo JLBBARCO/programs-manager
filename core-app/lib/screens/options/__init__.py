@@ -7,6 +7,7 @@ from typing import Any
 import customtkinter as ctk
 from lib.system import name
 from lib.log import info, warning, error
+from lib.functions.notifications import error_notification
 from lib.json import read_external_json
 from lib.execution import run
 from lib.screens import progress
@@ -140,9 +141,26 @@ class OptionsScreen(ctk.CTkFrame):
         self._display_mode = 'install'
         self._package_executor = ThreadPoolExecutor(max_workers=1)
 
+        self._is_loading = False
+        self._loading_install_json = True
+        self._loading_function_json = True
+        self._loading_installed_programs = True
+
+        self._update_loading_state()
         self.after(100, self.load_json_install_files)  # Load JSON files after a short delay to ensure the GUI is initialized
         self.after(100, self.load_json_function_files)  # Load JSON files after a short delay to ensure the GUI is initialized
         self.after(100, self.load_installed_programs)
+
+    def _update_loading_state(self):
+        self._is_loading = any((
+            self._loading_install_json,
+            self._loading_function_json,
+            self._loading_installed_programs,
+        ))
+        self.configure(cursor='watch' if self._is_loading else '')
+        self.button_run.configure(state='disabled' if self._is_loading else 'normal')
+        self.update_idletasks()
+
 
     def _is_alive(self):
         try:
@@ -155,46 +173,52 @@ class OptionsScreen(ctk.CTkFrame):
         self.json_numb_read = 0
         self.json_data_read = {}
 
-        for json_file in install_json_files:
-            if not self._is_alive():
-                return
-            if name() in json_file['system']:
-                try:
+        self._loading_install_json = True
+        self._update_loading_state()
+        try:
+            for json_file in install_json_files:
+                if not self._is_alive():
+                    return
+                if name() in json_file['system']:
+                    try:
+                        if not self._is_alive():
+                            return
+                        self.message_label.configure(text=f"Loading {json_file['name']} JSON file...")
+                        self.update()
+                        data = read_external_json(json_file['file'])
+                        if not self._is_alive():
+                            return
+                        if data is None:
+                            raise ValueError('Remote JSON data is unavailable')
+                        self.json_data_read[json_file['name']] = data
+
+                        info(f"Loaded {json_file['name']} JSON file successfully.")
+
+                    except Exception as e:
+                        error(f"Failed to load {json_file['name']} JSON file: {e}")
+                        continue
+
                     if not self._is_alive():
                         return
-                    self.message_label.configure(text=f"Loading {json_file['name']} JSON file...")
-                    self.update()
-                    data = read_external_json(json_file['file'])
-                    if not self._is_alive():
-                        return
-                    if data is None:
-                        raise ValueError('Remote JSON data is unavailable')
-                    self.json_data_read[json_file['name']] = data
+                    try:
+                        area_frame = getattr(self, json_file['area'])
+                        row = self.json_numb_read // 3
+                        col = self.json_numb_read % 3
+                        area_frame.grid(row=row, column=col, padx=10, pady=10, sticky='news')
+                        self.json_numb_read += 1
+                    except AttributeError as e:
+                        error(f"Failed to access area frame for {json_file['name']}: {e}")
+                        continue
 
-                    info(f"Loaded {json_file['name']} JSON file successfully.")
+                    self.json_data[json_file['name']] = data
+                    self.generate_checkboxes(data, area_frame, json_file['name'])
 
-                except Exception as e:
-                    error(f"Failed to load {json_file['name']} JSON file: {e}")
-                    continue
-
-                try:
-                    if not self._is_alive():
-                        return
-                    area_frame = getattr(self, json_file['area'])
-                    row = self.json_numb_read // 3
-                    col = self.json_numb_read % 3
-                    area_frame.grid(row=row, column=col, padx=10, pady=10, sticky='news')
-                    self.json_numb_read += 1
-                except AttributeError as e:
-                    error(f"Failed to access area frame for {json_file['name']}: {e}")
-                    continue
-
-                # Store data in main json_data dictionary
-                self.json_data[json_file['name']] = data
-                self.generate_checkboxes(data, area_frame, json_file['name'])
-
-        if self._is_alive():
-            self.message_label.configure(text=f"Loaded {self.json_numb_read} JSON files successfully.")
+            if self._is_alive():
+                self.message_label.configure(text=f"Loaded {self.json_numb_read} JSON files successfully.")
+        finally:
+            self._loading_install_json = False
+            if self._is_alive():
+                self._update_loading_state()
 
 
     def generate_checkboxes(self, data: Any, area_frame: ctk.CTkFrame, category_name: str):
@@ -223,36 +247,49 @@ class OptionsScreen(ctk.CTkFrame):
     def load_json_function_files(self):
         """Load JSON function files and generate UI elements"""
         self.json_numb_read = 0
+        self._loading_function_json = True
+        self._update_loading_state()
 
-        for json_file in functions_json_files:
-            if not self._is_alive():
-                return
-            if name() in json_file['system']:
-                try:
-                    if not self._is_alive():
-                        return
-                    self.message_label.configure(text=f"Loading {json_file['name']} JSON file...")
-                    print(f"Loading {json_file['name']} JSON file...")
-                    self.update()
-                    data = read_external_json(json_file['file'])
-                    if not self._is_alive():
-                        return
-                    if data is None:
-                        raise ValueError('Remote JSON data is unavailable')
-                    
-                    info(f"Loaded {json_file['name']} JSON file successfully.")
-                    # Store in main json_data dictionary
-                    self.json_data[json_file['name']] = data
-                    
-                except Exception as e:
-                    error(f"Failed to load {json_file['name']} JSON file: {e}")
-                    continue
+        try:
+            for json_file in functions_json_files:
+                if not self._is_alive():
+                    return
+                if name() in json_file['system']:
+                    try:
+                        if not self._is_alive():
+                            return
+                        self.message_label.configure(text=f"Loading {json_file['name']} JSON file...")
+                        data = read_external_json(json_file['file'])
+                        if not self._is_alive():
+                            return
+                        if data is None:
+                            raise ValueError('Remote JSON data is unavailable')
+
+                        info(f"Loaded {json_file['name']} JSON file successfully.")
+                        self.json_data[json_file['name']] = data
+
+                    except Exception as e:
+                        error(f"Failed to load {json_file['name']} JSON file: {e}")
+                        continue
+        finally:
+            self._loading_function_json = False
+            if self._is_alive():
+                self._update_loading_state()
 
     def load_installed_programs(self):
         if not self._is_alive():
             return
+        self._loading_installed_programs = True
+        self._update_loading_state()
         self.message_label.configure(text=f"Loading installed programs for {name()}...")
-        future = self._package_executor.submit(self._list_installed_programs)
+        try:
+            future = self._package_executor.submit(self._list_installed_programs)
+        except Exception as exception:
+            self._loading_installed_programs = False
+            self._update_loading_state()
+            error(f"Failed to load installed programs: {exception}")
+            self.message_label.configure(text='Could not load installed programs.')
+            return
         future.add_done_callback(self._schedule_installed_programs_finish)
 
     def _schedule_installed_programs_finish(self, future):
@@ -275,6 +312,10 @@ class OptionsScreen(ctk.CTkFrame):
             error(f"Failed to load installed programs: {exception}")
             if self._is_alive():
                 self.message_label.configure(text='Could not load installed programs.')
+        finally:
+            self._loading_installed_programs = False
+            if self._is_alive():
+                self._update_loading_state()
 
     def _list_installed_programs(self):
         if name() == 'Windows' and shutil.which('winget'):
@@ -376,6 +417,11 @@ class OptionsScreen(ctk.CTkFrame):
         if not self._is_alive():
             return
         self.activate_checkboxes = self.get_selected_options()
+        if not self.activate_checkboxes:
+            warning('No options selected to run.')
+            error_notification('Programs Manager', 'No options selected to run.')
+            self.message_label.configure(text='No options selected to run.')
+            return
         master = self.master
         self.destroy()
         progress.ProgressScreen(master, self.activate_checkboxes)
