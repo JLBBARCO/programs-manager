@@ -40,5 +40,6 @@
     "type": "install",
     "id": "TorProject.TorBrowser",
     "checkbox": false
-  }
+  },
+  { "name": "Brave", "type": "install", "id": "Brave.Brave", "checkbox": false }
 ]
