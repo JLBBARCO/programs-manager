@@ -17,7 +17,7 @@ def bios_shortcut():
 
 		for directory in shortcut_directories:
 			directory.mkdir(parents=True, exist_ok=True)
-			shortcut_path = directory / 'BIOS Shortcut.lnk'
+			shortcut_path = directory / 'BIOS.lnk'
 			ps_script = (
 				"$shell = New-Object -ComObject WScript.Shell; "
 				f"$shortcut = $shell.CreateShortcut('{shortcut_path}'); "

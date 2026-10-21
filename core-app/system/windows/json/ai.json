@@ -28,5 +28,11 @@
     "type": "install",
     "id": "9PHV7M7V4S5L",
     "checkbox": false
+  },
+  {
+    "name": "Gemini for Desktop",
+    "type": "install",
+    "id": "Google.GeminiDesktop",
+    "checkbox": false
   }
 ]
